@@ -5,6 +5,7 @@
 package interfaces;
 
 import entidades.Cliente;
+import excepciones.PersistenciaException;
 import java.util.List;
 
 /**
@@ -13,10 +14,10 @@ import java.util.List;
  */
 public interface IClienteDAO {
 
-    public Cliente guardar(Cliente cliente);
-    public Cliente buscarPorId(Long id);
-    public Cliente editar(Cliente cliente);
-    public boolean eliminar(Long id);
-    List<Cliente> buscarPorFiltros(String filtro);
+    public Cliente guardar(Cliente cliente) throws PersistenciaException;
+    public Cliente buscarPorId(Long id) throws PersistenciaException;
+    public Cliente editar(Cliente cliente) throws PersistenciaException;
+    public boolean eliminar(Long id) throws PersistenciaException;
+    List<Cliente> buscarPorFiltros(String filtro) throws PersistenciaException;
  
 }
