@@ -7,9 +7,10 @@ package dtos;
 import java.time.LocalDate;
 
 /**
- * Representa la información de un cliente frecuente dentro del sistema.
- * Esta clase se utiliza como DTO para transferir datos entre las capas de presentación y negocio.
- * 
+ * Representa la información de un cliente frecuente dentro del sistema. Esta
+ * clase se utiliza como DTO para transferir datos entre las capas de
+ * presentación y negocio.
+ *
  * @author regina, mariana e isaac.
  */
 public class ClienteFrecuenteDTO {
