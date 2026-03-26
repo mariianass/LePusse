@@ -68,7 +68,7 @@ public class ClienteDAOTest {
 //        cliente.setNombre("Jose");
 //        cliente.setApellidoPaterno("Trista");
 //        cliente.setApellidoMaterno("Rosales");
-//        cliente.setTelefono("1234567890");
+//        cliente.setTelefono("2346819881");
 //        cliente.setCorreoElectronico("jose@test.com");
 //        Cliente guardado = clienteDAO.guardar(cliente);
 //        
@@ -88,7 +88,7 @@ public class ClienteDAOTest {
 //        cliente.setNombre("Ernesto");
 //        cliente.setApellidoPaterno("Cisneros");
 //        cliente.setApellidoMaterno("Valenzuela");
-//        cliente.setTelefono("1234567890");
+//        cliente.setTelefono("8764567652");
 //        cliente.setCorreoElectronico("ernesto@test.com");
 //        Cliente guardado = clienteDAO.guardar(cliente);
 //        
@@ -130,5 +130,5 @@ public class ClienteDAOTest {
 //            clienteDAO.guardar(c2);
 //        });
 //    }
-   
+////   
 }
