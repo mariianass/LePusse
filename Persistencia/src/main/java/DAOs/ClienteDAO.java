@@ -34,7 +34,7 @@ public class ClienteDAO implements IClienteDAO {
     @Override
     public Cliente guardar(Cliente cliente) throws PersistenciaException {
         EntityManager em = ConexionBD.crearConexion();
-
+        
         try {
             em.getTransaction().begin();
             em.persist(cliente);
@@ -53,22 +53,67 @@ public class ClienteDAO implements IClienteDAO {
 
     @Override
     public Cliente buscarPorId(Long id) throws PersistenciaException {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        EntityManager em = ConexionBD.crearConexion();
+        
+        try {
+            return em.find(Cliente.class, id);
+        } catch (Exception e){
+            throw new PersistenciaException("No se encontró el cliente en la base de datos. "+e.getMessage());
+        } finally {
+            em.close();
+        }
+        
     }
 
     @Override
     public Cliente editar(Cliente cliente) throws PersistenciaException {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        EntityManager em = ConexionBD.crearConexion();
+
+        try {
+            em.getTransaction().begin();
+            Cliente clienteActualizado = em.merge(cliente);
+            em.getTransaction().commit();
+            return clienteActualizado;
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw new PersistenciaException("Error al editar el cliente en la base de datos.", e);
+        } finally {
+            em.close();
+        }
     }
 
     @Override
     public boolean eliminar(Long id) throws PersistenciaException {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        EntityManager em = ConexionBD.crearConexion();
+
+        try {
+            Cliente cliente = em.find(Cliente.class, id);
+
+            if (cliente == null) {
+                return false;
+            }
+
+            em.getTransaction().begin();
+            em.remove(cliente);
+            em.getTransaction().commit();
+            return true;
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw new PersistenciaException("Error al eliminar el cliente de la base de datos.", e);
+        } finally {
+            em.close();
+        }
     }
 
     @Override
     public List<Cliente> buscarPorFiltros(String filtro) throws PersistenciaException {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        
+        return null;
+        
     }
 
 }
