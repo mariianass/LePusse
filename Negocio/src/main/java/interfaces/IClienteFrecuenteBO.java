@@ -8,9 +8,9 @@ import dtos.ClienteFrecuenteDTO;
 import java.util.List;
 
 /**
- * Define las operaciones básicas de negocio para la gestión de clientes
- * frecuentes dentro del sistema. Esta interfaz establece los métodos necesarios
- * para registrar, actualizar, consultar y eliminar clientes frecuentes.
+ * Interfaz para la gestión de clientes frecuentes dentro del sistema. Esta
+ * interfaz establece los métodos necesarios para registrar, actualizar,
+ * consultar y eliminar clientes frecuentes.
  *
  * @author regina, mariana e isaac.
  */
