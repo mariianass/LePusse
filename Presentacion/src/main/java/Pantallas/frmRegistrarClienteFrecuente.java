@@ -2,6 +2,7 @@ package Pantallas;
 
 import Componentes.BotonRedondeado;
 import Componentes.MenuLateralPanel;
+import Controlador.Coordinador;
 import Estilos.Dimensiones;
 import Estilos.PaletaColores;
 import java.awt.BorderLayout;
@@ -26,6 +27,8 @@ import javax.swing.border.EmptyBorder;
  */
 public class FrmRegistrarClienteFrecuente extends JFrame{
     
+    private final Coordinador coordinador;
+    
     private JTextField txtPrimerNombre;
     private JTextField txtSegundoNombre;
     private JTextField txtApellidoPaterno;
@@ -33,7 +36,8 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
     private JTextField txtTelefono;
     private JTextField txtCorreo;
 
-    public FrmRegistrarClienteFrecuente() {
+    public FrmRegistrarClienteFrecuente(Coordinador coordinador) {
+        this.coordinador = coordinador;
         setTitle("Restaurante Le Pusse - Registrar Cliente Frecuente");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(Dimensiones.ANCHO_VENTANA, Dimensiones.ALTO_VENTANA);
@@ -42,7 +46,7 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        add(new MenuLateralPanel("Clientes Frecuentes"), BorderLayout.WEST);
+        add(new MenuLateralPanel("Clientes Frecuentes", coordinador), BorderLayout.WEST);
         add(crearContenidoPrincipal(), BorderLayout.CENTER);
     }
 
@@ -139,6 +143,14 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
 
         btnCancelar.addActionListener(e -> limpiarCampos());
         btnRegistrar.addActionListener(e -> registrarCliente());
+        
+        btnRegistrar.addActionListener(e -> {
+            System.out.println("Cliente registrado con éxito");
+            coordinador.regresarAGestionClientes();
+        });
+        btnCancelar.addActionListener(e -> {
+            coordinador.regresarAGestionClientes();
+        });
 
         panelBotones.add(btnCancelar);
         panelBotones.add(btnRegistrar);
@@ -236,10 +248,6 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
         );
 
         limpiarCampos();
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new FrmRegistrarClienteFrecuente().setVisible(true));
     }
     
 }
