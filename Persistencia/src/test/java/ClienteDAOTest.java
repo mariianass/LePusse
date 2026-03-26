@@ -32,14 +32,11 @@ public class ClienteDAOTest {
     void guardarClienteValido() throws PersistenciaException {
 
         // Preparamos un Cliente normal con todos sus campos obligatorios
-        
-        long numeroAleatorio = (long) (Math.random() * 10000000000L);
-        String telefonoUnico = String.valueOf(numeroAleatorio);
         Cliente cliente = new Cliente();
         cliente.setNombre("Regina");
         cliente.setApellidoPaterno("Jimenez");
         cliente.setApellidoMaterno("Meneses");
-        cliente.setTelefono(telefonoUnico);
+        cliente.setTelefono("6822491867");
         cliente.setCorreoElectronico("regina@test.com");
         
         Cliente resultado = clienteDAO.guardar(cliente);
