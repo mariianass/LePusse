@@ -1,5 +1,6 @@
 package Componentes;
 
+import Controlador.Coordinador;
 import Estilos.PaletaColores;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -22,7 +23,10 @@ import javax.swing.border.EmptyBorder;
  */
 public class MenuLateralPanel extends JPanel{
     
-    public MenuLateralPanel(String opcionActiva) {
+    private final Coordinador coordinador;
+    
+    public MenuLateralPanel(String opcionActiva, Coordinador coordinador) {
+        this.coordinador = coordinador;
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(265, 768));
         setBackground(PaletaColores.MARRON_OSCURO);
@@ -102,6 +106,10 @@ public class MenuLateralPanel extends JPanel{
         cerrarSesion.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cerrarSesion.setCursor(new Cursor(Cursor.HAND_CURSOR));
         cerrarSesion.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
+        cerrarSesion.addActionListener(e -> {
+        coordinador.cerrarSesion();
+        });
 
         inferior.add(lineaInferior);
         inferior.add(Box.createRigidArea(new Dimension(0, 18)));

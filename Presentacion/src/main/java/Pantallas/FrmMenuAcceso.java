@@ -1,6 +1,7 @@
 package Pantallas;
 
 import Componentes.BotonRedondeado;
+import Controlador.Coordinador;
 import Estilos.Dimensiones;
 import Estilos.PaletaColores;
 import Recursos.CargadorRecursos;
@@ -17,8 +18,12 @@ import javax.swing.border.LineBorder;
  */
 public class FrmMenuAcceso extends JFrame {
     
-    public FrmMenuAcceso() {
-            initComponents();
+    private final Coordinador coordinador;
+
+    
+    public FrmMenuAcceso(Coordinador coordinador) {
+        this.coordinador = coordinador;
+        initComponents();
     }
 
     private void initComponents() {
@@ -123,12 +128,16 @@ public class FrmMenuAcceso extends JFrame {
         panelBoton.add(btnIngresar);
         
         tarjeta.add(panelBoton);
+        
+        btnIngresar.addActionListener(e -> {
+        if (titulo.equals("Administrador")) {
+            coordinador.mostrarGestionarClientesFrecuentes();
+        } else {
+            // Aqui llamaremos al  metodo de coordinar que llamara a la pantalla de comandas.
+        }
+        });
 
         return tarjeta;
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new FrmMenuAcceso().setVisible(true));
     }
 
 }

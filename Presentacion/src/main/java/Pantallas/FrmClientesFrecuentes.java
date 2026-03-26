@@ -3,6 +3,7 @@ package Pantallas;
 import Componentes.BotonEditar;
 import Componentes.BotonRedondeado;
 import Componentes.MenuLateralPanel;
+import Controlador.Coordinador;
 import Estilos.Dimensiones;
 import Estilos.PaletaColores;
 import java.awt.BorderLayout;
@@ -30,7 +31,11 @@ import javax.swing.table.JTableHeader;
  * @author Mariana
  */
 public class FrmClientesFrecuentes extends JFrame{
-    public FrmClientesFrecuentes() {
+    
+    private final Coordinador coordinador;
+    
+    public FrmClientesFrecuentes(Coordinador coordinador) {
+        this.coordinador = coordinador;
         setTitle("Restaurante Le Pusse - Clientes Frecuentes");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(Dimensiones.ANCHO_VENTANA, Dimensiones.ALTO_VENTANA);
@@ -39,7 +44,7 @@ public class FrmClientesFrecuentes extends JFrame{
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        add(new MenuLateralPanel("Clientes Frecuentes"), BorderLayout.WEST);
+        add(new MenuLateralPanel("Clientes Frecuentes", coordinador), BorderLayout.WEST);
         add(crearContenidoPrincipal(), BorderLayout.CENTER);
     }
 
@@ -107,6 +112,10 @@ public class FrmClientesFrecuentes extends JFrame{
         btnNuevo.setBackground(PaletaColores.DORADO);
         btnNuevo.setForeground(PaletaColores.MARRON_OSCURO);
         btnNuevo.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        
+        btnNuevo.addActionListener(e -> {
+            coordinador.mostrarRegistroClienteFrecuente();
+        });
 
         JPanel panelBoton = new JPanel();
         panelBoton.setOpaque(false);
@@ -214,10 +223,6 @@ public class FrmClientesFrecuentes extends JFrame{
         scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         return scroll;
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new FrmClientesFrecuentes().setVisible(true));
     }
 
 }
