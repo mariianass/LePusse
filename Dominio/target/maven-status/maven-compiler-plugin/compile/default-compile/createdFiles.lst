@@ -1,2 +1,4 @@
-entidades\ClienteFrecuente.class
 entidades\Cliente.class
+entidades\ClienteFrecuente.class
+entidades\Comanda.class
+enums\EstadoComanda.class
