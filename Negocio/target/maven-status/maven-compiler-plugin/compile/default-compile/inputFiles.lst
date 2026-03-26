@@ -1,4 +1,11 @@
+<<<<<<< HEAD
 C:\Users\regin\OneDrive\Documentos\GitHub\LePusse\Negocio\src\main\java\BOs\ClienteBO.java
 C:\Users\regin\OneDrive\Documentos\GitHub\LePusse\Negocio\src\main\java\BOs\ClienteFrecuenteBO.java
 C:\Users\regin\OneDrive\Documentos\GitHub\LePusse\Negocio\src\main\java\interfaces\IClienteBO.java
 C:\Users\regin\OneDrive\Documentos\GitHub\LePusse\Negocio\src\main\java\interfaces\IClienteFrecuenteBO.java
+=======
+C:\Users\putme\OneDrive\Documentos\GitHub\LePusse\Negocio\src\main\java\BOs\ClienteBO.java
+C:\Users\putme\OneDrive\Documentos\GitHub\LePusse\Negocio\src\main\java\BOs\ClienteFrecuenteBO.java
+C:\Users\putme\OneDrive\Documentos\GitHub\LePusse\Negocio\src\main\java\interfaces\IClienteBO.java
+C:\Users\putme\OneDrive\Documentos\GitHub\LePusse\Negocio\src\main\java\interfaces\IClienteFrecuenteBO.java
+>>>>>>> 8b5d6c41c415585f6cf63bca476b1a39d845a9d7

@@ -117,12 +117,13 @@ public class ClienteDAO implements IClienteDAO {
         
         try {
             
-            String jpql = " SELECT c FROM Clientes c"
-                    + "WHERE LOWER(c.nombre) LIKE LOWER(:filtro)"
-                    + "OR LOWER(c.apellidoPaterno) LIKE LOWER(:filtro)"
-                    + "OR LOWER(c.apellidoMaterno) LIKE LOWER(:filtro)"
-                    + "OR LOWER(c.telefono) LIKE LOWER(:filtro)"
-                    + "OR LOWER(c.correoElectronico) LIKE LOWER(:filtro)";
+            String jpql = " SELECT c FROM Cliente c "
+                    + "WHERE LOWER(c.nombre) LIKE LOWER(:filtro) "
+                    + "OR LOWER(c.apellidoPaterno) LIKE LOWER(:filtro) "
+                    + "OR LOWER(c.apellidoMaterno) LIKE LOWER(:filtro) "
+                    + "OR LOWER(CONCAT(CONCAT(CONCAT(CONCAT(c.nombre, ' '), c.apellidoPaterno), ' '), c.apellidoMaterno)) LIKE LOWER(:filtro) "
+                    + "OR LOWER(c.telefono) LIKE LOWER(:filtro) "
+                    + "OR LOWER(c.correoElectronico) LIKE LOWER(:filtro) ";
             
             TypedQuery<Cliente> query = em.createQuery(jpql, Cliente.class);
             query.setParameter("filtro", "%" + filtro.trim() + "%");
