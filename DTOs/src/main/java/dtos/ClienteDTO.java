@@ -4,6 +4,8 @@
  */
 package dtos;
 
+import java.io.Serializable;
+
 /**
  * Representa la información de un cliente dentro del sistema. Esta clase se
  * utiliza como DTO para transferir datos entre las capas de presentación y
@@ -11,7 +13,7 @@ package dtos;
  *
  * @author regina, mariana e isaac.
  */
-public class ClienteDTO {
+public class ClienteDTO implements Serializable {
 
     private Long idCliente;
     private String nombre;

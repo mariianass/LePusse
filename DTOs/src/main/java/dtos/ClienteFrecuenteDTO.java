@@ -4,6 +4,7 @@
  */
 package dtos;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 /**
@@ -13,7 +14,7 @@ import java.time.LocalDate;
  *
  * @author regina, mariana e isaac.
  */
-public class ClienteFrecuenteDTO {
+public class ClienteFrecuenteDTO implements Serializable {
 
     private Long idCliente;
     private String nombre;
