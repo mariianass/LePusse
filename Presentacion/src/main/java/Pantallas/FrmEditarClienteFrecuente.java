@@ -6,6 +6,7 @@ import Controlador.Coordinador;
 import Estilos.Dimensiones;
 import Estilos.PaletaColores;
 import dtos.ClienteFrecuenteDTO;
+import interfaces.IClienteFrecuenteBO;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -13,23 +14,25 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.time.LocalDate;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 /**
  *
  * @author Mariana
  */
-public class FrmRegistrarClienteFrecuente extends JFrame{
+public class FrmEditarClienteFrecuente extends JFrame{
     
     private final Coordinador coordinador;
-    
+    private final ClienteFrecuenteDTO clienteDTO;
+    private final IClienteFrecuenteBO clienteFrecuenteBO;
+
     private JTextField txtPrimerNombre;
     private JTextField txtSegundoNombre;
     private JTextField txtApellidoPaterno;
@@ -37,10 +40,13 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
     private JTextField txtTelefono;
     private JTextField txtCorreo;
 
-    public FrmRegistrarClienteFrecuente(Coordinador coordinador) {
+    public FrmEditarClienteFrecuente(ClienteFrecuenteDTO clienteDTO, IClienteFrecuenteBO clienteFrecuenteBO, Coordinador coordinador) {
+        this.clienteDTO = clienteDTO;
+        this.clienteFrecuenteBO = clienteFrecuenteBO;
         this.coordinador = coordinador;
-        setTitle("Restaurante Le Pusse - Registrar Cliente Frecuente");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        setTitle("Restaurante Le Pusse - Editar Cliente Frecuente");
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(Dimensiones.ANCHO_VENTANA, Dimensiones.ALTO_VENTANA);
         setMinimumSize(new Dimension(Dimensiones.ANCHO_VENTANA, Dimensiones.ALTO_VENTANA));
         setResizable(false);
@@ -49,6 +55,8 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
 
         add(new MenuLateralPanel("Clientes Frecuentes", coordinador), BorderLayout.WEST);
         add(crearContenidoPrincipal(), BorderLayout.CENTER);
+
+        cargarDatosCliente();
     }
 
     private JPanel crearContenidoPrincipal() {
@@ -93,7 +101,7 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JLabel lblTitulo = new JLabel("Registrar Cliente Frecuente");
+        JLabel lblTitulo = new JLabel("Editar Cliente Frecuente");
         lblTitulo.setFont(new Font("Segoe UI", Font.PLAIN, 20));
         lblTitulo.setForeground(PaletaColores.TEXTO_MARRON);
 
@@ -136,47 +144,17 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
         btnCancelar.setForeground(PaletaColores.TEXTO_MARRON);
         btnCancelar.setFont(new Font("Segoe UI", Font.PLAIN, 13));
 
-        BotonRedondeado btnRegistrar = new BotonRedondeado("Registrar Cliente", 18);
-        btnRegistrar.setPreferredSize(new Dimension(155, 40));
-        btnRegistrar.setBackground(PaletaColores.MARRON_OSCURO);
-        btnRegistrar.setForeground(PaletaColores.BLANCO);
-        btnRegistrar.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        
-        btnRegistrar.addActionListener(e -> {
-                // Extraer los datos de los campos de texto
-                String pNombre = txtPrimerNombre.getText().trim();
-                String sNombre = txtSegundoNombre.getText().trim();
-                String aPaterno = txtApellidoPaterno.getText().trim();
-                String aMaterno = txtApellidoMaterno.getText().trim();
-                String tel = txtTelefono.getText().trim();
-                String correo = txtCorreo.getText().trim();
+        BotonRedondeado btnGuardar = new BotonRedondeado("Guardar", 18);
+        btnGuardar.setPreferredSize(new Dimension(125, 40));
+        btnGuardar.setBackground(PaletaColores.MARRON_OSCURO);
+        btnGuardar.setForeground(PaletaColores.BLANCO);
+        btnGuardar.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
-                // Crear y llenar el DTO
-                ClienteFrecuenteDTO nuevoCliente = new ClienteFrecuenteDTO();
-                nuevoCliente.setNombre(pNombre.concat(sNombre));
-                nuevoCliente.setApellidoPaterno(aPaterno);
-                nuevoCliente.setApellidoMaterno(aMaterno);
-                nuevoCliente.setTelefono(tel);
-                nuevoCliente.setCorreoElectronico(correo);
-                nuevoCliente.setFechaRegistro(LocalDate.now());
-
-            try {
-                // Mandar el DTO al coordinador para procesar el registro
-                coordinador.registrarClienteFrecuente(nuevoCliente);
-            } catch (Exception ex) {
-                System.out.println("Error al registrar cliente: " + ex.getMessage());
-            }
-                //Regresar a la tabla
-                coordinador.regresarAGestionClientes();
-        });
-        
-        
-        btnCancelar.addActionListener(e -> {
-            coordinador.regresarAGestionClientes();
-        });
+        btnCancelar.addActionListener(e -> dispose());
+        btnGuardar.addActionListener(e -> guardarCambios());
 
         panelBotones.add(btnCancelar);
-        panelBotones.add(btnRegistrar);
+        panelBotones.add(btnGuardar);
 
         gbc.gridx = 1;
         gbc.gridy = 8;
@@ -208,14 +186,12 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
     }
 
     private JPanel crearEtiqueta(String texto, boolean obligatorio) {
-        JPanel panel = new JPanel();
+        JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
-        panel.setLayout(new BorderLayout());
 
         JLabel lblTexto = new JLabel(texto);
         lblTexto.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lblTexto.setForeground(PaletaColores.TEXTO_MARRON);
-
         panel.add(lblTexto, BorderLayout.WEST);
 
         if (obligatorio) {
@@ -239,16 +215,21 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
         ));
     }
 
-    private void limpiarCampos() {
-        txtPrimerNombre.setText("");
+    private void cargarDatosCliente() {
+        if (clienteDTO == null) {
+            return;
+        }
+
+        txtPrimerNombre.setText(clienteDTO.getNombre() == null ? "" : clienteDTO.getNombre());
+        txtApellidoPaterno.setText(clienteDTO.getApellidoPaterno() == null ? "" : clienteDTO.getApellidoPaterno());
+        txtApellidoMaterno.setText(clienteDTO.getApellidoMaterno() == null ? "" : clienteDTO.getApellidoMaterno());
+        txtTelefono.setText(clienteDTO.getTelefono() == null ? "" : clienteDTO.getTelefono());
+        txtCorreo.setText(clienteDTO.getCorreoElectronico() == null ? "" : clienteDTO.getCorreoElectronico());
+
         txtSegundoNombre.setText("");
-        txtApellidoPaterno.setText("");
-        txtApellidoMaterno.setText("");
-        txtTelefono.setText("");
-        txtCorreo.setText("");
     }
 
-    private void registrarCliente() {
+    private void guardarCambios() {
         if (txtPrimerNombre.getText().trim().isEmpty()
                 || txtApellidoPaterno.getText().trim().isEmpty()
                 || txtApellidoMaterno.getText().trim().isEmpty()
@@ -263,14 +244,52 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
             return;
         }
 
-        JOptionPane.showMessageDialog(
+        int opcion = JOptionPane.showConfirmDialog(
                 this,
-                "¡Cliente creado exitosamente!",
-                "Mensaje",
-                JOptionPane.INFORMATION_MESSAGE
+                "¿Confirmas los cambios?",
+                "Seleccionar una opción",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE
         );
 
-        limpiarCampos();
+        if (opcion != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        try {
+            clienteDTO.setNombre(txtPrimerNombre.getText().trim());
+            clienteDTO.setApellidoPaterno(txtApellidoPaterno.getText().trim());
+            clienteDTO.setApellidoMaterno(txtApellidoMaterno.getText().trim());
+            clienteDTO.setTelefono(txtTelefono.getText().trim());
+
+            String correo = txtCorreo.getText().trim();
+            clienteDTO.setCorreoElectronico(correo.isEmpty() ? null : correo);
+
+            clienteFrecuenteBO.editar(clienteDTO);
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "¡Cliente actualizado exitosamente!",
+                    "Mensaje",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+            dispose();
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Error al actualizar el cliente: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            System.out.println("Esta ventana debe abrirse desde Presentación pasando un ClienteFrecuenteDTO y el BO.");
+        });
     }
     
 }
