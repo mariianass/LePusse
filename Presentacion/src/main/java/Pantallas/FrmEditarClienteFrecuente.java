@@ -49,7 +49,7 @@ public class FrmEditarClienteFrecuente extends JFrame{
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        add(new MenuLateralPanel("Clientes Frecuentes"), BorderLayout.WEST);
+        //add(new MenuLateralPanel("Clientes Frecuentes"), BorderLayout.WEST);
         add(crearContenidoPrincipal(), BorderLayout.CENTER);
 
         cargarDatosCliente();
