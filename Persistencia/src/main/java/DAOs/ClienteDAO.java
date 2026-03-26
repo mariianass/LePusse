@@ -10,6 +10,7 @@ import excepciones.PersistenciaException;
 import interfaces.IClienteDAO;
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -112,7 +113,27 @@ public class ClienteDAO implements IClienteDAO {
     @Override
     public List<Cliente> buscarPorFiltros(String filtro) throws PersistenciaException {
         
-        return null;
+        EntityManager em =  ConexionBD.crearConexion();
+        
+        try {
+            
+            String jpql = " SELECT c FROM Clientes c"
+                    + "WHERE LOWER(c.nombre) LIKE LOWER(:filtro)"
+                    + "OR LOWER(c.apellidoPaterno) LIKE LOWER(:filtro)"
+                    + "OR LOWER(c.apellidoMaterno) LIKE LOWER(:filtro)"
+                    + "OR LOWER(c.telefono) LIKE LOWER(:filtro)"
+                    + "OR LOWER(c.correoElectronico) LIKE LOWER(:filtro)";
+            
+            TypedQuery<Cliente> query = em.createQuery(jpql, Cliente.class);
+            query.setParameter("filtro", "%" + filtro.trim() + "%");
+            
+            return query.getResultList();
+            
+        } catch (Exception e){
+            throw new PersistenciaException("Error al buscar clientes por filtro, "+e);
+        } finally {
+            em.close();
+        }
         
     }
 
