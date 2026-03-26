@@ -4,55 +4,58 @@ import dtos.ClienteFrecuenteDTO;
 import java.util.List;
 
 /**
- * Interfaz para la gestión de clientes frecuentes dentro del sistema. Esta
- * interfaz establece los métodos necesarios para registrar, actualizar,
- * consultar y eliminar clientes frecuentes.
+ * Interfaz para la lógica de negocio de la entidad ClienteFrecuente. Define las
+ * operaciones básicas para guardar, consultar, actualizar, eliminar y buscar
+ * clientes frecuentes dentro del sistema.
  *
  * @author regina, mariana e isaac.
  */
 public interface IClienteFrecuenteBO {
 
     /**
-     * Registra un nuevo cliente frecuente en el sistema.
+     * Guarda un nuevo cliente frecuente en el sistema.
      *
      * @param clienteFrecuenteDTO DTO con la información del cliente frecuente.
-     * @return Cliente frecuente registrado.
-     * @throws Exception Si ocurre un error durante el registro.
+     * @return Cliente frecuente guardado.
+     * @throws Exception Si ocurre un error durante el guardado.
      */
-    ClienteFrecuenteDTO guardar(ClienteFrecuenteDTO clienteFrecuenteDTO) throws Exception;
-
-    /**
-     * Actualiza la información de un cliente frecuente existente.
-     *
-     * @param clienteFrecuenteDTO DTO con la información actualizada del cliente
-     * frecuente.
-     * @return Cliente frecuente actualizado.
-     * @throws Exception Si ocurre un error durante la actualización.
-     */
-    ClienteFrecuenteDTO editar(ClienteFrecuenteDTO clienteFrecuenteDTO) throws Exception;
-
-    /**
-     * Consulta todos los clientes frecuentes registrados en el sistema.
-     *
-     * @return Lista de clientes frecuentes.
-     * @throws Exception Si ocurre un error durante la consulta.
-     */
-    List<ClienteFrecuenteDTO> consultarTodos() throws Exception;
+    public ClienteFrecuenteDTO guardar(ClienteFrecuenteDTO clienteFrecuenteDTO) throws Exception;
 
     /**
      * Busca un cliente frecuente por su identificador único.
      *
-     * @param idCliente Identificador único del cliente frecuente.
+     * @param id Identificador único del cliente frecuente.
      * @return Cliente frecuente encontrado.
      * @throws Exception Si ocurre un error durante la búsqueda.
      */
-    ClienteFrecuenteDTO buscarPorId(Long idCliente) throws Exception;
+    public ClienteFrecuenteDTO buscarPorId(Long id) throws Exception;
+
+    /**
+     * Edita la información de un cliente frecuente existente.
+     *
+     * @param clienteFrecuenteDTO DTO con la información actualizada del cliente
+     * frecuente.
+     * @return Cliente frecuente actualizado.
+     * @throws Exception Si ocurre un error durante la edición.
+     */
+    public ClienteFrecuenteDTO editar(ClienteFrecuenteDTO clienteFrecuenteDTO) throws Exception;
 
     /**
      * Elimina un cliente frecuente del sistema.
      *
-     * @param idCliente Identificador único del cliente frecuente a eliminar.
+     * @param id Identificador único del cliente frecuente a eliminar.
+     * @return true si el cliente frecuente fue eliminado correctamente, false
+     * en caso contrario.
      * @throws Exception Si ocurre un error durante la eliminación.
      */
-    void eliminar(Long idCliente) throws Exception;
+    public boolean eliminar(Long id) throws Exception;
+
+    /**
+     * Busca clientes frecuentes que coincidan con el filtro proporcionado.
+     *
+     * @param filtro Texto de búsqueda para filtrar clientes frecuentes.
+     * @return Lista de clientes frecuentes que coinciden con el filtro.
+     * @throws Exception Si ocurre un error durante la búsqueda.
+     */
+    List<ClienteFrecuenteDTO> buscarPorFiltros(String filtro) throws Exception;
 }
