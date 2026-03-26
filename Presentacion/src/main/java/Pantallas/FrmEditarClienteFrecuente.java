@@ -2,8 +2,11 @@ package Pantallas;
 
 import Componentes.BotonRedondeado;
 import Componentes.MenuLateralPanel;
+import DAOs.ClienteDAO;
 import Estilos.Dimensiones;
 import Estilos.PaletaColores;
+import entidades.Cliente;
+import excepciones.PersistenciaException;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -24,8 +27,10 @@ import javax.swing.border.EmptyBorder;
  *
  * @author Mariana
  */
-public class FrmRegistrarClienteFrecuente extends JFrame{
+public class FrmEditarClienteFrecuente extends JFrame{
     
+    private Cliente cliente;
+
     private JTextField txtPrimerNombre;
     private JTextField txtSegundoNombre;
     private JTextField txtApellidoPaterno;
@@ -33,9 +38,11 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
     private JTextField txtTelefono;
     private JTextField txtCorreo;
 
-    public FrmRegistrarClienteFrecuente() {
-        setTitle("Restaurante Le Pusse - Registrar Cliente Frecuente");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    public FrmEditarClienteFrecuente(Cliente cliente) {
+        this.cliente = cliente;
+
+        setTitle("Restaurante Le Pusse - Editar Cliente Frecuente");
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(Dimensiones.ANCHO_VENTANA, Dimensiones.ALTO_VENTANA);
         setMinimumSize(new Dimension(Dimensiones.ANCHO_VENTANA, Dimensiones.ALTO_VENTANA));
         setResizable(false);
@@ -44,6 +51,8 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
 
         add(new MenuLateralPanel("Clientes Frecuentes"), BorderLayout.WEST);
         add(crearContenidoPrincipal(), BorderLayout.CENTER);
+
+        cargarDatosCliente();
     }
 
     private JPanel crearContenidoPrincipal() {
@@ -88,7 +97,7 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JLabel lblTitulo = new JLabel("Registrar Cliente Frecuente");
+        JLabel lblTitulo = new JLabel("Editar Cliente Frecuente");
         lblTitulo.setFont(new Font("Segoe UI", Font.PLAIN, 20));
         lblTitulo.setForeground(PaletaColores.TEXTO_MARRON);
 
@@ -131,17 +140,17 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
         btnCancelar.setForeground(PaletaColores.TEXTO_MARRON);
         btnCancelar.setFont(new Font("Segoe UI", Font.PLAIN, 13));
 
-        BotonRedondeado btnRegistrar = new BotonRedondeado("Registrar Cliente", 18);
-        btnRegistrar.setPreferredSize(new Dimension(155, 40));
-        btnRegistrar.setBackground(PaletaColores.MARRON_OSCURO);
-        btnRegistrar.setForeground(PaletaColores.BLANCO);
-        btnRegistrar.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        BotonRedondeado btnGuardar = new BotonRedondeado("Guardar", 18);
+        btnGuardar.setPreferredSize(new Dimension(125, 40));
+        btnGuardar.setBackground(PaletaColores.MARRON_OSCURO);
+        btnGuardar.setForeground(PaletaColores.BLANCO);
+        btnGuardar.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
-        btnCancelar.addActionListener(e -> limpiarCampos());
-        btnRegistrar.addActionListener(e -> registrarCliente());
+        btnCancelar.addActionListener(e -> dispose());
+        btnGuardar.addActionListener(e -> guardarCambios());
 
         panelBotones.add(btnCancelar);
-        panelBotones.add(btnRegistrar);
+        panelBotones.add(btnGuardar);
 
         gbc.gridx = 1;
         gbc.gridy = 8;
@@ -173,14 +182,12 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
     }
 
     private JPanel crearEtiqueta(String texto, boolean obligatorio) {
-        JPanel panel = new JPanel();
+        JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
-        panel.setLayout(new BorderLayout());
 
         JLabel lblTexto = new JLabel(texto);
         lblTexto.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lblTexto.setForeground(PaletaColores.TEXTO_MARRON);
-
         panel.add(lblTexto, BorderLayout.WEST);
 
         if (obligatorio) {
@@ -204,16 +211,21 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
         ));
     }
 
-    private void limpiarCampos() {
-        txtPrimerNombre.setText("");
+    private void cargarDatosCliente() {
+        if (cliente == null) {
+            return;
+        }
+
+        txtPrimerNombre.setText(cliente.getNombre());
+        txtApellidoPaterno.setText(cliente.getApellidoPaterno());
+        txtApellidoMaterno.setText(cliente.getApellidoMaterno());
+        txtTelefono.setText(cliente.getTelefono());
+        txtCorreo.setText(cliente.getCorreoElectronico());
+
         txtSegundoNombre.setText("");
-        txtApellidoPaterno.setText("");
-        txtApellidoMaterno.setText("");
-        txtTelefono.setText("");
-        txtCorreo.setText("");
     }
 
-    private void registrarCliente() {
+    private void guardarCambios() {
         if (txtPrimerNombre.getText().trim().isEmpty()
                 || txtApellidoPaterno.getText().trim().isEmpty()
                 || txtApellidoMaterno.getText().trim().isEmpty()
@@ -228,18 +240,60 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
             return;
         }
 
-        JOptionPane.showMessageDialog(
+        int opcion = JOptionPane.showConfirmDialog(
                 this,
-                "¡Cliente creado exitosamente!",
-                "Mensaje",
-                JOptionPane.INFORMATION_MESSAGE
+                "¿Confirmas los cambios?",
+                "Seleccionar una opción",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE
         );
 
-        limpiarCampos();
+        if (opcion != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        try {
+            cliente.setNombre(txtPrimerNombre.getText().trim());
+            cliente.setApellidoPaterno(txtApellidoPaterno.getText().trim());
+            cliente.setApellidoMaterno(txtApellidoMaterno.getText().trim());
+            cliente.setTelefono(txtTelefono.getText().trim());
+
+            String correo = txtCorreo.getText().trim();
+            cliente.setCorreoElectronico(correo.isEmpty() ? null : correo);
+
+            ClienteDAO.getInstance().editar(cliente);
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "¡Cliente actualizado exitosamente!",
+                    "Mensaje",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+            dispose();
+
+        } catch (PersistenciaException e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Error al actualizar el cliente: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new FrmRegistrarClienteFrecuente().setVisible(true));
+        SwingUtilities.invokeLater(() -> {
+            Cliente clientePrueba = new Cliente();
+            clientePrueba.setId(1L);
+            clientePrueba.setNombre("Isaac");
+            clientePrueba.setApellidoPaterno("Fierro");
+            clientePrueba.setApellidoMaterno("Gerhardus");
+            clientePrueba.setTelefono("687-161-4264");
+            clientePrueba.setCorreoElectronico("");
+
+            new FrmEditarClienteFrecuente(clientePrueba).setVisible(true);
+        });
     }
     
 }
