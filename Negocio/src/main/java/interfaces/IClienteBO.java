@@ -1,6 +1,7 @@
 package interfaces;
 
 import dtos.ClienteDTO;
+import excepciones.NegocioException;
 import java.util.List;
 
 /**
@@ -17,27 +18,27 @@ public interface IClienteBO {
      *
      * @param clienteDTO DTO con la información del cliente.
      * @return Cliente registrado.
-     * @throws Exception Si ocurre un error durante el registro.
+     * @throws NegocioException Si ocurre un error durante el registro.
      */
-    public ClienteDTO guardar(ClienteDTO clienteDTO) throws Exception;
+    public ClienteDTO guardar(ClienteDTO clienteDTO) throws NegocioException;
 
     /**
      * Busca un cliente por su identificador único.
      *
      * @param id Identificador único del cliente.
      * @return Cliente encontrado.
-     * @throws Exception Si ocurre un error durante la búsqueda.
+     * @throws NegocioException Si ocurre un error durante la búsqueda.
      */
-    public ClienteDTO buscarPorId(Long id) throws Exception;
+    public ClienteDTO buscarPorId(Long id) throws NegocioException;
 
     /**
      * Actualiza la información de un cliente existente.
      *
      * @param clienteDTO DTO con la información actualizada del cliente.
      * @return Cliente actualizado.
-     * @throws Exception Si ocurre un error durante la actualización.
+     * @throws NegocioException Si ocurre un error durante la actualización.
      */
-    public ClienteDTO editar(ClienteDTO clienteDTO) throws Exception;
+    public ClienteDTO editar(ClienteDTO clienteDTO) throws NegocioException;
 
     /**
      * Elimina un cliente del sistema.
@@ -45,16 +46,16 @@ public interface IClienteBO {
      * @param id Identificador único del cliente a eliminar.
      * @return true si el cliente fue eliminado correctamente, false en caso
      * contrario.
-     * @throws Exception Si ocurre un error durante la eliminación.
+     * @throws NegocioException Si ocurre un error durante la eliminación.
      */
-    public boolean eliminar(Long id) throws Exception;
+    public boolean eliminar(Long id) throws NegocioException;
 
     /**
      * Busca clientes que coincidan con el filtro proporcionado.
      *
      * @param filtro Texto de búsqueda para filtrar clientes.
      * @return Lista de clientes que coinciden con el filtro.
-     * @throws Exception Si ocurre un error durante la búsqueda.
+     * @throws NegocioException Si ocurre un error durante la búsqueda.
      */
-    List<ClienteDTO> buscarPorFiltros(String filtro) throws Exception;
+    List<ClienteDTO> buscarPorFiltros(String filtro) throws NegocioException;
 }

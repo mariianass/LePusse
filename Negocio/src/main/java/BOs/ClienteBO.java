@@ -7,6 +7,7 @@ package BOs;
 import DAOs.ClienteDAO;
 import dtos.ClienteDTO;
 import entidades.Cliente;
+import excepciones.NegocioException;
 import excepciones.PersistenciaException;
 import interfaces.IClienteBO;
 import interfaces.IClienteDAO;
@@ -49,10 +50,10 @@ public class ClienteBO implements IClienteBO {
      *
      * @param clienteDTO DTO con la información del cliente.
      * @return Cliente guardado.
-     * @throws Exception Si ocurre un error durante el guardado.
+     * @throws NegocioException Si ocurre un error durante el guardado.
      */
     @Override
-    public ClienteDTO guardar(ClienteDTO clienteDTO) throws Exception {
+    public ClienteDTO guardar(ClienteDTO clienteDTO) throws NegocioException {
         validarDatos(clienteDTO);
 
         try {
@@ -60,7 +61,7 @@ public class ClienteBO implements IClienteBO {
             Cliente clienteGuardado = clienteDAO.guardar(cliente);
             return convertirDTO(clienteGuardado);
         } catch (PersistenciaException e) {
-            throw new Exception("Error al guardar el cliente en negocio.", e);
+            throw new NegocioException("Error al guardar el cliente en negocio.", e);
         }
     }
 
@@ -69,24 +70,24 @@ public class ClienteBO implements IClienteBO {
      *
      * @param id Identificador único del cliente.
      * @return Cliente encontrado.
-     * @throws Exception Si ocurre un error durante la búsqueda.
+     * @throws NegocioException Si ocurre un error durante la búsqueda.
      */
     @Override
-    public ClienteDTO buscarPorId(Long id) throws Exception {
+    public ClienteDTO buscarPorId(Long id) throws NegocioException {
         if (id == null) {
-            throw new Exception("El id del cliente es obligatorio.");
+            throw new NegocioException("El id del cliente es obligatorio.");
         }
 
         try {
             Cliente cliente = clienteDAO.buscarPorId(id);
 
             if (cliente == null) {
-                throw new Exception("No se encontró el cliente.");
+                throw new NegocioException("No se encontró el cliente.");
             }
 
             return convertirDTO(cliente);
         } catch (PersistenciaException e) {
-            throw new Exception("Error al buscar el cliente en negocio.", e);
+            throw new NegocioException("Error al buscar el cliente en negocio.", e);
         }
     }
 
@@ -95,16 +96,16 @@ public class ClienteBO implements IClienteBO {
      *
      * @param clienteDTO DTO con la información actualizada del cliente.
      * @return Cliente actualizado.
-     * @throws Exception Si ocurre un error durante la edición.
+     * @throws NegocioException Si ocurre un error durante la edición.
      */
     @Override
-    public ClienteDTO editar(ClienteDTO clienteDTO) throws Exception {
+    public ClienteDTO editar(ClienteDTO clienteDTO) throws NegocioException {
         if (clienteDTO == null) {
-            throw new Exception("El cliente no puede ser nulo.");
+            throw new NegocioException("El cliente no puede ser nulo.");
         }
 
         if (clienteDTO.getIdCliente() == null) {
-            throw new Exception("El id del cliente es obligatorio para editar.");
+            throw new NegocioException("El id del cliente es obligatorio para editar.");
         }
 
         validarDatos(clienteDTO);
@@ -114,7 +115,7 @@ public class ClienteBO implements IClienteBO {
             Cliente clienteEditado = clienteDAO.editar(cliente);
             return convertirDTO(clienteEditado);
         } catch (PersistenciaException e) {
-            throw new Exception("Error al editar el cliente en negocio.", e);
+            throw new NegocioException("Error al editar el cliente en negocio.", e);
         }
     }
 
@@ -124,18 +125,18 @@ public class ClienteBO implements IClienteBO {
      * @param id Identificador único del cliente a eliminar.
      * @return true si el cliente fue eliminado correctamente, false en caso
      * contrario.
-     * @throws Exception Si ocurre un error durante la eliminación.
+     * @throws NegocioException Si ocurre un error durante la eliminación.
      */
     @Override
-    public boolean eliminar(Long id) throws Exception {
+    public boolean eliminar(Long id) throws NegocioException {
         if (id == null) {
-            throw new Exception("El id del cliente es obligatorio.");
+            throw new NegocioException("El id del cliente es obligatorio.");
         }
 
         try {
             return clienteDAO.eliminar(id);
         } catch (PersistenciaException e) {
-            throw new Exception("Error al eliminar el cliente en negocio.", e);
+            throw new NegocioException("Error al eliminar el cliente en negocio.", e);
         }
     }
 
@@ -144,10 +145,10 @@ public class ClienteBO implements IClienteBO {
      *
      * @param filtro Texto de búsqueda para filtrar clientes.
      * @return Lista de clientes que coinciden con el filtro.
-     * @throws Exception Si ocurre un error durante la búsqueda.
+     * @throws NegocioException Si ocurre un error durante la búsqueda.
      */
     @Override
-    public List<ClienteDTO> buscarPorFiltros(String filtro) throws Exception {
+    public List<ClienteDTO> buscarPorFiltros(String filtro) throws NegocioException {
         try {
             List<Cliente> clientes = clienteDAO.buscarPorFiltros(filtro);
             List<ClienteDTO> clientesDTO = new ArrayList<>();
@@ -160,7 +161,7 @@ public class ClienteBO implements IClienteBO {
 
             return clientesDTO;
         } catch (PersistenciaException e) {
-            throw new Exception("Error al buscar clientes por filtros en negocio.", e);
+            throw new NegocioException("Error al buscar clientes por filtros en negocio.", e);
         }
     }
 
@@ -168,27 +169,27 @@ public class ClienteBO implements IClienteBO {
      * Valida los datos obligatorios de un cliente.
      *
      * @param clienteDTO DTO del cliente a validar.
-     * @throws Exception Si falta algún dato obligatorio.
+     * @throws NegocioException Si falta algún dato obligatorio.
      */
-    private void validarDatos(ClienteDTO clienteDTO) throws Exception {
+    private void validarDatos(ClienteDTO clienteDTO) throws NegocioException {
         if (clienteDTO == null) {
-            throw new Exception("Cliente no puede ser nulo.");
+            throw new NegocioException("Cliente no puede ser nulo.");
         }
 
         if (clienteDTO.getNombre() == null || clienteDTO.getNombre().trim().isEmpty()) {
-            throw new Exception("Nombre es obligatorio.");
+            throw new NegocioException("Nombre es obligatorio.");
         }
 
         if (clienteDTO.getApellidoPaterno() == null || clienteDTO.getApellidoPaterno().trim().isEmpty()) {
-            throw new Exception("Apellido paterno es obligatorio.");
+            throw new NegocioException("Apellido paterno es obligatorio.");
         }
 
         if (clienteDTO.getApellidoMaterno() == null || clienteDTO.getApellidoMaterno().trim().isEmpty()) {
-            throw new Exception("Apellido materno es obligatorio.");
+            throw new NegocioException("Apellido materno es obligatorio.");
         }
 
         if (clienteDTO.getTelefono() == null || clienteDTO.getTelefono().trim().isEmpty()) {
-            throw new Exception("Telefono es obligatorio.");
+            throw new NegocioException("Telefono es obligatorio.");
         }
     }
 

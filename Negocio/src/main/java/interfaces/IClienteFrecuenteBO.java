@@ -1,6 +1,7 @@
 package interfaces;
 
 import dtos.ClienteFrecuenteDTO;
+import excepciones.NegocioException;
 import java.util.List;
 
 /**
@@ -17,18 +18,18 @@ public interface IClienteFrecuenteBO {
      *
      * @param clienteFrecuenteDTO DTO con la información del cliente frecuente.
      * @return Cliente frecuente guardado.
-     * @throws Exception Si ocurre un error durante el guardado.
+     * @throws NegocioException Si ocurre un error durante el guardado.
      */
-    public ClienteFrecuenteDTO guardar(ClienteFrecuenteDTO clienteFrecuenteDTO) throws Exception;
+    public ClienteFrecuenteDTO guardar(ClienteFrecuenteDTO clienteFrecuenteDTO) throws NegocioException;
 
     /**
      * Busca un cliente frecuente por su identificador único.
      *
      * @param id Identificador único del cliente frecuente.
      * @return Cliente frecuente encontrado.
-     * @throws Exception Si ocurre un error durante la búsqueda.
+     * @throws NegocioException Si ocurre un error durante la búsqueda.
      */
-    public ClienteFrecuenteDTO buscarPorId(Long id) throws Exception;
+    public ClienteFrecuenteDTO buscarPorId(Long id) throws NegocioException;
 
     /**
      * Edita la información de un cliente frecuente existente.
@@ -36,9 +37,9 @@ public interface IClienteFrecuenteBO {
      * @param clienteFrecuenteDTO DTO con la información actualizada del cliente
      * frecuente.
      * @return Cliente frecuente actualizado.
-     * @throws Exception Si ocurre un error durante la edición.
+     * @throws NegocioException Si ocurre un error durante la edición.
      */
-    public ClienteFrecuenteDTO editar(ClienteFrecuenteDTO clienteFrecuenteDTO) throws Exception;
+    public ClienteFrecuenteDTO editar(ClienteFrecuenteDTO clienteFrecuenteDTO) throws NegocioException;
 
     /**
      * Elimina un cliente frecuente del sistema.
@@ -46,16 +47,16 @@ public interface IClienteFrecuenteBO {
      * @param id Identificador único del cliente frecuente a eliminar.
      * @return true si el cliente frecuente fue eliminado correctamente, false
      * en caso contrario.
-     * @throws Exception Si ocurre un error durante la eliminación.
+     * @throws NegocioException Si ocurre un error durante la eliminación.
      */
-    public boolean eliminar(Long id) throws Exception;
+    public boolean eliminar(Long id) throws NegocioException;
 
     /**
      * Busca clientes frecuentes que coincidan con el filtro proporcionado.
      *
      * @param filtro Texto de búsqueda para filtrar clientes frecuentes.
      * @return Lista de clientes frecuentes que coinciden con el filtro.
-     * @throws Exception Si ocurre un error durante la búsqueda.
+     * @throws NegocioException Si ocurre un error durante la búsqueda.
      */
-    List<ClienteFrecuenteDTO> buscarPorFiltros(String filtro) throws Exception;
+    List<ClienteFrecuenteDTO> buscarPorFiltros(String filtro) throws NegocioException;
 }
