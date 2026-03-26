@@ -2,11 +2,11 @@ package Pantallas;
 
 import Componentes.BotonRedondeado;
 import Componentes.MenuLateralPanel;
-import DAOs.ClienteDAO;
+import Controlador.Coordinador;
 import Estilos.Dimensiones;
 import Estilos.PaletaColores;
-import entidades.Cliente;
-import excepciones.PersistenciaException;
+import dtos.ClienteFrecuenteDTO;
+import interfaces.IClienteFrecuenteBO;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -29,7 +29,9 @@ import javax.swing.border.EmptyBorder;
  */
 public class FrmEditarClienteFrecuente extends JFrame{
     
-    private Cliente cliente;
+    private final Coordinador coordinador;
+    private final ClienteFrecuenteDTO clienteDTO;
+    private final IClienteFrecuenteBO clienteFrecuenteBO;
 
     private JTextField txtPrimerNombre;
     private JTextField txtSegundoNombre;
@@ -38,8 +40,10 @@ public class FrmEditarClienteFrecuente extends JFrame{
     private JTextField txtTelefono;
     private JTextField txtCorreo;
 
-    public FrmEditarClienteFrecuente(Cliente cliente) {
-        this.cliente = cliente;
+    public FrmEditarClienteFrecuente(ClienteFrecuenteDTO clienteDTO, IClienteFrecuenteBO clienteFrecuenteBO, Coordinador coordinador) {
+        this.clienteDTO = clienteDTO;
+        this.clienteFrecuenteBO = clienteFrecuenteBO;
+        this.coordinador = coordinador;
 
         setTitle("Restaurante Le Pusse - Editar Cliente Frecuente");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -49,7 +53,7 @@ public class FrmEditarClienteFrecuente extends JFrame{
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        //add(new MenuLateralPanel("Clientes Frecuentes"), BorderLayout.WEST);
+        add(new MenuLateralPanel("Clientes Frecuentes", coordinador), BorderLayout.WEST);
         add(crearContenidoPrincipal(), BorderLayout.CENTER);
 
         cargarDatosCliente();
@@ -212,15 +216,15 @@ public class FrmEditarClienteFrecuente extends JFrame{
     }
 
     private void cargarDatosCliente() {
-        if (cliente == null) {
+        if (clienteDTO == null) {
             return;
         }
 
-        txtPrimerNombre.setText(cliente.getNombre());
-        txtApellidoPaterno.setText(cliente.getApellidoPaterno());
-        txtApellidoMaterno.setText(cliente.getApellidoMaterno());
-        txtTelefono.setText(cliente.getTelefono());
-        txtCorreo.setText(cliente.getCorreoElectronico());
+        txtPrimerNombre.setText(clienteDTO.getNombre() == null ? "" : clienteDTO.getNombre());
+        txtApellidoPaterno.setText(clienteDTO.getApellidoPaterno() == null ? "" : clienteDTO.getApellidoPaterno());
+        txtApellidoMaterno.setText(clienteDTO.getApellidoMaterno() == null ? "" : clienteDTO.getApellidoMaterno());
+        txtTelefono.setText(clienteDTO.getTelefono() == null ? "" : clienteDTO.getTelefono());
+        txtCorreo.setText(clienteDTO.getCorreoElectronico() == null ? "" : clienteDTO.getCorreoElectronico());
 
         txtSegundoNombre.setText("");
     }
@@ -253,15 +257,15 @@ public class FrmEditarClienteFrecuente extends JFrame{
         }
 
         try {
-            cliente.setNombre(txtPrimerNombre.getText().trim());
-            cliente.setApellidoPaterno(txtApellidoPaterno.getText().trim());
-            cliente.setApellidoMaterno(txtApellidoMaterno.getText().trim());
-            cliente.setTelefono(txtTelefono.getText().trim());
+            clienteDTO.setNombre(txtPrimerNombre.getText().trim());
+            clienteDTO.setApellidoPaterno(txtApellidoPaterno.getText().trim());
+            clienteDTO.setApellidoMaterno(txtApellidoMaterno.getText().trim());
+            clienteDTO.setTelefono(txtTelefono.getText().trim());
 
             String correo = txtCorreo.getText().trim();
-            cliente.setCorreoElectronico(correo.isEmpty() ? null : correo);
+            clienteDTO.setCorreoElectronico(correo.isEmpty() ? null : correo);
 
-            ClienteDAO.getInstance().editar(cliente);
+            clienteFrecuenteBO.editar(clienteDTO);
 
             JOptionPane.showMessageDialog(
                     this,
@@ -272,7 +276,7 @@ public class FrmEditarClienteFrecuente extends JFrame{
 
             dispose();
 
-        } catch (PersistenciaException e) {
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(
                     this,
                     "Error al actualizar el cliente: " + e.getMessage(),
@@ -284,15 +288,7 @@ public class FrmEditarClienteFrecuente extends JFrame{
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            Cliente clientePrueba = new Cliente();
-            clientePrueba.setId(1L);
-            clientePrueba.setNombre("Isaac");
-            clientePrueba.setApellidoPaterno("Fierro");
-            clientePrueba.setApellidoMaterno("Gerhardus");
-            clientePrueba.setTelefono("687-161-4264");
-            clientePrueba.setCorreoElectronico("");
-
-            new FrmEditarClienteFrecuente(clientePrueba).setVisible(true);
+            System.out.println("Esta ventana debe abrirse desde Presentación pasando un ClienteFrecuenteDTO y el BO.");
         });
     }
     
