@@ -1,9 +1,10 @@
 package Controlador;
 
-import BOs.ClienteBO;
+import BOs.ClienteFrecuenteBO;
 import Pantallas.FrmClientesFrecuentes;
 import Pantallas.FrmMenuAcceso;
 import Pantallas.FrmRegistrarClienteFrecuente;
+import dtos.ClienteFrecuenteDTO;
 
 /**
  *
@@ -12,7 +13,7 @@ import Pantallas.FrmRegistrarClienteFrecuente;
 public class Coordinador {
     
     // Capa Negocio (BOs)
-    private final ClienteBO clienteBO;
+    private final ClienteFrecuenteBO clienteFrecuenteBO;
     
     // Capa de Presentación (Pantallas)
     private FrmMenuAcceso frmMenuAcceso;
@@ -20,7 +21,7 @@ public class Coordinador {
     private FrmRegistrarClienteFrecuente frmRegistrarClientesFrecuentes;
     
     public Coordinador() {
-        this.clienteBO = ClienteBO.getInstance();
+       this.clienteFrecuenteBO = ClienteFrecuenteBO.getInstance();
     }
     
     /**
@@ -87,6 +88,17 @@ public class Coordinador {
            frmMenuAcceso = new FrmMenuAcceso(this);
        }
        frmMenuAcceso.setVisible(true);
+   }
+   
+   /**
+    * 
+    */
+   public void registrarClienteFrecuente(ClienteFrecuenteDTO cliente) throws Exception{
+        try {
+            clienteFrecuenteBO.guardar(cliente);
+        } catch (Exception ex) {
+            throw new Exception(ex);
+        }
    }
 
 }

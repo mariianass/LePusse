@@ -5,6 +5,7 @@ import Componentes.MenuLateralPanel;
 import Controlador.Coordinador;
 import Estilos.Dimensiones;
 import Estilos.PaletaColores;
+import dtos.ClienteFrecuenteDTO;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -12,6 +13,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.time.LocalDate;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -140,14 +142,36 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
         btnRegistrar.setBackground(PaletaColores.MARRON_OSCURO);
         btnRegistrar.setForeground(PaletaColores.BLANCO);
         btnRegistrar.setFont(new Font("Segoe UI", Font.BOLD, 13));
-
-        btnCancelar.addActionListener(e -> limpiarCampos());
-        btnRegistrar.addActionListener(e -> registrarCliente());
         
         btnRegistrar.addActionListener(e -> {
-            System.out.println("Cliente registrado con éxito");
-            coordinador.regresarAGestionClientes();
+                // Extraer los datos de los campos de texto
+                String pNombre = txtPrimerNombre.getText().trim();
+                String sNombre = txtSegundoNombre.getText().trim();
+                String aPaterno = txtApellidoPaterno.getText().trim();
+                String aMaterno = txtApellidoMaterno.getText().trim();
+                String tel = txtTelefono.getText().trim();
+                String correo = txtCorreo.getText().trim();
+
+                // Crear y llenar el DTO
+                ClienteFrecuenteDTO nuevoCliente = new ClienteFrecuenteDTO();
+                nuevoCliente.setNombre(pNombre.concat(sNombre));
+                nuevoCliente.setApellidoPaterno(aPaterno);
+                nuevoCliente.setApellidoMaterno(aMaterno);
+                nuevoCliente.setTelefono(tel);
+                nuevoCliente.setCorreoElectronico(correo);
+                nuevoCliente.setFechaRegistro(LocalDate.now());
+
+            try {
+                // Mandar el DTO al coordinador para procesar el registro
+                coordinador.registrarClienteFrecuente(nuevoCliente);
+            } catch (Exception ex) {
+                System.out.println("Error al registrar cliente: " + ex.getMessage());
+            }
+                //Regresar a la tabla
+                coordinador.regresarAGestionClientes();
         });
+        
+        
         btnCancelar.addActionListener(e -> {
             coordinador.regresarAGestionClientes();
         });

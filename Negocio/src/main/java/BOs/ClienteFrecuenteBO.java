@@ -219,21 +219,21 @@ public class ClienteFrecuenteBO implements IClienteFrecuenteBO {
             throw new Exception("La fecha de registro es obligatoria.");
         }
 
-        if (clienteFrecuenteDTO.getNumeroVisitas() == null) {
-            throw new Exception("El numero de visitas es obligatorio.");
-        }
-
-        if (clienteFrecuenteDTO.getPuntosFidelidad() == null) {
-            throw new Exception("Los puntos de fidelidad son obligatorios.");
-        }
-
-        if (clienteFrecuenteDTO.getNumeroVisitas() < 0) {
-            throw new Exception("El numero de visitas no puede ser negativo.");
-        }
-
-        if (clienteFrecuenteDTO.getPuntosFidelidad() < 0) {
-            throw new Exception("Los puntos de fidelidad no pueden ser negativos.");
-        }
+//        if (clienteFrecuenteDTO.getNumeroVisitas() == null) {
+//            throw new Exception("El numero de visitas es obligatorio.");
+//        }
+//
+//        if (clienteFrecuenteDTO.getPuntosFidelidad() == null) {
+//            throw new Exception("Los puntos de fidelidad son obligatorios.");
+//        }
+//
+//        if (clienteFrecuenteDTO.getNumeroVisitas() < 0) {
+//            throw new Exception("El numero de visitas no puede ser negativo.");
+//        }
+//
+//        if (clienteFrecuenteDTO.getPuntosFidelidad() < 0) {
+//            throw new Exception("Los puntos de fidelidad no pueden ser negativos.");
+//        }
     }
 
     /**
