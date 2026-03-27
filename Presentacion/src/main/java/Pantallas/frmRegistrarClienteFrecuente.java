@@ -155,7 +155,7 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
             if (Validadores.validarCliente(this, pNombre, aPaterno, aMaterno, tel, correo)) {
                 // Crear y llenar el DTO
                 ClienteFrecuenteDTO nuevoCliente = new ClienteFrecuenteDTO();
-                nuevoCliente.setNombre(pNombre.concat(sNombre));
+                nuevoCliente.setNombre(pNombre.concat(" "+sNombre));
                 nuevoCliente.setApellidoPaterno(aPaterno);
                 nuevoCliente.setApellidoMaterno(aMaterno);
                 nuevoCliente.setTelefono(tel);
