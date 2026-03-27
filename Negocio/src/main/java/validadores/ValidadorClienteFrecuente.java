@@ -48,21 +48,21 @@ public class ValidadorClienteFrecuente {
             throw new NegocioException("La fecha de registro es obligatoria.");
         }
 
-        if (clienteFrecuenteDTO.getNumeroVisitas() == null) {
-            throw new NegocioException("El número de visitas es obligatorio.");
-        }
-
-        if (clienteFrecuenteDTO.getPuntosFidelidad() == null) {
-            throw new NegocioException("Los puntos de fidelidad son obligatorios.");
-        }
-
-        if (clienteFrecuenteDTO.getNumeroVisitas() < 0) {
-            throw new NegocioException("El número de visitas no puede ser negativo.");
-        }
-
-        if (clienteFrecuenteDTO.getPuntosFidelidad() < 0) {
-            throw new NegocioException("Los puntos de fidelidad no pueden ser negativos.");
-        }
+//        if (clienteFrecuenteDTO.getNumeroVisitas() == null) {
+//            throw new NegocioException("El número de visitas es obligatorio.");
+//        }
+//
+//        if (clienteFrecuenteDTO.getPuntosFidelidad() == null) {
+//            throw new NegocioException("Los puntos de fidelidad son obligatorios.");
+//        }
+//
+//        if (clienteFrecuenteDTO.getNumeroVisitas() < 0) {
+//            throw new NegocioException("El número de visitas no puede ser negativo.");
+//        }
+//
+//        if (clienteFrecuenteDTO.getPuntosFidelidad() < 0) {
+//            throw new NegocioException("Los puntos de fidelidad no pueden ser negativos.");
+//        }
 
         if (clienteFrecuenteDTO.getNombre().length() > 100) {
             throw new NegocioException("El nombre no puede exceder los 100 caracteres.");

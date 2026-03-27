@@ -147,7 +147,10 @@ public class FrmEditarClienteFrecuente extends JFrame{
         btnGuardar.setForeground(PaletaColores.BLANCO);
         btnGuardar.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
-        btnCancelar.addActionListener(e -> dispose());
+        btnCancelar.addActionListener(e -> {
+            coordinador.regresarAGestionClientes();
+        });
+        
         btnGuardar.addActionListener(e -> guardarCambios());
 
         panelBotones.add(btnCancelar);
@@ -263,12 +266,6 @@ public class FrmEditarClienteFrecuente extends JFrame{
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error al actualizar: " + e.getMessage());
         }
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            System.out.println("Esta ventana debe abrirse desde Presentación pasando un ClienteFrecuenteDTO y el BO.");
-        });
     }
     
 }

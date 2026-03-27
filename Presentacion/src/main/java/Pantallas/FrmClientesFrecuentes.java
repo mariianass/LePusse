@@ -104,6 +104,30 @@ public class FrmClientesFrecuentes extends JFrame{
                 BorderFactory.createLineBorder(PaletaColores.LINEA_SUAVE, 1),
                 new EmptyBorder(0, 14, 0, 14)
         ));
+        
+        // Configuracion del filtro dinamico
+        txtBuscar.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (txtBuscar.getText().equals("Buscar por nombre...")) {
+                    txtBuscar.setText("");
+                }
+            }
+        });
+        
+        txtBuscar.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { accion(); }
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { accion(); }
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { accion(); }
+
+            private void accion() {
+                String texto = txtBuscar.getText();
+                filtrarClientes(texto);
+            }
+        });
 
         izquierda.add(txtBuscar);
         izquierda.add(Box.createRigidArea(new Dimension(16, 0)));
@@ -297,6 +321,34 @@ public class FrmClientesFrecuentes extends JFrame{
 
     public void recargarTabla() {
         cargarClientesEnTabla();
+    }
+    
+    private void filtrarClientes(String texto) {
+        try {
+            if (texto.isEmpty() || texto.equals("Buscar por nombre...")) {
+                cargarClientesEnTabla(); 
+                return;
+            }
+            modeloTabla.setRowCount(0);
+            List<ClienteFrecuenteDTO> filtrados = coordinador.buscarClientesPorFiltro(texto);
+
+            for (ClienteFrecuenteDTO cliente : filtrados) {
+                Object[] fila = {
+                    cliente.getIdCliente(),
+                    construirNombreCompleto(cliente),
+                    cliente.getTelefono() != null ? cliente.getTelefono() : "-",
+                    cliente.getCorreoElectronico() != null ? cliente.getCorreoElectronico() : "-",
+                    cliente.getFechaRegistro() != null ? cliente.getFechaRegistro().toString() : "-",
+                    cliente.getNumeroVisitas() != null ? cliente.getNumeroVisitas() : 0,
+                    cliente.getTotalGastado() != null ? "$" + String.format("%.2f", cliente.getTotalGastado()) : "$0.00",
+                    cliente.getPuntosFidelidad() != null ? cliente.getPuntosFidelidad() + " pts" : "0 pts",
+                    ""
+                };
+                modeloTabla.addRow(fila);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error al filtrar los clientes: " + e.getMessage(), "Error de Búsqueda", JOptionPane.ERROR_MESSAGE);      
+        }
     }
 
 }

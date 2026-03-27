@@ -9,8 +9,9 @@ import dtos.ClienteFrecuenteDTO;
 import java.util.List;
 
 /**
- *
- * @author Mariana
+ * Clase Controladora central del sistema Restaurante Le Pusse.
+ * Gestiona la navegación entre pantallas y la comunicación con la lógica de negocio.
+ * @author Mariana, Isaac y Regina
  */
 public class Coordinador {
     
@@ -23,6 +24,9 @@ public class Coordinador {
     private FrmRegistrarClienteFrecuente frmRegistrarClientesFrecuentes;
     private FrmEditarClienteFrecuente frmEditarClienteFrecuente;
     
+    /**
+     * Constructor que inicializa la instancia de la lógica de negocio.
+     */
     public Coordinador() {
        this.clienteFrecuenteBO = ClienteFrecuenteBO.getInstance();
     }
@@ -80,6 +84,10 @@ public class Coordinador {
        }
    }
    
+   /**
+     * Finaliza la ventana de edición y retorna a la vista de gestión,
+     * liberando recursos de memoria.
+     */
    public void regresarDesdeEditarCliente() {
         if (frmEditarClienteFrecuente != null) {
             frmEditarClienteFrecuente.setVisible(false);
@@ -111,8 +119,10 @@ public class Coordinador {
    }
    
    /**
-    * 
-    */
+     * Solicita a la capa de negocio persistir un nuevo cliente frecuente.
+     * @param cliente Objeto DTO con la información del cliente.
+     * @throws Exception Si ocurre un error durante el guardado.
+     */
    public void registrarClienteFrecuente(ClienteFrecuenteDTO cliente) throws Exception{
         try {
             clienteFrecuenteBO.guardar(cliente);
@@ -122,9 +132,9 @@ public class Coordinador {
    }
    
     /**
-     *
-     * @return
-     * @throws Exception
+     * Obtiene la lista completa de clientes frecuentes registrados.
+     * @return Lista de ClienteFrecuenteDTO.
+     * @throws Exception Si falla la consulta en la capa de negocio.
      */
     public List<ClienteFrecuenteDTO> obtenerClientesFrecuentes() throws Exception {
         try {
@@ -134,6 +144,10 @@ public class Coordinador {
         }
     }
     
+    /**
+     * Busca un cliente por ID y abre el formulario de edición con sus datos.
+     * @param idCliente Identificador único del cliente a editar.
+     */
     public void mostrarEditarClienteFrecuente(Long idCliente) {
         try {
             ClienteFrecuenteDTO cliente = clienteFrecuenteBO.buscarPorId(idCliente);
@@ -160,11 +174,30 @@ public class Coordinador {
         }
     }
     
+    /**
+     * Envía los cambios de un cliente existente a la capa de negocio para su actualización.
+     * @param cliente DTO con la información actualizada.
+     * @throws Exception Si ocurre un error en la actualización.
+     */
     public void actualizarClienteFrecuente(ClienteFrecuenteDTO cliente) throws Exception {
         try {
             clienteFrecuenteBO.editar(cliente);
         } catch (Exception ex) {
             throw new Exception("Error al actualizar el cliente frecuente.", ex);
+        }
+    }
+    
+    /**
+     * Realiza una búsqueda filtrada de clientes frecuentes en tiempo real.
+     * @param filtro Cadena de texto (nombre, teléfono o correo).
+     * @return Lista de clientes que coinciden con el filtro.
+     * @throws Exception Si falla la búsqueda en persistencia.
+     */
+    public List<ClienteFrecuenteDTO> buscarClientesPorFiltro(String filtro) throws Exception {
+        try {
+            return clienteFrecuenteBO.buscarPorFiltros(filtro);
+        } catch (Exception e) {
+            throw new Exception("Error al filtrar los clientes.", e);
         }
     }
 
