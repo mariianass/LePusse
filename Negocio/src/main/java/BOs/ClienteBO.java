@@ -17,8 +17,8 @@ import static validadores.ValidadorCliente.validar;
 
 /**
  * Implementa la lógica de negocio de la entidad Cliente. Esta clase se encarga
- * de convertir entre DTO y entidad, y delegar las
- * operaciones correspondientes a la capa de persistencia.
+ * de convertir entre DTO y entidad, y delegar las operaciones correspondientes
+ * a la capa de persistencia.
  *
  * @author regina, mariana e isaac.
  */
