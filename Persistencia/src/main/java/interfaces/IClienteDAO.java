@@ -19,5 +19,6 @@ public interface IClienteDAO {
     public Cliente editar(Cliente cliente) throws PersistenciaException;
     public boolean eliminar(Long id) throws PersistenciaException;
     List<Cliente> buscarPorFiltros(String filtro) throws PersistenciaException;
+    List<Cliente> obtenerTodos() throws PersistenciaException;
  
 }

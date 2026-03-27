@@ -122,7 +122,7 @@ public class ClienteDAO implements IClienteDAO {
                     + "OR LOWER(c.apellidoPaterno) LIKE LOWER(:filtro) "
                     + "OR LOWER(c.apellidoMaterno) LIKE LOWER(:filtro) "
                     + "OR LOWER(CONCAT(CONCAT(CONCAT(CONCAT(c.nombre, ' '), c.apellidoPaterno), ' '), c.apellidoMaterno)) LIKE LOWER(:filtro) "
-                    + "OR c.telefono) LIKE :filtro "
+                    + "OR LOWER(c.telefono) LIKE LOWER(:filtro) "
                     + "OR LOWER(c.correoElectronico) LIKE LOWER(:filtro) ";
             
             TypedQuery<Cliente> query = em.createQuery(jpql, Cliente.class);
@@ -136,6 +136,21 @@ public class ClienteDAO implements IClienteDAO {
             em.close();
         }
         
+    }
+    
+    @Override
+    public List<Cliente> obtenerTodos() throws PersistenciaException {
+        EntityManager em = ConexionBD.crearConexion();
+
+        try {
+            String jpql = "SELECT c FROM Cliente c";
+            TypedQuery<Cliente> query = em.createQuery(jpql, Cliente.class);
+            return query.getResultList();
+        } catch (Exception e) {
+            throw new PersistenciaException("Error al obtener todos los clientes.", e);
+        } finally {
+            em.close();
+        }
     }
 
 }

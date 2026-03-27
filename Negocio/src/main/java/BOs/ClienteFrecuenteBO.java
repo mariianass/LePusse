@@ -287,5 +287,25 @@ public class ClienteFrecuenteBO implements IClienteFrecuenteBO {
                 clienteFrecuente.getFechaUltimaComanda()
         );
     }
+    
+    @Override
+    public List<ClienteFrecuenteDTO> obtenerTodos() throws NegocioException {
+        try {
+            List<Cliente> clientes = clienteDAO.obtenerTodos();
+            List<ClienteFrecuenteDTO> clientesFrecuentesDTO = new ArrayList<>();
+
+            if (clientes != null) {
+                for (Cliente cliente : clientes) {
+                    if (cliente instanceof ClienteFrecuente) {
+                        clientesFrecuentesDTO.add(convertirDTO((ClienteFrecuente) cliente));
+                    }
+                }
+            }
+
+            return clientesFrecuentesDTO;
+        } catch (PersistenciaException e) {
+            throw new NegocioException("Error al obtener todos los clientes frecuentes en negocio.", e);
+        }
+    }
 
 }

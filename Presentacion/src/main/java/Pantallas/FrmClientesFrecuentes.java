@@ -6,21 +6,25 @@ import Componentes.MenuLateralPanel;
 import Controlador.Coordinador;
 import Estilos.Dimensiones;
 import Estilos.PaletaColores;
+import dtos.ClienteFrecuenteDTO;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -33,7 +37,9 @@ import javax.swing.table.JTableHeader;
 public class FrmClientesFrecuentes extends JFrame{
     
     private final Coordinador coordinador;
-    
+    private JTable tablaClientes;
+    private DefaultTableModel modeloTabla;
+
     public FrmClientesFrecuentes(Coordinador coordinador) {
         this.coordinador = coordinador;
         setTitle("Restaurante Le Pusse - Clientes Frecuentes");
@@ -46,6 +52,8 @@ public class FrmClientesFrecuentes extends JFrame{
 
         add(new MenuLateralPanel("Clientes Frecuentes", coordinador), BorderLayout.WEST);
         add(crearContenidoPrincipal(), BorderLayout.CENTER);
+
+        cargarClientesEnTabla();
     }
 
     private JPanel crearContenidoPrincipal() {
@@ -112,10 +120,8 @@ public class FrmClientesFrecuentes extends JFrame{
         btnNuevo.setBackground(PaletaColores.DORADO);
         btnNuevo.setForeground(PaletaColores.MARRON_OSCURO);
         btnNuevo.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        
-        btnNuevo.addActionListener(e -> {
-            coordinador.mostrarRegistroClienteFrecuente();
-        });
+
+        btnNuevo.addActionListener(e -> coordinador.mostrarRegistroClienteFrecuente());
 
         JPanel panelBoton = new JPanel();
         panelBoton.setOpaque(false);
@@ -156,38 +162,32 @@ public class FrmClientesFrecuentes extends JFrame{
 
     private JScrollPane crearTablaClientes() {
         String[] columnas = {
-            "Nombre Completo", "Teléfono", "Correo", "Fecha Registro",
+            "ID", "Nombre Completo", "Teléfono", "Correo", "Fecha Registro",
             "Visitas", "Total Gastado", "Puntos", "Acciones"
         };
 
-        DefaultTableModel modelo = new DefaultTableModel(null, columnas) {
+        modeloTabla = new DefaultTableModel(null, columnas) {
             @Override
             public boolean isCellEditable(int fila, int columna) {
                 return false;
             }
         };
 
-        modelo.addRow(new Object[]{"Isaac Iran Fierro Gerhardus", "687-161-4264", "-", "20/03/2026", "3", "$850.00", "42 pts", ""});
-        modelo.addRow(new Object[]{"Regina Jiménez Meneses", "644-249-1867", "reginamenesesj09@gmail.com", "18/02/2026", "12", "$3240.00", "162 pts", ""});
-        modelo.addRow(new Object[]{"Jesus Cisneros Valenzuela", "644-202-6452", "-", "03/03/2026", "6", "$1320.00", "66 pts", ""});
-        modelo.addRow(new Object[]{"Jose Trista Rosales", "644-206-3355", "jose.tristar@gmail.com", "15/03/2026", "1", "$200.00", "10 pts", ""});
-        modelo.addRow(new Object[]{"German Fetuccini Ruiz", "644-158-5678", "germanfetuccini01@hotmail.com", "12/02/2026", "12", "$6800.00", "340 pts", ""});
+        tablaClientes = new JTable(modeloTabla);
+        tablaClientes.setRowHeight(46);
+        tablaClientes.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        tablaClientes.setForeground(PaletaColores.TEXTO_MARRON);
+        tablaClientes.setBackground(PaletaColores.BLANCO);
+        tablaClientes.setShowVerticalLines(false);
+        tablaClientes.setShowHorizontalLines(true);
+        tablaClientes.setGridColor(PaletaColores.LINEA_SUAVE);
+        tablaClientes.setFocusable(false);
+        tablaClientes.setSelectionBackground(PaletaColores.BLANCO_SUAVE);
+        tablaClientes.setSelectionForeground(PaletaColores.TEXTO_MARRON);
+        tablaClientes.setIntercellSpacing(new Dimension(0, 1));
+        tablaClientes.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-        JTable tabla = new JTable(modelo);
-        tabla.setRowHeight(46);
-        tabla.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        tabla.setForeground(PaletaColores.TEXTO_MARRON);
-        tabla.setBackground(PaletaColores.BLANCO);
-        tabla.setShowVerticalLines(false);
-        tabla.setShowHorizontalLines(true);
-        tabla.setGridColor(PaletaColores.LINEA_SUAVE);
-        tabla.setFocusable(false);
-        tabla.setSelectionBackground(PaletaColores.BLANCO_SUAVE);
-        tabla.setSelectionForeground(PaletaColores.TEXTO_MARRON);
-        tabla.setIntercellSpacing(new Dimension(0, 1));
-        tabla.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
-        JTableHeader header = tabla.getTableHeader();
+        JTableHeader header = tablaClientes.getTableHeader();
         header.setFont(new Font("Segoe UI", Font.BOLD, 13));
         header.setBackground(PaletaColores.BLANCO);
         header.setForeground(PaletaColores.TEXTO_MARRON);
@@ -196,33 +196,107 @@ public class FrmClientesFrecuentes extends JFrame{
         header.setResizingAllowed(false);
         header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, PaletaColores.LINEA_SUAVE));
 
-        tabla.getColumnModel().getColumn(0).setPreferredWidth(240);
-        tabla.getColumnModel().getColumn(1).setPreferredWidth(120);
-        tabla.getColumnModel().getColumn(2).setPreferredWidth(200);
-        tabla.getColumnModel().getColumn(3).setPreferredWidth(120);
-        tabla.getColumnModel().getColumn(4).setPreferredWidth(80);
-        tabla.getColumnModel().getColumn(5).setPreferredWidth(120);
-        tabla.getColumnModel().getColumn(6).setPreferredWidth(83);
-        tabla.getColumnModel().getColumn(7).setPreferredWidth(80);
+        tablaClientes.getColumnModel().getColumn(0).setMinWidth(0);
+        tablaClientes.getColumnModel().getColumn(0).setMaxWidth(0);
+        tablaClientes.getColumnModel().getColumn(0).setPreferredWidth(0);
+
+        tablaClientes.getColumnModel().getColumn(1).setPreferredWidth(240);
+        tablaClientes.getColumnModel().getColumn(2).setPreferredWidth(120);
+        tablaClientes.getColumnModel().getColumn(3).setPreferredWidth(200);
+        tablaClientes.getColumnModel().getColumn(4).setPreferredWidth(120);
+        tablaClientes.getColumnModel().getColumn(5).setPreferredWidth(80);
+        tablaClientes.getColumnModel().getColumn(6).setPreferredWidth(120);
+        tablaClientes.getColumnModel().getColumn(7).setPreferredWidth(83);
+        tablaClientes.getColumnModel().getColumn(8).setPreferredWidth(80);
 
         DefaultTableCellRenderer centrado = new DefaultTableCellRenderer();
         centrado.setHorizontalAlignment(SwingConstants.CENTER);
         centrado.setBackground(PaletaColores.BLANCO);
         centrado.setForeground(PaletaColores.TEXTO_MARRON);
 
-        tabla.getColumnModel().getColumn(3).setCellRenderer(centrado);
-        tabla.getColumnModel().getColumn(4).setCellRenderer(centrado);
-        tabla.getColumnModel().getColumn(5).setCellRenderer(centrado);
-        tabla.getColumnModel().getColumn(6).setCellRenderer(centrado);
-        tabla.getColumnModel().getColumn(7).setCellRenderer(new BotonEditar());
+        tablaClientes.getColumnModel().getColumn(4).setCellRenderer(centrado);
+        tablaClientes.getColumnModel().getColumn(5).setCellRenderer(centrado);
+        tablaClientes.getColumnModel().getColumn(6).setCellRenderer(centrado);
+        tablaClientes.getColumnModel().getColumn(7).setCellRenderer(centrado);
+        tablaClientes.getColumnModel().getColumn(8).setCellRenderer(new BotonEditar());
 
-        JScrollPane scroll = new JScrollPane(tabla);
+        tablaClientes.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int filaSeleccionada = tablaClientes.getSelectedRow();
+                    Long idCliente = (Long) modeloTabla.getValueAt(filaSeleccionada, 0);
+                    coordinador.mostrarEditarClienteFrecuente(idCliente);
+                }
+            }
+        });
+
+        JScrollPane scroll = new JScrollPane(tablaClientes);
         scroll.setBorder(BorderFactory.createEmptyBorder());
         scroll.getViewport().setBackground(PaletaColores.BLANCO);
         scroll.setBackground(PaletaColores.BLANCO);
         scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         return scroll;
+    }
+
+    private void cargarClientesEnTabla() {
+        try {
+            modeloTabla.setRowCount(0);
+
+            List<ClienteFrecuenteDTO> clientes = coordinador.obtenerClientesFrecuentes();
+
+            for (ClienteFrecuenteDTO cliente : clientes) {
+                Object[] fila = {
+                    cliente.getIdCliente(),
+                    construirNombreCompleto(cliente),
+                    cliente.getTelefono() != null ? cliente.getTelefono() : "-",
+                    (cliente.getCorreoElectronico() != null && !cliente.getCorreoElectronico().isBlank())
+                            ? cliente.getCorreoElectronico() : "-",
+                    cliente.getFechaRegistro() != null ? cliente.getFechaRegistro().toString() : "-",
+                    cliente.getNumeroVisitas() != null ? cliente.getNumeroVisitas() : 0,
+                    cliente.getTotalGastado() != null ? "$" + String.format("%.2f", cliente.getTotalGastado()) : "$0.00",
+                    cliente.getPuntosFidelidad() != null ? cliente.getPuntosFidelidad() + " pts" : "0 pts",
+                    ""
+                };
+
+                modeloTabla.addRow(fila);
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Error al cargar los clientes frecuentes: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    private String construirNombreCompleto(ClienteFrecuenteDTO cliente) {
+        StringBuilder nombreCompleto = new StringBuilder();
+
+        if (cliente.getNombre() != null && !cliente.getNombre().isBlank()) {
+            nombreCompleto.append(cliente.getNombre().trim());
+        }
+        if (cliente.getApellidoPaterno() != null && !cliente.getApellidoPaterno().isBlank()) {
+            if (nombreCompleto.length() > 0) {
+                nombreCompleto.append(" ");
+            }
+            nombreCompleto.append(cliente.getApellidoPaterno().trim());
+        }
+        if (cliente.getApellidoMaterno() != null && !cliente.getApellidoMaterno().isBlank()) {
+            if (nombreCompleto.length() > 0) {
+                nombreCompleto.append(" ");
+            }
+            nombreCompleto.append(cliente.getApellidoMaterno().trim());
+        }
+
+        return nombreCompleto.toString();
+    }
+
+    public void recargarTabla() {
+        cargarClientesEnTabla();
     }
 
 }

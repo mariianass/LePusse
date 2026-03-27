@@ -31,7 +31,6 @@ public class FrmEditarClienteFrecuente extends JFrame{
     
     private final Coordinador coordinador;
     private final ClienteFrecuenteDTO clienteDTO;
-    private final IClienteFrecuenteBO clienteFrecuenteBO;
 
     private JTextField txtPrimerNombre;
     private JTextField txtSegundoNombre;
@@ -40,17 +39,15 @@ public class FrmEditarClienteFrecuente extends JFrame{
     private JTextField txtTelefono;
     private JTextField txtCorreo;
 
-    public FrmEditarClienteFrecuente(ClienteFrecuenteDTO clienteDTO, IClienteFrecuenteBO clienteFrecuenteBO, Coordinador coordinador) {
-        this.clienteDTO = clienteDTO;
-        this.clienteFrecuenteBO = clienteFrecuenteBO;
+    public FrmEditarClienteFrecuente(Coordinador coordinador, ClienteFrecuenteDTO clienteDTO) {
         this.coordinador = coordinador;
+        this.clienteDTO = clienteDTO;
 
         setTitle("Restaurante Le Pusse - Editar Cliente Frecuente");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(Dimensiones.ANCHO_VENTANA, Dimensiones.ALTO_VENTANA);
-        setMinimumSize(new Dimension(Dimensiones.ANCHO_VENTANA, Dimensiones.ALTO_VENTANA));
-        setResizable(false);
         setLocationRelativeTo(null);
+        setResizable(false);
         setLayout(new BorderLayout());
 
         add(new MenuLateralPanel("Clientes Frecuentes", coordinador), BorderLayout.WEST);
@@ -220,27 +217,21 @@ public class FrmEditarClienteFrecuente extends JFrame{
             return;
         }
 
-        txtPrimerNombre.setText(clienteDTO.getNombre() == null ? "" : clienteDTO.getNombre());
-        txtApellidoPaterno.setText(clienteDTO.getApellidoPaterno() == null ? "" : clienteDTO.getApellidoPaterno());
-        txtApellidoMaterno.setText(clienteDTO.getApellidoMaterno() == null ? "" : clienteDTO.getApellidoMaterno());
-        txtTelefono.setText(clienteDTO.getTelefono() == null ? "" : clienteDTO.getTelefono());
-        txtCorreo.setText(clienteDTO.getCorreoElectronico() == null ? "" : clienteDTO.getCorreoElectronico());
-
+        txtPrimerNombre.setText(clienteDTO.getNombre() != null ? clienteDTO.getNombre() : "");
+        txtApellidoPaterno.setText(clienteDTO.getApellidoPaterno() != null ? clienteDTO.getApellidoPaterno() : "");
+        txtApellidoMaterno.setText(clienteDTO.getApellidoMaterno() != null ? clienteDTO.getApellidoMaterno() : "");
+        txtTelefono.setText(clienteDTO.getTelefono() != null ? clienteDTO.getTelefono() : "");
+        txtCorreo.setText(clienteDTO.getCorreoElectronico() != null ? clienteDTO.getCorreoElectronico() : "");
         txtSegundoNombre.setText("");
     }
-
+    
     private void guardarCambios() {
         if (txtPrimerNombre.getText().trim().isEmpty()
                 || txtApellidoPaterno.getText().trim().isEmpty()
                 || txtApellidoMaterno.getText().trim().isEmpty()
                 || txtTelefono.getText().trim().isEmpty()) {
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Complete todos los campos obligatorios.",
-                    "Validación",
-                    JOptionPane.WARNING_MESSAGE
-            );
+            JOptionPane.showMessageDialog(this, "Complete todos los campos obligatorios.");
             return;
         }
 
@@ -248,8 +239,7 @@ public class FrmEditarClienteFrecuente extends JFrame{
                 this,
                 "¿Confirmas los cambios?",
                 "Seleccionar una opción",
-                JOptionPane.YES_NO_CANCEL_OPTION,
-                JOptionPane.QUESTION_MESSAGE
+                JOptionPane.YES_NO_CANCEL_OPTION
         );
 
         if (opcion != JOptionPane.YES_OPTION) {
@@ -265,24 +255,13 @@ public class FrmEditarClienteFrecuente extends JFrame{
             String correo = txtCorreo.getText().trim();
             clienteDTO.setCorreoElectronico(correo.isEmpty() ? null : correo);
 
-            clienteFrecuenteBO.editar(clienteDTO);
+            coordinador.actualizarClienteFrecuente(clienteDTO);
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    "¡Cliente actualizado exitosamente!",
-                    "Mensaje",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-
-            dispose();
+            JOptionPane.showMessageDialog(this, "¡Cliente actualizado exitosamente!");
+            coordinador.regresarDesdeEditarCliente();
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Error al actualizar el cliente: " + e.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
+            JOptionPane.showMessageDialog(this, "Error al actualizar: " + e.getMessage());
         }
     }
 

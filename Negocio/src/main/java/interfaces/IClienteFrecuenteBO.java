@@ -59,4 +59,6 @@ public interface IClienteFrecuenteBO {
      * @throws NegocioException Si ocurre un error durante la búsqueda.
      */
     List<ClienteFrecuenteDTO> buscarPorFiltros(String filtro) throws NegocioException;
+    
+    List<ClienteFrecuenteDTO> obtenerTodos() throws NegocioException;
 }
