@@ -3,5 +3,6 @@ C:\Users\Isaac\Documentos\GitHub\LePusse\Negocio\src\main\java\BOs\ClienteFrecue
 C:\Users\Isaac\Documentos\GitHub\LePusse\Negocio\src\main\java\excepciones\NegocioException.java
 C:\Users\Isaac\Documentos\GitHub\LePusse\Negocio\src\main\java\interfaces\IClienteBO.java
 C:\Users\Isaac\Documentos\GitHub\LePusse\Negocio\src\main\java\interfaces\IClienteFrecuenteBO.java
+C:\Users\Isaac\Documentos\GitHub\LePusse\Negocio\src\main\java\interfaces\IComandaBO.java
 C:\Users\Isaac\Documentos\GitHub\LePusse\Negocio\src\main\java\validadores\ValidadorCliente.java
 C:\Users\Isaac\Documentos\GitHub\LePusse\Negocio\src\main\java\validadores\ValidadorClienteFrecuente.java
