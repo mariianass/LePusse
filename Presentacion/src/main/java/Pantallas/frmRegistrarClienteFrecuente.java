@@ -266,6 +266,7 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
                     "Validación",
                     JOptionPane.WARNING_MESSAGE
             );
+            
             return;
         }
 
