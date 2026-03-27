@@ -10,11 +10,12 @@ import interfaces.IClienteDAO;
 import interfaces.IClienteFrecuenteBO;
 import java.util.ArrayList;
 import java.util.List;
+import static validadores.ValidadorClienteFrecuente.validar;
 
 /**
  * Implementa la lógica de negocio de la entidad ClienteFrecuente. Esta clase se
- * encarga de validar la información, convertir entre DTO y entidad, y delegar
- * las operaciones correspondientes a la capa de persistencia.
+ * de convertir entre DTO y entidad, y delegar las operaciones correspondientes
+ * a la capa de persistencia.
  *
  * @author regina, mariana e isaac.
  */
@@ -51,7 +52,7 @@ public class ClienteFrecuenteBO implements IClienteFrecuenteBO {
      */
     @Override
     public ClienteFrecuenteDTO guardar(ClienteFrecuenteDTO clienteFrecuenteDTO) throws NegocioException {
-        validarDatos(clienteFrecuenteDTO);
+        validar(clienteFrecuenteDTO);
 
         try {
             ClienteFrecuente clienteFrecuente = convertirEntidad(clienteFrecuenteDTO);
@@ -115,7 +116,7 @@ public class ClienteFrecuenteBO implements IClienteFrecuenteBO {
             throw new NegocioException("El id del cliente frecuente es obligatorio para editar.");
         }
 
-        validarDatos(clienteFrecuenteDTO);
+        validar(clienteFrecuenteDTO);
 
         try {
             ClienteFrecuente clienteFrecuente = convertirEntidad(clienteFrecuenteDTO);
@@ -187,54 +188,6 @@ public class ClienteFrecuenteBO implements IClienteFrecuenteBO {
         } catch (PersistenciaException e) {
             throw new NegocioException("Error al buscar clientes frecuentes por filtros en negocio.", e);
         }
-    }
-
-    /**
-     * Valida los datos obligatorios de un cliente frecuente.
-     *
-     * @param clienteFrecuenteDTO DTO del cliente frecuente a validar.
-     * @throws NegocioException Si falta algún dato obligatorio.
-     */
-    private void validarDatos(ClienteFrecuenteDTO clienteFrecuenteDTO) throws NegocioException {
-        if (clienteFrecuenteDTO == null) {
-            throw new NegocioException("Cliente frecuente no puede ser nulo.");
-        }
-
-        if (clienteFrecuenteDTO.getNombre() == null || clienteFrecuenteDTO.getNombre().trim().isEmpty()) {
-            throw new NegocioException("Nombre es obligatorio.");
-        }
-
-        if (clienteFrecuenteDTO.getApellidoPaterno() == null || clienteFrecuenteDTO.getApellidoPaterno().trim().isEmpty()) {
-            throw new NegocioException("Apellido paterno es obligatorio.");
-        }
-
-        if (clienteFrecuenteDTO.getApellidoMaterno() == null || clienteFrecuenteDTO.getApellidoMaterno().trim().isEmpty()) {
-            throw new NegocioException("Apellido materno es obligatorio.");
-        }
-
-        if (clienteFrecuenteDTO.getTelefono() == null || clienteFrecuenteDTO.getTelefono().trim().isEmpty()) {
-            throw new NegocioException("Telefono es obligatorio.");
-        }
-
-        if (clienteFrecuenteDTO.getFechaRegistro() == null) {
-            throw new NegocioException("La fecha de registro es obligatoria.");
-        }
-
-//        if (clienteFrecuenteDTO.getNumeroVisitas() == null) {
-//            throw new NegocioException("El numero de visitas es obligatorio.");
-//        }
-//
-//        if (clienteFrecuenteDTO.getPuntosFidelidad() == null) {
-//            throw new NegocioException("Los puntos de fidelidad son obligatorios.");
-//        }
-//
-//        if (clienteFrecuenteDTO.getNumeroVisitas() < 0) {
-//            throw new NegocioException("El numero de visitas no puede ser negativo.");
-//        }
-//
-//        if (clienteFrecuenteDTO.getPuntosFidelidad() < 0) {
-//            throw new NegocioException("Los puntos de fidelidad no pueden ser negativos.");
-//        }
     }
 
     /**

@@ -13,11 +13,12 @@ import interfaces.IClienteBO;
 import interfaces.IClienteDAO;
 import java.util.ArrayList;
 import java.util.List;
+import static validadores.ValidadorCliente.validar;
 
 /**
  * Implementa la lógica de negocio de la entidad Cliente. Esta clase se encarga
- * de validar la información, convertir entre DTO y entidad, y delegar las
- * operaciones correspondientes a la capa de persistencia.
+ * de convertir entre DTO y entidad, y delegar las operaciones correspondientes
+ * a la capa de persistencia.
  *
  * @author regina, mariana e isaac.
  */
@@ -54,7 +55,7 @@ public class ClienteBO implements IClienteBO {
      */
     @Override
     public ClienteDTO guardar(ClienteDTO clienteDTO) throws NegocioException {
-        validarDatos(clienteDTO);
+        validar(clienteDTO);
 
         try {
             Cliente cliente = convertirEntidad(clienteDTO);
@@ -108,7 +109,7 @@ public class ClienteBO implements IClienteBO {
             throw new NegocioException("El id del cliente es obligatorio para editar.");
         }
 
-        validarDatos(clienteDTO);
+        validar(clienteDTO);
 
         try {
             Cliente cliente = convertirEntidad(clienteDTO);
@@ -162,34 +163,6 @@ public class ClienteBO implements IClienteBO {
             return clientesDTO;
         } catch (PersistenciaException e) {
             throw new NegocioException("Error al buscar clientes por filtros en negocio.", e);
-        }
-    }
-
-    /**
-     * Valida los datos obligatorios de un cliente.
-     *
-     * @param clienteDTO DTO del cliente a validar.
-     * @throws NegocioException Si falta algún dato obligatorio.
-     */
-    private void validarDatos(ClienteDTO clienteDTO) throws NegocioException {
-        if (clienteDTO == null) {
-            throw new NegocioException("Cliente no puede ser nulo.");
-        }
-
-        if (clienteDTO.getNombre() == null || clienteDTO.getNombre().trim().isEmpty()) {
-            throw new NegocioException("Nombre es obligatorio.");
-        }
-
-        if (clienteDTO.getApellidoPaterno() == null || clienteDTO.getApellidoPaterno().trim().isEmpty()) {
-            throw new NegocioException("Apellido paterno es obligatorio.");
-        }
-
-        if (clienteDTO.getApellidoMaterno() == null || clienteDTO.getApellidoMaterno().trim().isEmpty()) {
-            throw new NegocioException("Apellido materno es obligatorio.");
-        }
-
-        if (clienteDTO.getTelefono() == null || clienteDTO.getTelefono().trim().isEmpty()) {
-            throw new NegocioException("Telefono es obligatorio.");
         }
     }
 
