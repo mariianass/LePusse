@@ -9,28 +9,29 @@ import dtos.ClienteFrecuenteDTO;
 import java.util.List;
 
 /**
- * Clase Controladora central del sistema Restaurante Le Pusse.
- * Gestiona la navegación entre pantallas y la comunicación con la lógica de negocio.
+ * Clase Controladora central del sistema Restaurante Le Pusse. Gestiona la
+ * navegación entre pantallas y la comunicación con la lógica de negocio.
+ *
  * @author Mariana, Isaac y Regina
  */
 public class Coordinador {
-    
+
     // Capa Negocio (BOs)
     private final ClienteFrecuenteBO clienteFrecuenteBO;
-    
+
     // Capa de Presentación (Pantallas)
     private FrmMenuAcceso frmMenuAcceso;
     private FrmClientesFrecuentes frmGestionarClientesFrecuentes;
     private FrmRegistrarClienteFrecuente frmRegistrarClientesFrecuentes;
     private FrmEditarClienteFrecuente frmEditarClienteFrecuente;
-    
+
     /**
      * Constructor que inicializa la instancia de la lógica de negocio.
      */
     public Coordinador() {
-       this.clienteFrecuenteBO = ClienteFrecuenteBO.getInstance();
+        this.clienteFrecuenteBO = ClienteFrecuenteBO.getInstance();
     }
-    
+
     /**
      * Inicia la aplicación mostrando el menú principal.
      */
@@ -40,9 +41,9 @@ public class Coordinador {
         }
         frmMenuAcceso.setVisible(true);
     }
-    
+
     /**
-     * Hace visible la pantalla principal de gestión de clientes frecuentes. 
+     * Hace visible la pantalla principal de gestión de clientes frecuentes.
      */
     public void mostrarGestionarClientesFrecuentes() {
         if (frmMenuAcceso != null) {
@@ -55,40 +56,42 @@ public class Coordinador {
         frmGestionarClientesFrecuentes.toFront();
         frmGestionarClientesFrecuentes.recargarTabla();
     }
-    
+
     /**
      * Muestra la pantalla para registrar un nuevo cliente frecuente.
      */
     public void mostrarRegistroClienteFrecuente() {
-        if (frmGestionarClientesFrecuentes != null) frmGestionarClientesFrecuentes.setVisible(false);
+        if (frmGestionarClientesFrecuentes != null) {
+            frmGestionarClientesFrecuentes.setVisible(false);
+        }
         if (frmRegistrarClientesFrecuentes == null) {
             frmRegistrarClientesFrecuentes = new FrmRegistrarClienteFrecuente(this);
         }
         frmRegistrarClientesFrecuentes.setVisible(true);
         frmRegistrarClientesFrecuentes.toFront();
     }
-    
+
     /**
-    * Cierra la pantalla de registro y regresa a la gestión de clientes.
-    */
-   public void regresarAGestionClientes() {
-       if (frmRegistrarClientesFrecuentes != null) {
-           frmRegistrarClientesFrecuentes.setVisible(false);
-           frmRegistrarClientesFrecuentes.dispose(); 
-           frmRegistrarClientesFrecuentes = null;
-       }
-       if (frmGestionarClientesFrecuentes != null) {
-           frmGestionarClientesFrecuentes.setVisible(true);
-           frmGestionarClientesFrecuentes.toFront();
-           frmGestionarClientesFrecuentes.recargarTabla();
-       }
-   }
-   
-   /**
-     * Finaliza la ventana de edición y retorna a la vista de gestión,
-     * liberando recursos de memoria.
+     * Cierra la pantalla de registro y regresa a la gestión de clientes.
      */
-   public void regresarDesdeEditarCliente() {
+    public void regresarAGestionClientes() {
+        if (frmRegistrarClientesFrecuentes != null) {
+            frmRegistrarClientesFrecuentes.setVisible(false);
+            frmRegistrarClientesFrecuentes.dispose();
+            frmRegistrarClientesFrecuentes = null;
+        }
+        if (frmGestionarClientesFrecuentes != null) {
+            frmGestionarClientesFrecuentes.setVisible(true);
+            frmGestionarClientesFrecuentes.toFront();
+            frmGestionarClientesFrecuentes.recargarTabla();
+        }
+    }
+
+    /**
+     * Finaliza la ventana de edición y retorna a la vista de gestión, liberando
+     * recursos de memoria.
+     */
+    public void regresarDesdeEditarCliente() {
         if (frmEditarClienteFrecuente != null) {
             frmEditarClienteFrecuente.setVisible(false);
             frmEditarClienteFrecuente.dispose();
@@ -101,38 +104,54 @@ public class Coordinador {
             frmGestionarClientesFrecuentes.recargarTabla();
         }
     }
-   
-   /**
-    * Cierra la sesión actual y regresa al menú de acceso.
-    */
-   public void cerrarSesion() {
-       if (frmGestionarClientesFrecuentes != null) {
-           frmGestionarClientesFrecuentes.setVisible(false);
-       }
-       if (frmRegistrarClientesFrecuentes != null) {
-           frmRegistrarClientesFrecuentes.setVisible(false);
-       }
-       if (frmMenuAcceso == null) {
-           frmMenuAcceso = new FrmMenuAcceso(this);
-       }
-       frmMenuAcceso.setVisible(true);
-   }
-   
-   /**
+
+    /**
+     * Cierra la sesión actual y regresa al menú de acceso.
+     */
+    public void cerrarSesion() {
+        if (frmGestionarClientesFrecuentes != null) {
+            frmGestionarClientesFrecuentes.setVisible(false);
+        }
+        if (frmRegistrarClientesFrecuentes != null) {
+            frmRegistrarClientesFrecuentes.setVisible(false);
+        }
+        if (frmMenuAcceso == null) {
+            frmMenuAcceso = new FrmMenuAcceso(this);
+        }
+        frmMenuAcceso.setVisible(true);
+    }
+
+    /**
      * Solicita a la capa de negocio persistir un nuevo cliente frecuente.
+     *
      * @param cliente Objeto DTO con la información del cliente.
      * @throws Exception Si ocurre un error durante el guardado.
      */
-   public void registrarClienteFrecuente(ClienteFrecuenteDTO cliente) throws Exception{
+    public void registrarClienteFrecuente(ClienteFrecuenteDTO cliente) throws Exception {
         try {
             clienteFrecuenteBO.guardar(cliente);
         } catch (Exception ex) {
             throw new Exception(ex);
         }
-   }
-   
+    }
+
+    /**
+     * Elimina un cliente frecuente del sistema.
+     *
+     * @param idCliente Identificador del cliente a eliminar.
+     * @throws Exception Si ocurre un error durante la eliminación.
+     */
+    public void eliminarCliente(Long idCliente) throws Exception {
+        try {
+            clienteFrecuenteBO.eliminar(idCliente);
+        } catch (Exception ex) {
+            throw new Exception("Error al eliminar el cliente frecuente.", ex);
+        }
+    }
+
     /**
      * Obtiene la lista completa de clientes frecuentes registrados.
+     *
      * @return Lista de ClienteFrecuenteDTO.
      * @throws Exception Si falla la consulta en la capa de negocio.
      */
@@ -143,9 +162,10 @@ public class Coordinador {
             throw new Exception("Error al obtener los clientes frecuentes.", ex);
         }
     }
-    
+
     /**
      * Busca un cliente por ID y abre el formulario de edición con sus datos.
+     *
      * @param idCliente Identificador único del cliente a editar.
      */
     public void mostrarEditarClienteFrecuente(Long idCliente) {
@@ -173,9 +193,11 @@ public class Coordinador {
             );
         }
     }
-    
+
     /**
-     * Envía los cambios de un cliente existente a la capa de negocio para su actualización.
+     * Envía los cambios de un cliente existente a la capa de negocio para su
+     * actualización.
+     *
      * @param cliente DTO con la información actualizada.
      * @throws Exception Si ocurre un error en la actualización.
      */
@@ -186,9 +208,10 @@ public class Coordinador {
             throw new Exception("Error al actualizar el cliente frecuente.", ex);
         }
     }
-    
+
     /**
      * Realiza una búsqueda filtrada de clientes frecuentes en tiempo real.
+     *
      * @param filtro Cadena de texto (nombre, teléfono o correo).
      * @return Lista de clientes que coinciden con el filtro.
      * @throws Exception Si falla la búsqueda en persistencia.

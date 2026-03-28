@@ -27,8 +27,8 @@ import javax.swing.border.EmptyBorder;
  *
  * @author Mariana
  */
-public class FrmEditarClienteFrecuente extends JFrame{
-    
+public class FrmEditarClienteFrecuente extends JFrame {
+
     private final Coordinador coordinador;
     private final ClienteFrecuenteDTO clienteDTO;
 
@@ -135,6 +135,14 @@ public class FrmEditarClienteFrecuente extends JFrame{
         JPanel panelBotones = new JPanel();
         panelBotones.setOpaque(false);
 
+        BotonRedondeado btnEliminar = new BotonRedondeado("Eliminar", 18);
+        btnEliminar.setPreferredSize(new Dimension(125, 40));
+        btnEliminar.setBackground(new Color(200, 70, 70)); // rojo elegante
+        btnEliminar.setForeground(PaletaColores.BLANCO);
+        btnEliminar.setFont(new Font("Segoe UI", Font.BOLD, 13));
+
+        btnEliminar.addActionListener(e -> eliminarCliente());
+
         BotonRedondeado btnCancelar = new BotonRedondeado("Cancelar", 18);
         btnCancelar.setPreferredSize(new Dimension(130, 40));
         btnCancelar.setBackground(new Color(232, 216, 182));
@@ -150,9 +158,10 @@ public class FrmEditarClienteFrecuente extends JFrame{
         btnCancelar.addActionListener(e -> {
             coordinador.regresarAGestionClientes();
         });
-        
+
         btnGuardar.addActionListener(e -> guardarCambios());
 
+        panelBotones.add(btnEliminar);
         panelBotones.add(btnCancelar);
         panelBotones.add(btnGuardar);
 
@@ -227,7 +236,7 @@ public class FrmEditarClienteFrecuente extends JFrame{
         txtCorreo.setText(clienteDTO.getCorreoElectronico() != null ? clienteDTO.getCorreoElectronico() : "");
         txtSegundoNombre.setText("");
     }
-    
+
     private void guardarCambios() {
         if (txtPrimerNombre.getText().trim().isEmpty()
                 || txtApellidoPaterno.getText().trim().isEmpty()
@@ -267,5 +276,29 @@ public class FrmEditarClienteFrecuente extends JFrame{
             JOptionPane.showMessageDialog(this, "Error al actualizar: " + e.getMessage());
         }
     }
-    
+
+    private void eliminarCliente() {
+        int confirmacion = JOptionPane.showConfirmDialog(
+                this,
+                "¿Estás seguro de eliminar este cliente?",
+                "Confirmar eliminación",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirmacion != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        try {
+            coordinador.eliminarCliente(clienteDTO.getIdCliente());
+
+            JOptionPane.showMessageDialog(this, "Cliente eliminado correctamente");
+
+            coordinador.regresarDesdeEditarCliente();
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error al eliminar: " + e.getMessage());
+        }
+    }
+
 }
