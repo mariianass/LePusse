@@ -157,6 +157,7 @@ public class FrmEditarClienteFrecuente extends JFrame {
 
         btnCancelar.addActionListener(e -> {
             coordinador.regresarAGestionClientes();
+            dispose();
         });
 
         btnGuardar.addActionListener(e -> guardarCambios());

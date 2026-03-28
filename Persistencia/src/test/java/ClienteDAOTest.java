@@ -46,7 +46,7 @@ public class ClienteDAOTest {
         cliente.setNombre("Regina");
         cliente.setApellidoPaterno("Jimenez");
         cliente.setApellidoMaterno("Meneses");
-        cliente.setTelefono("6442491867");
+        cliente.setTelefono("6441112222");
         cliente.setCorreoElectronico("regina@test.com");
         
         Cliente resultado = clienteDAO.guardar(cliente);
