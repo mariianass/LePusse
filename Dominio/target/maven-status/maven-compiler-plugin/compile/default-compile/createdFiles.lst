@@ -1,4 +1,6 @@
 entidades\Cliente.class
+entidades\Ingrediente.class
 entidades\ClienteFrecuente.class
 entidades\Comanda.class
 enums\EstadoComanda.class
+enums\UnidadMedida.class

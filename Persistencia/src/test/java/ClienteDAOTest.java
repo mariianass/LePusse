@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- *
- * @author regin
+ * Pruebas unitarias para ClienteDAO.
+ * @author regina, mariana e isaac
  */
 public class ClienteDAOTest {
     
@@ -29,7 +29,6 @@ public class ClienteDAOTest {
             try {
                 clienteDAO.eliminar(id);
             } catch (PersistenciaException e) {
-                // Ignorar si ya fue eliminado o no existe
             }
         }
     }
