@@ -9,8 +9,13 @@ import entidades.Ingrediente;
 import enums.UnidadMedida;
 import excepciones.PersistenciaException;
 import interfaces.IIngredienteDAO;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 /**
  *
@@ -81,24 +86,23 @@ public class IngredienteDAO implements IIngredienteDAO {
     }
 
     @Override
-    public Ingrediente buscarPorId(Long id) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public Ingrediente buscarPorId(Long id) throws PersistenciaException {
+        if (id == null) {
+            throw new PersistenciaException("El id del ingrediente no puede ser nulo.");
+        }
+
+        EntityManager em = ConexionBD.crearConexion();
+
+        try {
+            return em.find(Ingrediente.class, id);
+        } catch (Exception e) {
+            throw new PersistenciaException("Error al buscar el ingrediente por ID.", e);
+        } finally {
+            em.close();
+        }
     }
 
-    @Override
-    public List<Ingrediente> buscarTodos() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
 
-    @Override
-    public List<Ingrediente> buscarPorNombre(String nombre) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    @Override
-    public List<Ingrediente> buscarPorUnidad(UnidadMedida unidad) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
 
     @Override
     public boolean existeDuplicado(String nombre, UnidadMedida unidad) throws PersistenciaException{
@@ -124,4 +128,43 @@ public class IngredienteDAO implements IIngredienteDAO {
     public void actualizarStock(Long id, Double nuevoStock) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
+
+    @Override
+    public List<Ingrediente> buscarPorNombreYUnidad(String nombre, UnidadMedida unidad) throws PersistenciaException {
+
+        EntityManager em = ConexionBD.crearConexion();
+
+        try {
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Ingrediente> cq = cb.createQuery(Ingrediente.class);
+            Root<Ingrediente> ingrediente = cq.from(Ingrediente.class);
+
+            List<Predicate> filtros = new ArrayList<>();
+
+            if (nombre != null && !nombre.isBlank()) {
+                filtros.add(cb.like(
+                        cb.lower(ingrediente.get("nombre")),
+                        "%" + nombre.toLowerCase() + "%"
+                ));
+            }
+
+            if (unidad != null) {
+                filtros.add(cb.equal(ingrediente.get("unidadMedida"), unidad));
+            }
+
+            cq.select(ingrediente);
+
+            if (!filtros.isEmpty()) {
+                cq.where(cb.and(filtros.toArray(new Predicate[0])));
+            }
+
+            return em.createQuery(cq).getResultList();
+
+        } catch (Exception e) {
+            throw new PersistenciaException("Error al buscar ingredientes por nombre y unidad.", e);
+        } finally {
+            em.close();
+        }
+    }
+    
 }

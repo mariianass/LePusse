@@ -8,6 +8,8 @@ import enums.UnidadMedida;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -32,6 +34,7 @@ public class Ingrediente implements Serializable {
     @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
     
+    @Enumerated(EnumType.STRING)
     @Column(name = "unidad_medida", nullable = false)
     private UnidadMedida unidadMedida;
     

@@ -18,10 +18,8 @@ public interface IIngredienteDAO {
     
     void guardar(Ingrediente ingrediente) throws PersistenciaException;
     boolean eliminar(Long id) throws PersistenciaException;
-    Ingrediente buscarPorId(Long id);
-    List<Ingrediente> buscarTodos();
-    List<Ingrediente> buscarPorNombre(String nombre);
-    List<Ingrediente> buscarPorUnidad(UnidadMedida unidad);
+    Ingrediente buscarPorId(Long id) throws PersistenciaException;
+    List<Ingrediente> buscarPorNombreYUnidad(String nombre, UnidadMedida unidad) throws PersistenciaException;
     boolean existeDuplicado(String nombre, UnidadMedida unidad) throws PersistenciaException;
     void actualizarStock(Long id, Double nuevoStock);
     
