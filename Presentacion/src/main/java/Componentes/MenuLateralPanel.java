@@ -145,6 +145,14 @@ public class MenuLateralPanel extends JPanel{
             boton.setBorderPainted(false);
             boton.setForeground(Color.WHITE);
         }
+        
+        if (texto.equals("Ingredientes")) {
+            boton.addActionListener(e -> coordinador.mostrarGestionarIngredientes());
+        }
+        
+        if (texto.equals("Clientes Frecuentes")) {
+            boton.addActionListener(e -> coordinador.mostrarGestionarClientesFrecuentes());
+        }
 
         boton.setAlignmentX(Component.LEFT_ALIGNMENT);
         return boton;

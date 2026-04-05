@@ -1,11 +1,15 @@
 package Controlador;
 
 import BOs.ClienteFrecuenteBO;
+import BOs.IngredienteBO;
 import Pantallas.FrmClientesFrecuentes;
 import Pantallas.FrmEditarClienteFrecuente;
+import Pantallas.FrmIngredientes;
 import Pantallas.FrmMenuAcceso;
 import Pantallas.FrmRegistrarClienteFrecuente;
 import dtos.ClienteFrecuenteDTO;
+import dtos.IngredienteDTO;
+import enums.UnidadMedida;
 import java.util.List;
 
 /**
@@ -18,18 +22,22 @@ public class Coordinador {
 
     // Capa Negocio (BOs)
     private final ClienteFrecuenteBO clienteFrecuenteBO;
+    private final IngredienteBO ingredienteBO;
 
     // Capa de Presentación (Pantallas)
     private FrmMenuAcceso frmMenuAcceso;
     private FrmClientesFrecuentes frmGestionarClientesFrecuentes;
     private FrmRegistrarClienteFrecuente frmRegistrarClientesFrecuentes;
     private FrmEditarClienteFrecuente frmEditarClienteFrecuente;
+    private FrmIngredientes frmIngredientes;
+
 
     /**
      * Constructor que inicializa la instancia de la lógica de negocio.
      */
     public Coordinador() {
         this.clienteFrecuenteBO = ClienteFrecuenteBO.getInstance();
+        this.ingredienteBO = IngredienteBO.getInstance();
     }
 
     /**
@@ -46,9 +54,9 @@ public class Coordinador {
      * Hace visible la pantalla principal de gestión de clientes frecuentes.
      */
     public void mostrarGestionarClientesFrecuentes() {
-        if (frmMenuAcceso != null) {
-            frmMenuAcceso.setVisible(false);
-        }
+        
+        ocultarTodasLasPantallas();
+        
         if (frmGestionarClientesFrecuentes == null) {
             frmGestionarClientesFrecuentes = new FrmClientesFrecuentes(this);
         }
@@ -61,9 +69,9 @@ public class Coordinador {
      * Muestra la pantalla para registrar un nuevo cliente frecuente.
      */
     public void mostrarRegistroClienteFrecuente() {
-        if (frmGestionarClientesFrecuentes != null) {
-            frmGestionarClientesFrecuentes.setVisible(false);
-        }
+        
+        ocultarTodasLasPantallas();
+        
         if (frmRegistrarClientesFrecuentes == null) {
             frmRegistrarClientesFrecuentes = new FrmRegistrarClienteFrecuente(this);
         }
@@ -109,15 +117,13 @@ public class Coordinador {
      * Cierra la sesión actual y regresa al menú de acceso.
      */
     public void cerrarSesion() {
-        if (frmGestionarClientesFrecuentes != null) {
-            frmGestionarClientesFrecuentes.setVisible(false);
-        }
-        if (frmRegistrarClientesFrecuentes != null) {
-            frmRegistrarClientesFrecuentes.setVisible(false);
-        }
+        
+        ocultarTodasLasPantallas();
+        
         if (frmMenuAcceso == null) {
             frmMenuAcceso = new FrmMenuAcceso(this);
         }
+
         frmMenuAcceso.setVisible(true);
     }
 
@@ -224,4 +230,83 @@ public class Coordinador {
         }
     }
 
+    /**
+     * Hace visible la pantalla principal de gestión de ingredientes.
+     */
+    public void mostrarGestionarIngredientes() {
+        
+        ocultarTodasLasPantallas();
+         
+        if (frmIngredientes == null) {
+            frmIngredientes = new FrmIngredientes(this);
+        }
+        frmIngredientes.setVisible(true);
+        frmIngredientes.toFront();
+        frmIngredientes.recargarTabla();
+    }
+    
+    /**
+    * Obtiene la lista completa de ingredientes registrados.
+    *
+    * @return Lista de IngredienteDTO.
+    * @throws Exception Si falla la consulta en la capa de negocio.
+    */
+   public List<IngredienteDTO> obtenerIngredientes() throws Exception {
+       try {
+           return ingredienteBO.buscarPorNombreYUnidad("", null);
+       } catch (Exception ex) {
+           throw new Exception("Error al obtener los ingredientes.", ex);
+       }
+   }
+    
+    /**
+     * Obtiene la lista de ingredientes aplicando filtros opcionales por nombre
+     * y unidad de medida.
+     *
+     * @param nombre Nombre o parte del nombre del ingrediente.
+     * @param unidad Unidad de medida seleccionada.
+     * @return Lista de IngredienteDTO.
+     * @throws Exception Si falla la consulta en la capa de negocio.
+     */
+    public List<IngredienteDTO> buscarIngredientesPorNombreYUnidad(String nombre, UnidadMedida unidad) throws Exception {
+        try {
+            return ingredienteBO.buscarPorNombreYUnidad(nombre, unidad);
+        } catch (Exception ex) {
+            throw new Exception("Error al obtener los ingredientes.", ex);
+        }
+    }
+    
+    /**
+     * Busca un ingrediente por su identificador único.
+     *
+     * @param idIngrediente Identificador único del ingrediente.
+     * @return IngredienteDTO encontrado.
+     * @throws Exception Si ocurre un error durante la búsqueda.
+     */
+    public IngredienteDTO buscarIngredientePorId(Long idIngrediente) throws Exception {
+        try {
+            return ingredienteBO.buscarPorId(idIngrediente);
+        } catch (Exception ex) {
+            throw new Exception("Error al buscar el ingrediente.", ex);
+        }
+    }
+    
+    private void ocultarTodasLasPantallas() {
+        if (frmMenuAcceso != null) {
+            frmMenuAcceso.setVisible(false);
+        }
+        if (frmGestionarClientesFrecuentes != null) {
+            frmGestionarClientesFrecuentes.setVisible(false);
+        }
+        if (frmRegistrarClientesFrecuentes != null) {
+            frmRegistrarClientesFrecuentes.setVisible(false);
+        }
+        if (frmEditarClienteFrecuente != null) {
+            frmEditarClienteFrecuente.setVisible(false);
+        }
+        if (frmIngredientes != null) {
+            frmIngredientes.setVisible(false);
+        }
+    }
+    
 }
