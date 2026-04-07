@@ -5,6 +5,7 @@
 package dtos;
 
 import enums.UnidadMedida;
+import enumsDTO.UnidadMedidaDTO;
 import java.io.Serializable;
 
 /**
@@ -17,7 +18,7 @@ public class IngredienteDTO implements Serializable {
 
     private Long idIngrediente;
     private String nombre;
-    private UnidadMedida unidadMedida;
+    private UnidadMedidaDTO unidadMedida;
     private Double stockActual;
     private Double umbral;
     public IngredienteDTO() {
@@ -32,7 +33,7 @@ public class IngredienteDTO implements Serializable {
      * @param stockActual Cantidad actual en inventario.
      * @param umbral Límite mínimo para alerta de stock.
      */
-    public IngredienteDTO(Long idIngrediente, String nombre, UnidadMedida unidadMedida, Double stockActual, Double umbral) {
+    public IngredienteDTO(Long idIngrediente, String nombre, UnidadMedidaDTO unidadMedida, Double stockActual, Double umbral) {
         this.idIngrediente = idIngrediente;
         this.nombre = nombre;
         this.unidadMedida = unidadMedida;
@@ -56,11 +57,11 @@ public class IngredienteDTO implements Serializable {
         this.nombre = nombre;
     }
 
-    public UnidadMedida getUnidadMedida() {
+    public UnidadMedidaDTO getUnidadMedida() {
         return unidadMedida;
     }
 
-    public void setUnidadMedida(UnidadMedida unidadMedida) {
+    public void setUnidadMedida(UnidadMedidaDTO unidadMedida) {
         this.unidadMedida = unidadMedida;
     }
 
