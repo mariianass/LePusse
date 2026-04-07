@@ -175,6 +175,8 @@ public class FrmIngredientes extends JFrame {
         btnNuevoIngrediente.setBackground(PaletaColores.DORADO);
         btnNuevoIngrediente.setForeground(PaletaColores.MARRON_OSCURO);
         btnNuevoIngrediente.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        
+        btnNuevoIngrediente.addActionListener(e -> coordinador.mostrarNuevoIngrediente());
 
         JPanel panelBoton = new JPanel();
         panelBoton.setOpaque(false);
@@ -367,9 +369,6 @@ public class FrmIngredientes extends JFrame {
     }
 
     private String obtenerUnidadMedida(IngredienteDTO ingrediente) {
-        if (ingrediente.getUnidadMedida() == null) {
-            return "-";
-        }
         return ingrediente.getUnidadMedida().toString();
     }
 

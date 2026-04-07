@@ -6,6 +6,7 @@ import Pantallas.FrmClientesFrecuentes;
 import Pantallas.FrmEditarClienteFrecuente;
 import Pantallas.FrmIngredientes;
 import Pantallas.FrmMenuAcceso;
+import Pantallas.FrmNuevoIngrediente;
 import Pantallas.FrmRegistrarClienteFrecuente;
 import dtos.ClienteFrecuenteDTO;
 import dtos.IngredienteDTO;
@@ -30,6 +31,7 @@ public class Coordinador {
     private FrmRegistrarClienteFrecuente frmRegistrarClientesFrecuentes;
     private FrmEditarClienteFrecuente frmEditarClienteFrecuente;
     private FrmIngredientes frmIngredientes;
+    private FrmNuevoIngrediente frmNuevoIngrediente;
 
 
     /**
@@ -291,6 +293,30 @@ public class Coordinador {
         }
     }
     
+    public void mostrarNuevoIngrediente() {
+        ocultarTodasLasPantallas();
+
+        if (frmNuevoIngrediente == null) {
+            frmNuevoIngrediente = new FrmNuevoIngrediente(this);
+        }
+        frmNuevoIngrediente.setVisible(true);
+        frmNuevoIngrediente.toFront();
+    }
+    
+    /**
+    * Solicita a la capa de negocio persistir un nuevo ingrediente.
+    *
+    * @param ingrediente Objeto DTO con la información del ingrediente.
+    * @throws Exception Si ocurre un error durante el guardado.
+    */
+   public void registrarIngrediente(IngredienteDTO ingrediente) throws Exception {
+       try {
+           ingredienteBO.guardar(ingrediente);
+       } catch (Exception ex) {
+           throw new Exception("Error al registrar el ingrediente.", ex);
+       }
+   }
+    
     private void ocultarTodasLasPantallas() {
         if (frmMenuAcceso != null) {
             frmMenuAcceso.setVisible(false);
@@ -306,6 +332,9 @@ public class Coordinador {
         }
         if (frmIngredientes != null) {
             frmIngredientes.setVisible(false);
+        }
+        if (frmNuevoIngrediente != null) {
+            frmNuevoIngrediente.setVisible(false);
         }
     }
     
