@@ -254,30 +254,5 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
         txtCorreo.setText("");
     }
 
-    private void registrarCliente() {
-        if (txtPrimerNombre.getText().trim().isEmpty()
-                || txtApellidoPaterno.getText().trim().isEmpty()
-                || txtApellidoMaterno.getText().trim().isEmpty()
-                || txtTelefono.getText().trim().isEmpty()) {
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Complete todos los campos obligatorios.",
-                    "Validación",
-                    JOptionPane.WARNING_MESSAGE
-            );
-            
-            return;
-        }
-
-        JOptionPane.showMessageDialog(
-                this,
-                "¡Cliente creado exitosamente!",
-                "Mensaje",
-                JOptionPane.INFORMATION_MESSAGE
-        );
-
-        limpiarCampos();
-    }
     
 }

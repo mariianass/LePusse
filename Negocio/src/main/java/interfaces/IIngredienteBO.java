@@ -18,4 +18,5 @@ public interface IIngredienteBO {
     
     List<IngredienteDTO> buscarPorNombreYUnidad(String nombre, UnidadMedida unidad) throws NegocioException;
     IngredienteDTO buscarPorId(Long id) throws NegocioException;
+    IngredienteDTO guardar(IngredienteDTO ingredienteDTO) throws NegocioException;
 }

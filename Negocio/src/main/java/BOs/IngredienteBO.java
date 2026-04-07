@@ -8,12 +8,14 @@ import DAOs.IngredienteDAO;
 import dtos.IngredienteDTO;
 import entidades.Ingrediente;
 import enums.UnidadMedida;
+import enumsDTO.UnidadMedidaDTO;
 import excepciones.NegocioException;
 import excepciones.PersistenciaException;
 import interfaces.IIngredienteBO;
 import interfaces.IIngredienteDAO;
 import java.util.ArrayList;
 import java.util.List;
+import static validadores.ValidadorIngrediente.validar;
 
 /**
  * Implementa la lógica de negocio de la entidad Ingrediente. Esta clase se
@@ -44,6 +46,26 @@ public class IngredienteBO implements IIngredienteBO {
             instanciaIngredienteBO = new IngredienteBO();
         }
         return instanciaIngredienteBO;
+    }
+    
+    /**
+     * Guarda un nuevo ingrediente en el sistema.
+     *
+     * @param ingredienteDTO DTO con la información del ingrediente.
+     * @return Ingrediente guardado.
+     * @throws NegocioException Si ocurre un error durante el guardado.
+     */
+    @Override
+    public IngredienteDTO guardar(IngredienteDTO ingredienteDTO) throws NegocioException {
+        validar(ingredienteDTO);
+
+        try {
+            Ingrediente ingrediente = convertirEntidad(ingredienteDTO);
+            ingredienteDAO.guardar(ingrediente);
+            return convertirDTO(ingrediente);
+        } catch (PersistenciaException e) {
+            throw new NegocioException("Error al guardar el ingrediente en negocio.", e);
+        }
     }
 
     /**
@@ -104,42 +126,89 @@ public class IngredienteBO implements IIngredienteBO {
     }
 
     /**
-     * Convierte un DTO de Ingrediente a su representación en entidad.
-     *
-     * @param ingredienteDTO DTO del ingrediente.
-     * @return Entidad ingrediente.
-     */
-    private Ingrediente convertirEntidad(IngredienteDTO ingredienteDTO) {
-        if (ingredienteDTO == null) {
-            return null;
-        }
+    * Convierte un DTO de Ingrediente a su representación en entidad.
+    *
+    * @param ingredienteDTO DTO del ingrediente.
+    * @return Entidad ingrediente.
+    */
+   private Ingrediente convertirEntidad(IngredienteDTO ingredienteDTO) {
+       if (ingredienteDTO == null) {
+           return null;
+       }
 
-        return new Ingrediente(
-                ingredienteDTO.getIdIngrediente(),
-                ingredienteDTO.getNombre(),
-                ingredienteDTO.getUnidadMedida(),
-                ingredienteDTO.getStockActual(),
-                ingredienteDTO.getUmbral()
-        );
-    }
+       return new Ingrediente(
+               ingredienteDTO.getIdIngrediente(),
+               ingredienteDTO.getNombre(),
+               convertirUnidadMedidaEntidad(ingredienteDTO.getUnidadMedida()),
+               ingredienteDTO.getStockActual(),
+               ingredienteDTO.getUmbral()
+       );
+   }
 
-    /**
-     * Convierte una entidad Ingrediente a su representación en DTO.
-     *
-     * @param ingrediente Entidad ingrediente.
-     * @return DTO del ingrediente.
-     */
-    private IngredienteDTO convertirDTO(Ingrediente ingrediente) {
-        if (ingrediente == null) {
-            return null;
-        }
+   /**
+    * Convierte una entidad Ingrediente a su representación en DTO.
+    *
+    * @param ingrediente Entidad ingrediente.
+    * @return DTO del ingrediente.
+    */
+   private IngredienteDTO convertirDTO(Ingrediente ingrediente) {
+       if (ingrediente == null) {
+           return null;
+       }
 
-        return new IngredienteDTO(
-                ingrediente.getIdIngrediente(),
-                ingrediente.getNombre(),
-                ingrediente.getUnidadMedida(),
-                ingrediente.getStockActual(),
-                ingrediente.getUmbral()
-        );
-    }
+       return new IngredienteDTO(
+               ingrediente.getIdIngrediente(),
+               ingrediente.getNombre(),
+               convertirUnidadMedidaDTO(ingrediente.getUnidadMedida()),
+               ingrediente.getStockActual(),
+               ingrediente.getUmbral()
+       );
+   }
+
+   /**
+    * Convierte un enum UnidadMedidaDTO a UnidadMedida.
+    *
+    * @param unidadMedidaDTO Unidad de medida del DTO.
+    * @return Unidad de medida de la entidad.
+    */
+   private UnidadMedida convertirUnidadMedidaEntidad(UnidadMedidaDTO unidadMedidaDTO) {
+       if (unidadMedidaDTO == null) {
+           return null;
+       }
+
+       switch (unidadMedidaDTO) {
+           case PIEZAS:
+               return UnidadMedida.PIEZAS;
+           case GRAMOS:
+               return UnidadMedida.GRAMOS;
+           case MILILITROS:
+               return UnidadMedida.MILILITROS;
+           default:
+               throw new IllegalArgumentException("Unidad de medida DTO no válida: " + unidadMedidaDTO);
+       }
+   }
+
+   /**
+    * Convierte un enum UnidadMedida a UnidadMedidaDTO.
+    *
+    * @param unidadMedida Unidad de medida de la entidad.
+    * @return Unidad de medida del DTO.
+    */
+   private UnidadMedidaDTO convertirUnidadMedidaDTO(UnidadMedida unidadMedida) {
+       if (unidadMedida == null) {
+           return null;
+       }
+
+       switch (unidadMedida) {
+           case PIEZAS:
+               return UnidadMedidaDTO.PIEZAS;
+           case GRAMOS:
+               return UnidadMedidaDTO.GRAMOS;
+           case MILILITROS:
+               return UnidadMedidaDTO.MILILITROS;
+           default:
+               throw new IllegalArgumentException("Unidad de medida no válida: " + unidadMedida);
+       }
+   }
+    
 }
