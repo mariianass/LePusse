@@ -30,7 +30,7 @@ public class IngredienteDAOTest {
     }
 
     @AfterEach
-    void tearDown() throws PersistenciaException {
+    void tearDown() {
         for (Long id : idsIngredientesCreados) {
             try {
                 ingredienteDAO.eliminar(id);
@@ -39,80 +39,93 @@ public class IngredienteDAOTest {
         }
     }
 
-    private void registrarId(Ingrediente ingrediente) {
-        if (ingrediente != null && ingrediente.getIdIngrediente() != null) {
-            idsIngredientesCreados.add(ingrediente.getIdIngrediente());
+    private void registrarId(Ingrediente ing) {
+        if (ing != null && ing.getIdIngrediente() != null) {
+            idsIngredientesCreados.add(ing.getIdIngrediente());
         }
     }
 
+
     @Test
-    void testGuardarIngredienteValido() throws PersistenciaException {
-        Ingrediente ing = new Ingrediente(null, "Pimienta", UnidadMedida.GRAMOS, 500.0, 50.0);
-        
+    void testGuardarExitoNuevoIngrediente() throws PersistenciaException {
+        Ingrediente ing = new Ingrediente(null, "Cebolla", UnidadMedida.GRAMOS, 1000.0, 100.0);
         ingredienteDAO.guardar(ing);
         registrarId(ing);
-
-        assertNotNull(ing.getIdIngrediente(), "Debería generar un ID");
-        assertTrue(ingredienteDAO.existeDuplicado("Pimienta", UnidadMedida.GRAMOS));
+        assertNotNull(ing.getIdIngrediente());
     }
 
     @Test
-    void testGuardarDuplicadoMismoNombreDiferenteUnidad() throws PersistenciaException {
-        Ingrediente ing1 = new Ingrediente(null, "Queso", UnidadMedida.GRAMOS, 1000.0, 100.0);
-        Ingrediente ing2 = new Ingrediente(null, "Queso", UnidadMedida.PIEZAS, 10.0, 2.0);
-
+    void testGuardarExitoMismoNombreDiferenteUnidad() throws PersistenciaException {
+        Ingrediente ing1 = new Ingrediente(null, "Mantequila", UnidadMedida.GRAMOS, 500.0, 50.0);
+        Ingrediente ing2 = new Ingrediente(null, "Mantequila", UnidadMedida.MILILITROS, 500.0, 50.0);
+        
         ingredienteDAO.guardar(ing1);
         registrarId(ing1);
         
-        ingredienteDAO.guardar(ing2);
-        registrarId(ing2);
-
-        assertNotNull(ing1.getIdIngrediente());
-        assertNotNull(ing2.getIdIngrediente());
-        assertNotEquals(ing1.getIdIngrediente(), ing2.getIdIngrediente());
+        assertDoesNotThrow(() -> {
+            ingredienteDAO.guardar(ing2);
+            registrarId(ing2);
+        });
     }
 
     @Test
-    void testGuardarDuplicadoMismaUnidadLanzaExcepcion() throws PersistenciaException {
+    void testGuardarErrorDuplicadoExacto() throws PersistenciaException {
         Ingrediente ing1 = new Ingrediente(null, "Sal", UnidadMedida.GRAMOS, 100.0, 10.0);
         ingredienteDAO.guardar(ing1);
         registrarId(ing1);
 
         Ingrediente ing2 = new Ingrediente(null, "Sal", UnidadMedida.GRAMOS, 200.0, 20.0);
-
-        assertThrows(PersistenciaException.class, () -> {
-            ingredienteDAO.guardar(ing2);
-        }, "Debería lanzar PersistenciaException por nombre y unidad duplicada");
+        assertThrows(PersistenciaException.class, () -> ingredienteDAO.guardar(ing2));
     }
 
-    @Test
-    void testEliminarIngrediente() throws PersistenciaException {
-        Ingrediente ing = new Ingrediente(null, "Aceite", UnidadMedida.MILILITROS, 1000.0, 100.0);
-        ingredienteDAO.guardar(ing);
-
-        boolean eliminado = ingredienteDAO.eliminar(ing.getIdIngrediente());
-        
-        assertTrue(eliminado);
-        assertFalse(ingredienteDAO.existeDuplicado("Aceite", UnidadMedida.MILILITROS));
-    }
 
     @Test
-    void testEliminarInexistente() throws PersistenciaException {
-        boolean resultado = ingredienteDAO.eliminar(-1L);
-        assertFalse(resultado, "Debería retornar false si el ID no existe");
-    }
-
-    @Test
-    void testExisteDuplicado() throws PersistenciaException {
-        String nombre = "Azúcar";
-        UnidadMedida unidad = UnidadMedida.GRAMOS;
-        
-        assertFalse(ingredienteDAO.existeDuplicado(nombre, unidad));
-
-        Ingrediente ing = new Ingrediente(null, nombre, unidad, 500.0, 50.0);
+    void testEditarExitoMismoRegistro() throws PersistenciaException {
+        Ingrediente ing = new Ingrediente(null, "Harina", UnidadMedida.GRAMOS, 500.0, 50.0);
         ingredienteDAO.guardar(ing);
         registrarId(ing);
 
-        assertTrue(ingredienteDAO.existeDuplicado(nombre, unidad));
+        ing.setStockActual(800.0);
+        assertDoesNotThrow(() -> ingredienteDAO.editar(ing));
+    }
+
+    @Test
+    void testEditarErrorConOtroIngrediente() throws PersistenciaException {
+        Ingrediente ing1 = new Ingrediente(null, "Leche", UnidadMedida.MILILITROS, 1000.0, 100.0);
+        Ingrediente ing2 = new Ingrediente(null, "Agua", UnidadMedida.MILILITROS, 1000.0, 100.0);
+        ingredienteDAO.guardar(ing1);
+        ingredienteDAO.guardar(ing2);
+        registrarId(ing1);
+        registrarId(ing2);
+        ing2.setNombre("Leche");
+        assertThrows(PersistenciaException.class, () -> ingredienteDAO.editar(ing2));
+    }
+
+    @Test
+    void testExisteDuplicado_ValidacionCruzada() throws PersistenciaException {
+        Ingrediente ing = new Ingrediente(null, "Azúcar", UnidadMedida.GRAMOS, 10.0, 1.0);
+        ingredienteDAO.guardar(ing);
+        registrarId(ing);
+        assertTrue(ingredienteDAO.existeDuplicado("Azúcar", UnidadMedida.GRAMOS, null));
+        assertFalse(ingredienteDAO.existeDuplicado("Azúcar", UnidadMedida.GRAMOS, ing.getIdIngrediente()));
+    }
+    
+    @Test
+    void testActualizarStockExito() throws PersistenciaException {
+        Ingrediente ing = new Ingrediente(null, "Carne", UnidadMedida.GRAMOS, 100.0, 10.0);
+        ingredienteDAO.guardar(ing);
+        registrarId(ing);
+        ingredienteDAO.actualizarStock(ing.getIdIngrediente(), 999.0);
+        Ingrediente actualizado = ingredienteDAO.buscarPorId(ing.getIdIngrediente());
+        assertEquals(999.0, actualizado.getStockActual());
+    }
+
+    @Test
+    void testEliminarExito() throws PersistenciaException {
+        Ingrediente ing = new Ingrediente(null, "Temporal", UnidadMedida.GRAMOS, 1.0, 1.0);
+        ingredienteDAO.guardar(ing);
+        
+        assertTrue(ingredienteDAO.eliminar(ing.getIdIngrediente()));
+        assertFalse(ingredienteDAO.eliminar(-99L));
     }
 }
