@@ -313,7 +313,7 @@ public class Coordinador {
        try {
            ingredienteBO.guardar(ingrediente);
        } catch (Exception ex) {
-           throw new Exception("Error al registrar el ingrediente.", ex);
+           throw new Exception(ex.getMessage());
        }
    }
     

@@ -67,6 +67,47 @@ public class Validadores {
 
         return true;
     }
+    
+    /**
+    * Valida los datos para el registro de ingredientes.
+    * Reglas: Nombre obligatorio (2-100 chars), stock y umbral numéricos positivos.
+    */
+   public static boolean validarIngrediente(Component parent, String nombre, int indexUnidad, String stock, String umbral) {
+
+       // Validar campos vacíos
+       if (nombre.isEmpty() || stock.isEmpty() || umbral.isEmpty()) {
+           mostrarMensaje(parent, "Por favor, complete todos los campos obligatorios.", "Campos Incompletos", JOptionPane.WARNING_MESSAGE);
+           return false;
+       }
+
+       // Validar que seleccionó una unidad (index 0 suele ser "Seleccione...")
+       if (indexUnidad <= 0) {
+           mostrarMensaje(parent, "Debe seleccionar una unidad de medida válida.", "Unidad no seleccionada", JOptionPane.WARNING_MESSAGE);
+           return false;
+       }
+
+       // Validar longitud y formato del nombre (letras, números y espacios permitidos en ingredientes)
+       if (nombre.length() < 2 || nombre.length() > 100) {
+           mostrarMensaje(parent, "El nombre del ingrediente debe tener entre 2 y 100 caracteres.", "Nombre Inválido", JOptionPane.ERROR_MESSAGE);
+           return false;
+       }
+
+       // Validar que stock y umbral sean números válidos y positivos
+       try {
+           double s = Double.parseDouble(stock);
+           double u = Double.parseDouble(umbral);
+
+           if (s < 0 || u < 0) {
+               mostrarMensaje(parent, "La cantidad y el umbral no pueden ser valores negativos.", "Valor Inválido", JOptionPane.ERROR_MESSAGE);
+               return false;
+           }
+       } catch (NumberFormatException e) {
+           mostrarMensaje(parent, "La cantidad en inventario y el umbral deben ser números válidos.", "Formato Numérico Incorrecto", JOptionPane.ERROR_MESSAGE);
+           return false;
+       }
+
+       return true;
+   }
 
     /**
     * Centraliza la creación de cuadros de diálogo para notificar al usuario.
@@ -78,4 +119,6 @@ public class Validadores {
     private static void mostrarMensaje(Component parent, String mensaje, String titulo, int tipo) {
         JOptionPane.showMessageDialog(parent, mensaje, titulo, tipo);
     }
+    
+    
 }

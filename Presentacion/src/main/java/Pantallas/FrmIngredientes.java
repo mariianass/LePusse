@@ -58,11 +58,11 @@ public class FrmIngredientes extends JFrame {
     private JTextField txtBuscar;
     private JComboBox<String> cmbUnidadMedida;
 
-    private List<IngredienteDTO> ingredientesCache;
+    private List<IngredienteDTO> ingredientes;
 
     public FrmIngredientes(Coordinador coordinador) {
         this.coordinador = coordinador;
-        this.ingredientesCache = new ArrayList<>();
+        this.ingredientes = new ArrayList<>();
 
         setTitle("Restaurante Le Pusse - Ingredientes");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -162,6 +162,10 @@ public class FrmIngredientes extends JFrame {
         cmbUnidadMedida.setBackground(PaletaColores.BLANCO);
         cmbUnidadMedida.setForeground(PaletaColores.MARRON_OSCURO);
         cmbUnidadMedida.setBorder(BorderFactory.createLineBorder(PaletaColores.LINEA_SUAVE, 1));
+        cmbUnidadMedida.addItem("Todas las unidades");
+        cmbUnidadMedida.addItem("GRAMOS");
+        cmbUnidadMedida.addItem("MILILITROS");
+        cmbUnidadMedida.addItem("PIEZAS");
         cmbUnidadMedida.addActionListener(e -> aplicarFiltros());
 
         izquierda.add(txtBuscar);
@@ -200,7 +204,7 @@ public class FrmIngredientes extends JFrame {
 
     private JScrollPane crearTablaIngredientes() {
         String[] columnas = {
-            "ID", "Nombre", "Unidad de Medida", "Stock Actual", "Disponibilidad", "Acciones"
+            "ID", "Nombre", "Unidad de Medida", "Stock Actual", "Disponibilidad"
         };
 
         modeloTabla = new DefaultTableModel(null, columnas) {
@@ -241,7 +245,6 @@ public class FrmIngredientes extends JFrame {
         tablaIngredientes.getColumnModel().getColumn(2).setPreferredWidth(220);
         tablaIngredientes.getColumnModel().getColumn(3).setPreferredWidth(210);
         tablaIngredientes.getColumnModel().getColumn(4).setPreferredWidth(190);
-        tablaIngredientes.getColumnModel().getColumn(5).setPreferredWidth(120);
 
         DefaultTableCellRenderer centrado = new DefaultTableCellRenderer();
         centrado.setHorizontalAlignment(SwingConstants.CENTER);
@@ -251,7 +254,6 @@ public class FrmIngredientes extends JFrame {
         tablaIngredientes.getColumnModel().getColumn(2).setCellRenderer(centrado);
         tablaIngredientes.getColumnModel().getColumn(3).setCellRenderer(centrado);
         tablaIngredientes.getColumnModel().getColumn(4).setCellRenderer(centrado);
-        tablaIngredientes.getColumnModel().getColumn(5).setCellRenderer(new BotonEditar());
 
         tablaIngredientes.addMouseListener(new MouseAdapter() {
             @Override
@@ -279,138 +281,69 @@ public class FrmIngredientes extends JFrame {
 
     private void cargarIngredientes() {
         try {
-            ingredientesCache = coordinador.obtenerIngredientes();
-            cargarComboUnidades();
-            llenarTabla(ingredientesCache);
+            ingredientes = coordinador.obtenerIngredientes();
+            llenarTabla(ingredientes);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Error al cargar los ingredientes: " + e.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
-        }
-    }
-
-    private void cargarComboUnidades() {
-        cmbUnidadMedida.removeAllItems();
-        cmbUnidadMedida.addItem("Todas las unidades");
-
-        Set<String> unidades = new LinkedHashSet<>();
-
-        for (IngredienteDTO ingrediente : ingredientesCache) {
-            String unidad = obtenerUnidadMedida(ingrediente);
-            if (unidad != null && !unidad.isBlank()) {
-                unidades.add(unidad);
-            }
-        }
-
-        for (String unidad : unidades) {
-            cmbUnidadMedida.addItem(unidad);
+            JOptionPane.showMessageDialog(this, "Error al cargar: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void aplicarFiltros() {
-        String texto = txtBuscar.getText() != null ? txtBuscar.getText().trim() : "";
-        String unidadSeleccionada = cmbUnidadMedida.getSelectedItem() != null
-                ? cmbUnidadMedida.getSelectedItem().toString()
-                : "Todas las unidades";
+        if (cmbUnidadMedida.getSelectedItem() == null) return;
 
-        boolean buscarTodo = texto.isEmpty() || "Buscar por nombre...".equalsIgnoreCase(texto);
-        boolean todasLasUnidades = "Todas las unidades".equalsIgnoreCase(unidadSeleccionada);
+        String texto = txtBuscar.getText().trim().toLowerCase();
+        String unidadSeleccionada = cmbUnidadMedida.getSelectedItem().toString();
+
+        boolean buscarTodo = texto.isEmpty() || "buscar por nombre...".equals(texto);
+        boolean todasLasUnidades = "Todas las unidades".equals(unidadSeleccionada);
 
         List<IngredienteDTO> filtrados = new ArrayList<>();
 
-        for (IngredienteDTO ingrediente : ingredientesCache) {
-            String nombre = obtenerNombre(ingrediente);
-            String unidad = obtenerUnidadMedida(ingrediente);
+        for (IngredienteDTO ing : ingredientes) {
+            String nombre = (ing.getNombre() != null) ? ing.getNombre().toLowerCase() : "";
+            String unidadIngrediente = (ing.getUnidadMedida() != null) ? ing.getUnidadMedida().toString() : "";
 
-            boolean coincideNombre = buscarTodo
-                    || (nombre != null && nombre.toLowerCase().contains(texto.toLowerCase()));
-
-            boolean coincideUnidad = todasLasUnidades
-                    || (unidad != null && unidad.equalsIgnoreCase(unidadSeleccionada));
+            boolean coincideNombre = buscarTodo || nombre.contains(texto);
+            boolean coincideUnidad = todasLasUnidades || unidadIngrediente.equalsIgnoreCase(unidadSeleccionada);
 
             if (coincideNombre && coincideUnidad) {
-                filtrados.add(ingrediente);
+                filtrados.add(ing);
             }
         }
-
         llenarTabla(filtrados);
     }
 
     private void llenarTabla(List<IngredienteDTO> ingredientes) {
         modeloTabla.setRowCount(0);
 
-        for (IngredienteDTO ingrediente : ingredientes) {
-            Object[] fila = {
-                obtenerIdIngrediente(ingrediente),
-                obtenerNombre(ingrediente),
-                obtenerUnidadMedida(ingrediente),
-                construirTextoStock(ingrediente),
-                calcularDisponibilidad(ingrediente),
-                ""
-            };
+        for (IngredienteDTO ing : ingredientes) {
+            double stock = ing.getStockActual() != null ? ing.getStockActual() : 0;
+            String unidad = ing.getUnidadMedida() != null ? ing.getUnidadMedida().toString() : "";
 
-            modeloTabla.addRow(fila);
+            String stockTexto = (stock == (long) stock) 
+                ? String.format("%d %s", (long) stock, unidad) 
+                : String.format("%.2f %s", stock, unidad);
+
+            modeloTabla.addRow(new Object[]{
+                ing.getIdIngrediente(), 
+                ing.getNombre(),  
+                unidad,
+                stockTexto,
+                calcularDisponibilidad(ing)
+            });
         }
+    }
+
+    private String calcularDisponibilidad(IngredienteDTO ing) {
+        double stock = ing.getStockActual() != null ? ing.getStockActual() : 0;
+        double umbral = ing.getUmbral() != null ? ing.getUmbral() : 0;
+
+        if (stock <= 0) return "Agotado";
+        if (stock <= umbral) return "Stock Bajo";
+        return "Disponible";
     }
 
     public void recargarTabla() {
         cargarIngredientes();
-    }
-
-    private Long obtenerIdIngrediente(IngredienteDTO ingrediente) {
-        return ingrediente.getIdIngrediente();
-    }
-
-    private String obtenerNombre(IngredienteDTO ingrediente) {
-        return ingrediente.getNombre() != null ? ingrediente.getNombre() : "-";
-    }
-
-    private String obtenerUnidadMedida(IngredienteDTO ingrediente) {
-        return ingrediente.getUnidadMedida().toString();
-    }
-
-    private String construirTextoStock(IngredienteDTO ingrediente) {
-        String unidad = obtenerUnidadMedida(ingrediente);
-        double stock = obtenerValorNumerico(ingrediente.getStockActual());
-
-        if (stock == (long) stock) {
-            return String.format("%d %s", (long) stock, unidad);
-        }
-
-        return String.format("%.2f %s", stock, unidad);
-    }
-
-    private String calcularDisponibilidad(IngredienteDTO ingrediente) {
-        double stock = obtenerValorNumerico(ingrediente.getStockActual());
-        double umbral = obtenerValorNumerico(ingrediente.getUmbral());
-
-        if (stock <= 0) {
-            return "Agotado";
-        }
-
-        if (stock <= umbral) {
-            return "Stock Bajo";
-        }
-
-        return "Disponible";
-    }
-
-    private double obtenerValorNumerico(Object valor) {
-        if (valor == null) {
-            return 0;
-        }
-
-        if (valor instanceof Number) {
-            return ((Number) valor).doubleValue();
-        }
-
-        try {
-            return Double.parseDouble(valor.toString());
-        } catch (NumberFormatException e) {
-            return 0;
-        }
     }
 }

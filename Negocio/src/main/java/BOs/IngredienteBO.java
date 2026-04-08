@@ -64,7 +64,7 @@ public class IngredienteBO implements IIngredienteBO {
             ingredienteDAO.guardar(ingrediente);
             return convertirDTO(ingrediente);
         } catch (PersistenciaException e) {
-            throw new NegocioException("Error al guardar el ingrediente en negocio.", e);
+            throw new NegocioException(e.getMessage(), e);
         }
     }
 

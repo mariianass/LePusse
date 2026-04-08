@@ -9,6 +9,7 @@ import Componentes.MenuLateralPanel;
 import Controlador.Coordinador;
 import Estilos.Dimensiones;
 import Estilos.PaletaColores;
+import Validadores.Validadores;
 import dtos.IngredienteDTO;
 import enums.UnidadMedida;
 import enumsDTO.UnidadMedidaDTO;
@@ -124,7 +125,7 @@ public class FrmNuevoIngrediente extends JFrame {
         JLabel lblTitulo = new JLabel("Nuevo Ingrediente");
         lblTitulo.setFont(new Font("Segoe UI Semilight", Font.PLAIN, 25));
         lblTitulo.setForeground(PaletaColores.TEXTO_MARRON);
-        lblTitulo.setAlignmentX(CENTER_ALIGNMENT);
+        lblTitulo.setAlignmentX(LEFT_ALIGNMENT);
 
         panelCampos.add(lblTitulo);
         panelCampos.add(Box.createRigidArea(new Dimension(0, 24)));
@@ -238,7 +239,7 @@ public class FrmNuevoIngrediente extends JFrame {
 
         combo.addItem("Seleccione una unidad");
         for (UnidadMedida unidad : UnidadMedida.values()) {
-            combo.addItem(formatearUnidad(unidad));
+            combo.addItem(unidad.toString());
         }
 
         return combo;
@@ -257,7 +258,6 @@ public class FrmNuevoIngrediente extends JFrame {
         asterisco.setFont(new Font("Segoe UI Semilight", Font.PLAIN, 24));
         asterisco.setForeground(new Color(255, 70, 95));
 
-        panelEtiqueta.add(Box.createHorizontalGlue());
         panelEtiqueta.add(etiqueta);
         panelEtiqueta.add(asterisco);
         panelEtiqueta.add(Box.createHorizontalGlue());
@@ -265,101 +265,39 @@ public class FrmNuevoIngrediente extends JFrame {
         return panelEtiqueta;
     }
 
-    private String formatearUnidad(UnidadMedida unidad) {
-        switch (unidad) {
-            case PIEZAS:
-                return "Piezas";
-            case GRAMOS:
-                return "Gramos";
-            case MILILITROS:
-                return "Mililitros";
-            default:
-                return unidad.name();
-        }
-    }
-
     private void guardarIngrediente() {
         String nombre = txtNombreIngrediente.getText().trim();
-        String unidadTexto = cmbUnidadMedida.getSelectedItem() != null
-                ? cmbUnidadMedida.getSelectedItem().toString()
-                : "";
-        String cantidadTexto = txtCantidadInventario.getText().trim();
-        String umbralTexto = txtUmbral.getText().trim();
+        int indexUnidad = cmbUnidadMedida.getSelectedIndex();
+        String stockTxt = txtCantidadInventario.getText().trim();
+        String umbralTxt = txtUmbral.getText().trim();
 
-        if (nombre.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Debes capturar el nombre del ingrediente.",
-                    "Campo obligatorio",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        if ("Seleccione una unidad".equals(unidadTexto)) {
-            JOptionPane.showMessageDialog(this,
-                    "Debes seleccionar una unidad de medida.",
-                    "Campo obligatorio",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        if (cantidadTexto.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Debes capturar la cantidad en inventario.",
-                    "Campo obligatorio",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        if (umbralTexto.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Debes capturar el umbral.",
-                    "Campo obligatorio",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
+        if (!Validadores.validarIngrediente(this, nombre, indexUnidad, stockTxt, umbralTxt)) {
+            return; 
         }
 
         try {
-            Double cantidad = Double.valueOf(cantidadTexto);
-            Double umbral = Double.valueOf(umbralTexto);
-
-            UnidadMedidaDTO unidadDTO = null;
-
-            if (unidadTexto.equals("Piezas")) {
-                unidadDTO = UnidadMedidaDTO.PIEZAS;
-            } else if (unidadTexto.equals("Gramos")) {
-                unidadDTO = UnidadMedidaDTO.GRAMOS;
-            } else if (unidadTexto.equals("Mililitros")) {
-                unidadDTO = UnidadMedidaDTO.MILILITROS;
-            }
-
             IngredienteDTO ingredienteDTO = new IngredienteDTO();
             ingredienteDTO.setNombre(nombre);
-            ingredienteDTO.setUnidadMedida(unidadDTO);
-            ingredienteDTO.setStockActual(cantidad);
-            ingredienteDTO.setUmbral(umbral);
+            ingredienteDTO.setUnidadMedida(enumsDTO.UnidadMedidaDTO.values()[indexUnidad - 1]);
 
+            ingredienteDTO.setStockActual(Double.valueOf(stockTxt));
+            ingredienteDTO.setUmbral(Double.valueOf(umbralTxt));
             coordinador.registrarIngrediente(ingredienteDTO);
 
-            JOptionPane.showMessageDialog(this,
-                    "Ingrediente registrado correctamente.",
-                    "Éxito",
+            JOptionPane.showMessageDialog(this, 
+                    "Ingrediente registrado correctamente.", 
+                    "Éxito", 
                     JOptionPane.INFORMATION_MESSAGE);
 
             dispose();
             coordinador.mostrarGestionarIngredientes();
 
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this,
-                    "Cantidad en inventario y umbral deben ser valores numéricos.",
-                    "Dato inválido",
-                    JOptionPane.WARNING_MESSAGE);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this,
-                    e.getMessage(),
-                    "Error",
+            JOptionPane.showMessageDialog(this, 
+                    e.getMessage(), 
+                    "Error de Sistema", 
                     JOptionPane.ERROR_MESSAGE);
         }
     }
-    
     
 }
