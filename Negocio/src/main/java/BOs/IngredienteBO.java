@@ -210,5 +210,76 @@ public class IngredienteBO implements IIngredienteBO {
                throw new IllegalArgumentException("Unidad de medida no válida: " + unidadMedida);
        }
    }
+
+   /**
+     * Actualiza la información de un ingrediente existente en el sistema.
+     * Primero valida que los datos cumplan con las reglas de negocio y que el ID no sea nulo.
+     * @param ingredienteDTO DTO con los nuevos datos del ingrediente.
+     * @return DTO del ingrediente actualizado y sincronizado con la base de datos.
+     * @throws NegocioException Si los datos son inválidos, el ID es nulo, o si ocurre 
+     * un error de duplicidad o persistencia.
+     */
+    @Override
+    public IngredienteDTO editar(IngredienteDTO ingredienteDTO) throws NegocioException {
+        validar(ingredienteDTO);
+        
+        if (ingredienteDTO.getIdIngrediente() == null) {
+            throw new NegocioException("No se puede editar un ingrediente sin su ID.");
+        }
+
+        try {
+            Ingrediente ingrediente = convertirEntidad(ingredienteDTO);
+            Ingrediente actualizado = ingredienteDAO.editar(ingrediente);
+            return convertirDTO(actualizado);
+        } catch (PersistenciaException e) {
+            throw new NegocioException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Elimina de forma definitiva un ingrediente del sistema mediante su identificador.
+     * @param id Identificador único del ingrediente a eliminar.
+     * @throws NegocioException Si el ID es nulo, si el ingrediente no existe 
+     * o si ocurre un error en la capa de persistencia.
+     */
+    @Override
+    public void eliminar(Long id) throws NegocioException {
+        if (id == null) {
+            throw new NegocioException("El ID del ingrediente es obligatorio para eliminar.");
+        }
+        try {
+            boolean eliminado = ingredienteDAO.eliminar(id);
+            if (!eliminado) {
+                throw new NegocioException("El ingrediente a eliminar no existe en el sistema.");
+            }
+        } catch (PersistenciaException e) {
+            throw new NegocioException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Actualiza de manera rápida y directa únicamente el stock actual de un ingrediente.
+     * Ideal para procesos de inventario donde no se desea modificar el resto de atributos.
+     * @param id Identificador único del ingrediente.
+     * @param cantidadNeta Nuevo valor de stock que se asignará.
+     * @throws NegocioException Si el ID es nulo, la cantidad es nula o negativa, 
+     * o si hay un error en la base de datos.
+     */
+    @Override
+    public void actualizarStock(Long id, Double cantidadNeta) throws NegocioException {
+        if (id == null) {
+            throw new NegocioException("ID obligatorio.");
+        }
+        if (cantidadNeta == null || cantidadNeta < 0) {
+            throw new NegocioException("El stock no puede ser negativo.");
+        }
+
+        try {
+            ingredienteDAO.actualizarStock(id, cantidadNeta);
+        } catch (PersistenciaException e) {
+            throw new NegocioException(e.getMessage(), e);
+        }
+    
+    }
     
 }
