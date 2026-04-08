@@ -256,19 +256,18 @@ public class FrmIngredientes extends JFrame {
         tablaIngredientes.getColumnModel().getColumn(4).setCellRenderer(centrado);
 
         tablaIngredientes.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (tablaIngredientes.getSelectedRow() == -1) {
-                    return;
-                }
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            int filaSeleccionada = tablaIngredientes.getSelectedRow();
 
-                if (e.getClickCount() == 2) {
-                    int filaSeleccionada = tablaIngredientes.getSelectedRow();
-                    Long idIngrediente = (Long) modeloTabla.getValueAt(filaSeleccionada, 0);
-
-                }
+            if (filaSeleccionada == -1) return;
+            
+            if (e.getClickCount() == 2) {
+                Long idIngrediente = (Long) modeloTabla.getValueAt(filaSeleccionada, 0);
+                coordinador.mostrarEditarIngrediente(idIngrediente);
             }
-        });
+        }
+    });
 
         JScrollPane scroll = new JScrollPane(tablaIngredientes);
         scroll.setBorder(BorderFactory.createEmptyBorder());

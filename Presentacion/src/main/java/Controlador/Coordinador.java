@@ -4,6 +4,7 @@ import BOs.ClienteFrecuenteBO;
 import BOs.IngredienteBO;
 import Pantallas.FrmClientesFrecuentes;
 import Pantallas.FrmEditarClienteFrecuente;
+import Pantallas.FrmEditarIngrediente;
 import Pantallas.FrmIngredientes;
 import Pantallas.FrmMenuAcceso;
 import Pantallas.FrmNuevoIngrediente;
@@ -32,6 +33,7 @@ public class Coordinador {
     private FrmEditarClienteFrecuente frmEditarClienteFrecuente;
     private FrmIngredientes frmIngredientes;
     private FrmNuevoIngrediente frmNuevoIngrediente;
+    private FrmEditarIngrediente frmEditarIngrediente;
 
 
     /**
@@ -336,6 +338,73 @@ public class Coordinador {
         if (frmNuevoIngrediente != null) {
             frmNuevoIngrediente.setVisible(false);
         }
+        if (frmEditarIngrediente != null) {
+        frmEditarIngrediente.setVisible(false);
+        frmEditarIngrediente.dispose();
+        frmEditarIngrediente = null;
+    }
+    }
+    
+    /**
+     * Busca un ingrediente por ID y abre el formulario de edición.
+     * @param idIngrediente Identificador del ingrediente a editar.
+     */
+    public void mostrarEditarIngrediente(Long idIngrediente) {
+        try {
+            IngredienteDTO ingrediente = ingredienteBO.buscarPorId(idIngrediente);
+
+            if (ingrediente == null) {
+                throw new Exception("No se encontró el ingrediente seleccionado.");
+            }
+
+            ocultarTodasLasPantallas();
+
+            frmEditarIngrediente = new FrmEditarIngrediente(this, ingrediente);
+            frmEditarIngrediente.setVisible(true);
+            frmEditarIngrediente.toFront();
+
+        } catch (Exception ex) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    null,
+                    "Error al abrir la pantalla de edición: " + ex.getMessage(),
+                    "Error",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    /**
+     * Envía los cambios de un ingrediente a la capa de negocio para su actualización.
+     * @param ingrediente DTO con la información actualizada.
+     * @throws Exception Si ocurre un error en la validación o persistencia.
+     */
+    public void actualizarIngrediente(IngredienteDTO ingrediente) throws Exception {
+        try {
+            ingredienteBO.editar(ingrediente);
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage());
+        }
+    }
+
+    /**
+     * Elimina un ingrediente del sistema.
+     * @param idIngrediente ID del ingrediente a borrar.
+     * @throws Exception Si el ingrediente está siendo usado o no existe.
+     */
+    public void eliminarIngrediente(Long idIngrediente) throws Exception {
+        try {
+            ingredienteBO.eliminar(idIngrediente);
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage());
+        }
+    }
+
+    /**
+     * Regresa a la pantalla principal de ingredientes y refresca la tabla.
+     */
+    public void regresarAGestionIngredientes() {
+        ocultarTodasLasPantallas();
+        mostrarGestionarIngredientes();
     }
     
 }
