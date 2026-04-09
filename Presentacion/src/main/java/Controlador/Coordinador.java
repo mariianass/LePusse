@@ -242,7 +242,7 @@ public class Coordinador {
         ocultarTodasLasPantallas();
          
         if (frmIngredientes == null) {
-            frmIngredientes = new FrmIngredientes(this);
+            frmIngredientes = new FrmIngredientes(this, false);
         }
         frmIngredientes.setVisible(true);
         frmIngredientes.toFront();

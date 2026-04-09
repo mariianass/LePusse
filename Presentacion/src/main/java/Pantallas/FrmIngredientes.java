@@ -59,13 +59,19 @@ public class FrmIngredientes extends JFrame {
     private JComboBox<String> cmbUnidadMedida;
 
     private List<IngredienteDTO> ingredientes;
+    
+    // Booleano para control de comportamiento, si es pantalla principal de ingredientes o solo de seleccion.
+    // Si es false, es la pantalla normal de ingredientes, donde aparece el buscador y el boton agregar
+    // Si es true, es la pantalla de seleccion de ingredientes para producto.
+    private boolean modoSeleccion;
 
-    public FrmIngredientes(Coordinador coordinador) {
+    public FrmIngredientes(Coordinador coordinador, boolean modoSeleccion) {
         this.coordinador = coordinador;
         this.ingredientes = new ArrayList<>();
+        this.modoSeleccion = modoSeleccion;
 
-        setTitle("Restaurante Le Pusse - Ingredientes");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setTitle("Restaurante Le Pusse - " + (modoSeleccion ? "Seleccionar Ingrediente" : "Ingredientes"));
+        setDefaultCloseOperation(modoSeleccion ? JFrame.DISPOSE_ON_CLOSE : JFrame.EXIT_ON_CLOSE);
         setSize(Dimensiones.ANCHO_VENTANA, Dimensiones.ALTO_VENTANA);
         setMinimumSize(new Dimension(Dimensiones.ANCHO_VENTANA, Dimensiones.ALTO_VENTANA));
         setResizable(false);
@@ -87,7 +93,7 @@ public class FrmIngredientes extends JFrame {
         cabecera.setBackground(PaletaColores.BLANCO);
         cabecera.setBorder(new EmptyBorder(26, 28, 20, 28));
 
-        JLabel titulo = new JLabel("Ingredientes");
+        JLabel titulo = new JLabel(modoSeleccion ? "Seleccionar Ingrediente" : "Ingredientes");
         titulo.setFont(new Font("Segoe UI Semilight", Font.PLAIN, 34));
         titulo.setForeground(PaletaColores.TEXTO_MARRON);
         cabecera.add(titulo, BorderLayout.WEST);
@@ -171,23 +177,21 @@ public class FrmIngredientes extends JFrame {
         izquierda.add(txtBuscar);
         izquierda.add(Box.createRigidArea(new Dimension(18, 0)));
         izquierda.add(cmbUnidadMedida);
-
-        BotonRedondeado btnNuevoIngrediente = new BotonRedondeado("Nuevo Ingrediente", 20);
-        btnNuevoIngrediente.setPreferredSize(new Dimension(170, 42));
-        btnNuevoIngrediente.setMinimumSize(new Dimension(170, 42));
-        btnNuevoIngrediente.setMaximumSize(new Dimension(170, 42));
-        btnNuevoIngrediente.setBackground(PaletaColores.DORADO);
-        btnNuevoIngrediente.setForeground(PaletaColores.MARRON_OSCURO);
-        btnNuevoIngrediente.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        
-        btnNuevoIngrediente.addActionListener(e -> coordinador.mostrarNuevoIngrediente());
-
-        JPanel panelBoton = new JPanel();
-        panelBoton.setOpaque(false);
-        panelBoton.add(btnNuevoIngrediente);
-
         superior.add(izquierda, BorderLayout.WEST);
-        superior.add(panelBoton, BorderLayout.EAST);
+
+        if (!modoSeleccion) {
+            BotonRedondeado btnNuevoIngrediente = new BotonRedondeado("Nuevo Ingrediente", 20);
+            btnNuevoIngrediente.setPreferredSize(new Dimension(170, 42));
+            btnNuevoIngrediente.setBackground(PaletaColores.DORADO);
+            btnNuevoIngrediente.setForeground(PaletaColores.MARRON_OSCURO);
+            btnNuevoIngrediente.setFont(new Font("Segoe UI", Font.BOLD, 13));
+            btnNuevoIngrediente.addActionListener(e -> coordinador.mostrarNuevoIngrediente());
+
+            JPanel panelBoton = new JPanel();
+            panelBoton.setOpaque(false);
+            panelBoton.add(btnNuevoIngrediente);
+            superior.add(panelBoton, BorderLayout.EAST);
+        }
 
         return superior;
     }
@@ -256,18 +260,24 @@ public class FrmIngredientes extends JFrame {
         tablaIngredientes.getColumnModel().getColumn(4).setCellRenderer(centrado);
 
         tablaIngredientes.addMouseListener(new MouseAdapter() {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            int filaSeleccionada = tablaIngredientes.getSelectedRow();
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int fila = tablaIngredientes.getSelectedRow();
+                if (fila == -1) return;
 
-            if (filaSeleccionada == -1) return;
-            
-            if (e.getClickCount() == 2) {
-                Long idIngrediente = (Long) modeloTabla.getValueAt(filaSeleccionada, 0);
-                coordinador.mostrarEditarIngrediente(idIngrediente);
+                if (e.getClickCount() == 2) {
+                    Long id = (Long) modeloTabla.getValueAt(fila, 0);
+                    
+                    if (modoSeleccion) {
+                        // ENVIAR EL INGREDIENTE A LA LISTA DE PRODUCTOS
+                        enviarIngredienteAProducto(id);
+                    } else {
+                        // ABRIR PANTALLA DE EDICIÓN
+                        coordinador.mostrarEditarIngrediente(id);
+                    }
+                }
             }
-        }
-    });
+        });
 
         JScrollPane scroll = new JScrollPane(tablaIngredientes);
         scroll.setBorder(BorderFactory.createEmptyBorder());
@@ -276,6 +286,19 @@ public class FrmIngredientes extends JFrame {
         scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         return scroll;
+    }
+    
+    private void enviarIngredienteAProducto(Long id) {
+        IngredienteDTO seleccionado = ingredientes.stream()
+                .filter(i -> i.getIdIngrediente().equals(id))
+                .findFirst()
+                .orElse(null);
+
+        if (seleccionado != null) {
+            // Mandamos el ingrediente al coordinador para que se agregue al producto
+            // Cerramos la ventana de selección para regresar a la de productos
+            this.dispose();
+        }
     }
 
     private void cargarIngredientes() {
