@@ -2,21 +2,28 @@ package Controlador;
 
 import BOs.ClienteFrecuenteBO;
 import BOs.IngredienteBO;
+import BOs.ProductoBO;
 import Pantallas.FrmClientesFrecuentes;
 import Pantallas.FrmEditarClienteFrecuente;
 import Pantallas.FrmEditarIngrediente;
+import Pantallas.FrmEditarProducto;
 import Pantallas.FrmIngredientes;
 import Pantallas.FrmMenuAcceso;
 import Pantallas.FrmNuevoIngrediente;
+import Pantallas.FrmNuevoProducto;
+import Pantallas.FrmProductos;
 import Pantallas.FrmRegistrarClienteFrecuente;
 import dtos.ClienteFrecuenteDTO;
 import dtos.IngredienteDTO;
+import dtos.ProductoDTO;
 import enums.UnidadMedida;
+import enumsDTO.TipoProductoDTO;
 import java.util.List;
+import javax.swing.JOptionPane;
 
 /**
- * Clase Controladora central del sistema Restaurante Le Pusse. Gestiona la
- * navegación entre pantallas y la comunicación con la lógica de negocio.
+ * Clase controladora central del sistema Restaurante Le Pusse.
+ * Gestiona la navegación entre pantallas y la comunicación con la lógica de negocio.
  *
  * @author Mariana, Isaac y Regina
  */
@@ -25,23 +32,29 @@ public class Coordinador {
     // Capa Negocio (BOs)
     private final ClienteFrecuenteBO clienteFrecuenteBO;
     private final IngredienteBO ingredienteBO;
+    private final ProductoBO productoBO;
 
-    // Capa de Presentación (Pantallas)
+    // Capa Presentación (Pantallas)
     private FrmMenuAcceso frmMenuAcceso;
     private FrmClientesFrecuentes frmGestionarClientesFrecuentes;
     private FrmRegistrarClienteFrecuente frmRegistrarClientesFrecuentes;
     private FrmEditarClienteFrecuente frmEditarClienteFrecuente;
+
     private FrmIngredientes frmIngredientes;
     private FrmNuevoIngrediente frmNuevoIngrediente;
     private FrmEditarIngrediente frmEditarIngrediente;
 
+    private FrmProductos frmProductos;
+    private FrmNuevoProducto frmNuevoProducto;
+    private FrmEditarProducto frmEditarProducto;
 
     /**
-     * Constructor que inicializa la instancia de la lógica de negocio.
+     * Constructor que inicializa la lógica de negocio.
      */
     public Coordinador() {
         this.clienteFrecuenteBO = ClienteFrecuenteBO.getInstance();
         this.ingredienteBO = IngredienteBO.getInstance();
+        this.productoBO = ProductoBO.getInstance();
     }
 
     /**
@@ -55,15 +68,33 @@ public class Coordinador {
     }
 
     /**
+     * Cierra la sesión actual y regresa al menú de acceso.
+     */
+    public void cerrarSesion() {
+        ocultarTodasLasPantallas();
+
+        if (frmMenuAcceso == null) {
+            frmMenuAcceso = new FrmMenuAcceso(this);
+        }
+
+        frmMenuAcceso.setVisible(true);
+        frmMenuAcceso.toFront();
+    }
+
+    // =========================================================
+    // CLIENTES FRECUENTES
+    // =========================================================
+
+    /**
      * Hace visible la pantalla principal de gestión de clientes frecuentes.
      */
     public void mostrarGestionarClientesFrecuentes() {
-        
         ocultarTodasLasPantallas();
-        
+
         if (frmGestionarClientesFrecuentes == null) {
             frmGestionarClientesFrecuentes = new FrmClientesFrecuentes(this);
         }
+
         frmGestionarClientesFrecuentes.setVisible(true);
         frmGestionarClientesFrecuentes.toFront();
         frmGestionarClientesFrecuentes.recargarTabla();
@@ -73,18 +104,18 @@ public class Coordinador {
      * Muestra la pantalla para registrar un nuevo cliente frecuente.
      */
     public void mostrarRegistroClienteFrecuente() {
-        
         ocultarTodasLasPantallas();
-        
+
         if (frmRegistrarClientesFrecuentes == null) {
             frmRegistrarClientesFrecuentes = new FrmRegistrarClienteFrecuente(this);
         }
+
         frmRegistrarClientesFrecuentes.setVisible(true);
         frmRegistrarClientesFrecuentes.toFront();
     }
 
     /**
-     * Cierra la pantalla de registro y regresa a la gestión de clientes.
+     * Regresa a la pantalla de gestión de clientes frecuentes desde registro.
      */
     public void regresarAGestionClientes() {
         if (frmRegistrarClientesFrecuentes != null) {
@@ -92,6 +123,7 @@ public class Coordinador {
             frmRegistrarClientesFrecuentes.dispose();
             frmRegistrarClientesFrecuentes = null;
         }
+
         if (frmGestionarClientesFrecuentes != null) {
             frmGestionarClientesFrecuentes.setVisible(true);
             frmGestionarClientesFrecuentes.toFront();
@@ -100,8 +132,7 @@ public class Coordinador {
     }
 
     /**
-     * Finaliza la ventana de edición y retorna a la vista de gestión, liberando
-     * recursos de memoria.
+     * Regresa a la pantalla de gestión de clientes frecuentes desde edición.
      */
     public void regresarDesdeEditarCliente() {
         if (frmEditarClienteFrecuente != null) {
@@ -118,38 +149,24 @@ public class Coordinador {
     }
 
     /**
-     * Cierra la sesión actual y regresa al menú de acceso.
-     */
-    public void cerrarSesion() {
-        
-        ocultarTodasLasPantallas();
-        
-        if (frmMenuAcceso == null) {
-            frmMenuAcceso = new FrmMenuAcceso(this);
-        }
-
-        frmMenuAcceso.setVisible(true);
-    }
-
-    /**
-     * Solicita a la capa de negocio persistir un nuevo cliente frecuente.
+     * Registra un nuevo cliente frecuente.
      *
-     * @param cliente Objeto DTO con la información del cliente.
-     * @throws Exception Si ocurre un error durante el guardado.
+     * @param cliente DTO del cliente frecuente.
+     * @throws Exception Si ocurre un error.
      */
     public void registrarClienteFrecuente(ClienteFrecuenteDTO cliente) throws Exception {
         try {
             clienteFrecuenteBO.guardar(cliente);
         } catch (Exception ex) {
-            throw new Exception(ex);
+            throw new Exception(ex.getMessage(), ex);
         }
     }
 
     /**
-     * Elimina un cliente frecuente del sistema.
+     * Elimina un cliente frecuente.
      *
-     * @param idCliente Identificador del cliente a eliminar.
-     * @throws Exception Si ocurre un error durante la eliminación.
+     * @param idCliente ID del cliente.
+     * @throws Exception Si ocurre un error.
      */
     public void eliminarCliente(Long idCliente) throws Exception {
         try {
@@ -160,10 +177,10 @@ public class Coordinador {
     }
 
     /**
-     * Obtiene la lista completa de clientes frecuentes registrados.
+     * Obtiene todos los clientes frecuentes.
      *
-     * @return Lista de ClienteFrecuenteDTO.
-     * @throws Exception Si falla la consulta en la capa de negocio.
+     * @return Lista de clientes frecuentes.
+     * @throws Exception Si ocurre un error.
      */
     public List<ClienteFrecuenteDTO> obtenerClientesFrecuentes() throws Exception {
         try {
@@ -174,9 +191,9 @@ public class Coordinador {
     }
 
     /**
-     * Busca un cliente por ID y abre el formulario de edición con sus datos.
+     * Abre la pantalla de edición de cliente frecuente.
      *
-     * @param idCliente Identificador único del cliente a editar.
+     * @param idCliente ID del cliente.
      */
     public void mostrarEditarClienteFrecuente(Long idCliente) {
         try {
@@ -186,30 +203,27 @@ public class Coordinador {
                 throw new Exception("No se encontró el cliente seleccionado.");
             }
 
-            if (frmGestionarClientesFrecuentes != null) {
-                frmGestionarClientesFrecuentes.setVisible(false);
-            }
+            ocultarTodasLasPantallas();
 
             frmEditarClienteFrecuente = new FrmEditarClienteFrecuente(this, cliente);
             frmEditarClienteFrecuente.setVisible(true);
             frmEditarClienteFrecuente.toFront();
 
         } catch (Exception ex) {
-            javax.swing.JOptionPane.showMessageDialog(
+            JOptionPane.showMessageDialog(
                     null,
                     "Error al abrir la pantalla de edición: " + ex.getMessage(),
                     "Error",
-                    javax.swing.JOptionPane.ERROR_MESSAGE
+                    JOptionPane.ERROR_MESSAGE
             );
         }
     }
 
     /**
-     * Envía los cambios de un cliente existente a la capa de negocio para su
-     * actualización.
+     * Actualiza un cliente frecuente.
      *
-     * @param cliente DTO con la información actualizada.
-     * @throws Exception Si ocurre un error en la actualización.
+     * @param cliente DTO actualizado.
+     * @throws Exception Si ocurre un error.
      */
     public void actualizarClienteFrecuente(ClienteFrecuenteDTO cliente) throws Exception {
         try {
@@ -220,57 +234,60 @@ public class Coordinador {
     }
 
     /**
-     * Realiza una búsqueda filtrada de clientes frecuentes en tiempo real.
+     * Busca clientes frecuentes por filtro.
      *
-     * @param filtro Cadena de texto (nombre, teléfono o correo).
-     * @return Lista de clientes que coinciden con el filtro.
-     * @throws Exception Si falla la búsqueda en persistencia.
+     * @param filtro Texto de búsqueda.
+     * @return Lista filtrada.
+     * @throws Exception Si ocurre un error.
      */
     public List<ClienteFrecuenteDTO> buscarClientesPorFiltro(String filtro) throws Exception {
         try {
             return clienteFrecuenteBO.buscarPorFiltros(filtro);
-        } catch (Exception e) {
-            throw new Exception("Error al filtrar los clientes.", e);
+        } catch (Exception ex) {
+            throw new Exception("Error al filtrar los clientes.", ex);
         }
     }
+
+    // =========================================================
+    // INGREDIENTES
+    // =========================================================
 
     /**
      * Hace visible la pantalla principal de gestión de ingredientes.
      */
     public void mostrarGestionarIngredientes() {
-        
         ocultarTodasLasPantallas();
-         
+
         if (frmIngredientes == null) {
             frmIngredientes = new FrmIngredientes(this, false);
         }
+
         frmIngredientes.setVisible(true);
         frmIngredientes.toFront();
         frmIngredientes.recargarTabla();
     }
-    
+
     /**
-    * Obtiene la lista completa de ingredientes registrados.
-    *
-    * @return Lista de IngredienteDTO.
-    * @throws Exception Si falla la consulta en la capa de negocio.
-    */
-   public List<IngredienteDTO> obtenerIngredientes() throws Exception {
-       try {
-           return ingredienteBO.buscarPorNombreYUnidad("", null);
-       } catch (Exception ex) {
-           throw new Exception("Error al obtener los ingredientes.", ex);
-       }
-   }
-    
-    /**
-     * Obtiene la lista de ingredientes aplicando filtros opcionales por nombre
-     * y unidad de medida.
+     * Obtiene todos los ingredientes.
      *
-     * @param nombre Nombre o parte del nombre del ingrediente.
-     * @param unidad Unidad de medida seleccionada.
-     * @return Lista de IngredienteDTO.
-     * @throws Exception Si falla la consulta en la capa de negocio.
+     * @return Lista de ingredientes.
+     * @throws Exception Si ocurre un error.
+     */
+    public List<IngredienteDTO> obtenerIngredientes() throws Exception {
+        try {
+            return ingredienteBO.buscarPorNombreYUnidad("", null);
+        } catch (Exception ex) {
+            throw new Exception("Error al obtener los ingredientes.", ex);
+        }
+    }
+
+    /**
+     * Busca ingredientes por nombre y unidad.
+     *
+     * @param nombre Nombre parcial.
+     * @param unidad Unidad de medida.
+     * @return Lista filtrada.
+     * @throws Exception Si ocurre un error.
      */
     public List<IngredienteDTO> buscarIngredientesPorNombreYUnidad(String nombre, UnidadMedida unidad) throws Exception {
         try {
@@ -279,13 +296,13 @@ public class Coordinador {
             throw new Exception("Error al obtener los ingredientes.", ex);
         }
     }
-    
+
     /**
-     * Busca un ingrediente por su identificador único.
+     * Busca un ingrediente por ID.
      *
-     * @param idIngrediente Identificador único del ingrediente.
-     * @return IngredienteDTO encontrado.
-     * @throws Exception Si ocurre un error durante la búsqueda.
+     * @param idIngrediente ID del ingrediente.
+     * @return Ingrediente encontrado.
+     * @throws Exception Si ocurre un error.
      */
     public IngredienteDTO buscarIngredientePorId(Long idIngrediente) throws Exception {
         try {
@@ -294,31 +311,308 @@ public class Coordinador {
             throw new Exception("Error al buscar el ingrediente.", ex);
         }
     }
-    
+
+    /**
+     * Muestra la pantalla de nuevo ingrediente.
+     */
     public void mostrarNuevoIngrediente() {
         ocultarTodasLasPantallas();
 
         if (frmNuevoIngrediente == null) {
             frmNuevoIngrediente = new FrmNuevoIngrediente(this);
         }
+
         frmNuevoIngrediente.setVisible(true);
         frmNuevoIngrediente.toFront();
     }
-    
+
     /**
-    * Solicita a la capa de negocio persistir un nuevo ingrediente.
-    *
-    * @param ingrediente Objeto DTO con la información del ingrediente.
-    * @throws Exception Si ocurre un error durante el guardado.
-    */
-   public void registrarIngrediente(IngredienteDTO ingrediente) throws Exception {
-       try {
-           ingredienteBO.guardar(ingrediente);
-       } catch (Exception ex) {
-           throw new Exception(ex.getMessage());
-       }
-   }
-    
+     * Registra un nuevo ingrediente.
+     *
+     * @param ingrediente DTO del ingrediente.
+     * @throws Exception Si ocurre un error.
+     */
+    public void registrarIngrediente(IngredienteDTO ingrediente) throws Exception {
+        try {
+            ingredienteBO.guardar(ingrediente);
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage(), ex);
+        }
+    }
+
+    /**
+     * Muestra la pantalla de edición de ingrediente.
+     *
+     * @param idIngrediente ID del ingrediente.
+     */
+    public void mostrarEditarIngrediente(Long idIngrediente) {
+        try {
+            IngredienteDTO ingrediente = ingredienteBO.buscarPorId(idIngrediente);
+
+            if (ingrediente == null) {
+                throw new Exception("No se encontró el ingrediente seleccionado.");
+            }
+
+            ocultarTodasLasPantallas();
+
+            frmEditarIngrediente = new FrmEditarIngrediente(this, ingrediente);
+            frmEditarIngrediente.setVisible(true);
+            frmEditarIngrediente.toFront();
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Error al abrir la pantalla de edición: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    /**
+     * Actualiza un ingrediente.
+     *
+     * @param ingrediente DTO actualizado.
+     * @throws Exception Si ocurre un error.
+     */
+    public void actualizarIngrediente(IngredienteDTO ingrediente) throws Exception {
+        try {
+            ingredienteBO.editar(ingrediente);
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage(), ex);
+        }
+    }
+
+    /**
+     * Elimina un ingrediente.
+     *
+     * @param idIngrediente ID del ingrediente.
+     * @throws Exception Si ocurre un error.
+     */
+    public void eliminarIngrediente(Long idIngrediente) throws Exception {
+        try {
+            ingredienteBO.eliminar(idIngrediente);
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage(), ex);
+        }
+    }
+
+    /**
+     * Regresa a la pantalla principal de ingredientes.
+     */
+    public void regresarAGestionIngredientes() {
+        if (frmNuevoIngrediente != null) {
+            frmNuevoIngrediente.setVisible(false);
+            frmNuevoIngrediente.dispose();
+            frmNuevoIngrediente = null;
+        }
+
+        if (frmEditarIngrediente != null) {
+            frmEditarIngrediente.setVisible(false);
+            frmEditarIngrediente.dispose();
+            frmEditarIngrediente = null;
+        }
+
+        if (frmIngredientes != null) {
+            frmIngredientes.setVisible(true);
+            frmIngredientes.toFront();
+            frmIngredientes.recargarTabla();
+        }
+    }
+
+    // =========================================================
+    // PRODUCTOS
+    // =========================================================
+
+    /**
+     * Hace visible la pantalla principal de gestión de productos.
+     */
+    public void mostrarGestionarProductos() {
+        ocultarTodasLasPantallas();
+
+        if (frmProductos == null) {
+            frmProductos = new FrmProductos(this);
+        }
+
+        frmProductos.setVisible(true);
+        frmProductos.toFront();
+        frmProductos.recargarTabla();
+    }
+
+    /**
+     * Muestra la pantalla para registrar un nuevo producto.
+     */
+    public void mostrarNuevoProducto() {
+        ocultarTodasLasPantallas();
+
+        if (frmNuevoProducto == null) {
+            frmNuevoProducto = new FrmNuevoProducto(this);
+        }
+
+        frmNuevoProducto.setVisible(true);
+        frmNuevoProducto.toFront();
+    }
+
+    /**
+     * Regresa a la pantalla principal de productos.
+     */
+    public void regresarAGestionProductos() {
+        if (frmNuevoProducto != null) {
+            frmNuevoProducto.setVisible(false);
+            frmNuevoProducto.dispose();
+            frmNuevoProducto = null;
+        }
+
+        if (frmEditarProducto != null) {
+            frmEditarProducto.setVisible(false);
+            frmEditarProducto.dispose();
+            frmEditarProducto = null;
+        }
+
+        if (frmProductos != null) {
+            frmProductos.setVisible(true);
+            frmProductos.toFront();
+            frmProductos.recargarTabla();
+        }
+    }
+
+    /**
+     * Obtiene todos los productos.
+     *
+     * @return Lista de productos.
+     * @throws Exception Si ocurre un error.
+     */
+    public List<ProductoDTO> obtenerProductos() throws Exception {
+        try {
+            return productoBO.obtenerTodos();
+        } catch (Exception ex) {
+            throw new Exception("Error al obtener los productos.", ex);
+        }
+    }
+
+    /**
+     * Busca productos por nombre y tipo.
+     *
+     * @param nombre Nombre o parte del nombre.
+     * @param tipo Tipo de producto DTO.
+     * @return Lista de productos filtrados.
+     * @throws Exception Si ocurre un error.
+     */
+    public List<ProductoDTO> buscarProductosPorNombreYTipo(String nombre, TipoProductoDTO tipo) throws Exception {
+        try {
+            return productoBO.buscarPorNombreYTipo(nombre, tipo);
+        } catch (Exception ex) {
+            throw new Exception("Error al buscar productos.", ex);
+        }
+    }
+
+    /**
+     * Registra un nuevo producto.
+     *
+     * @param producto DTO del producto.
+     * @throws Exception Si ocurre un error.
+     */
+    public void registrarProducto(ProductoDTO producto) throws Exception {
+        try {
+            productoBO.guardar(producto);
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage(), ex);
+        }
+    }
+
+    /**
+     * Muestra la pantalla de edición de producto.
+     *
+     * @param idProducto ID del producto.
+     */
+    public void mostrarEditarProducto(Long idProducto) {
+        try {
+            ProductoDTO producto = productoBO.buscarPorId(idProducto);
+
+            if (producto == null) {
+                throw new Exception("No se encontró el producto seleccionado.");
+            }
+
+            ocultarTodasLasPantallas();
+
+            frmEditarProducto = new FrmEditarProducto(this, producto);
+            frmEditarProducto.setVisible(true);
+            frmEditarProducto.toFront();
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Error al abrir la pantalla de edición: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    /**
+     * Actualiza un producto.
+     *
+     * @param producto DTO actualizado.
+     * @throws Exception Si ocurre un error.
+     */
+    public void actualizarProducto(ProductoDTO producto) throws Exception {
+        try {
+            productoBO.editar(producto);
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage(), ex);
+        }
+    }
+
+    /**
+     * Elimina un producto.
+     *
+     * @param idProducto ID del producto.
+     * @throws Exception Si ocurre un error.
+     */
+    public void eliminarProducto(Long idProducto) throws Exception {
+        try {
+            productoBO.eliminar(idProducto);
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage(), ex);
+        }
+    }
+
+    /**
+     * Cambia el estado activo/inactivo de un producto.
+     *
+     * @param idProducto ID del producto.
+     * @param activo Nuevo estado.
+     * @throws Exception Si ocurre un error.
+     */
+    public void cambiarEstadoProducto(Long idProducto, Boolean activo) throws Exception {
+        try {
+            productoBO.cambiarEstadoActivo(idProducto, activo);
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage(), ex);
+        }
+    }
+
+    /**
+     * Actualiza la disponibilidad de un producto.
+     *
+     * @param idProducto ID del producto.
+     * @throws Exception Si ocurre un error.
+     */
+    public void actualizarDisponibilidadProducto(Long idProducto) throws Exception {
+        try {
+            productoBO.actualizarDisponibilidad(idProducto);
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage(), ex);
+        }
+    }
+
+    // =========================================================
+    // UTILIDAD GENERAL
+    // =========================================================
+
+    /**
+     * Oculta todas las pantallas activas del sistema.
+     */
     private void ocultarTodasLasPantallas() {
         if (frmMenuAcceso != null) {
             frmMenuAcceso.setVisible(false);
@@ -339,72 +633,16 @@ public class Coordinador {
             frmNuevoIngrediente.setVisible(false);
         }
         if (frmEditarIngrediente != null) {
-        frmEditarIngrediente.setVisible(false);
-        frmEditarIngrediente.dispose();
-        frmEditarIngrediente = null;
-    }
-    }
-    
-    /**
-     * Busca un ingrediente por ID y abre el formulario de edición.
-     * @param idIngrediente Identificador del ingrediente a editar.
-     */
-    public void mostrarEditarIngrediente(Long idIngrediente) {
-        try {
-            IngredienteDTO ingrediente = ingredienteBO.buscarPorId(idIngrediente);
-
-            if (ingrediente == null) {
-                throw new Exception("No se encontró el ingrediente seleccionado.");
-            }
-
-            ocultarTodasLasPantallas();
-
-            frmEditarIngrediente = new FrmEditarIngrediente(this, ingrediente);
-            frmEditarIngrediente.setVisible(true);
-            frmEditarIngrediente.toFront();
-
-        } catch (Exception ex) {
-            javax.swing.JOptionPane.showMessageDialog(
-                    null,
-                    "Error al abrir la pantalla de edición: " + ex.getMessage(),
-                    "Error",
-                    javax.swing.JOptionPane.ERROR_MESSAGE
-            );
+            frmEditarIngrediente.setVisible(false);
+        }
+        if (frmProductos != null) {
+            frmProductos.setVisible(false);
+        }
+        if (frmNuevoProducto != null) {
+            frmNuevoProducto.setVisible(false);
+        }
+        if (frmEditarProducto != null) {
+            frmEditarProducto.setVisible(false);
         }
     }
-
-    /**
-     * Envía los cambios de un ingrediente a la capa de negocio para su actualización.
-     * @param ingrediente DTO con la información actualizada.
-     * @throws Exception Si ocurre un error en la validación o persistencia.
-     */
-    public void actualizarIngrediente(IngredienteDTO ingrediente) throws Exception {
-        try {
-            ingredienteBO.editar(ingrediente);
-        } catch (Exception ex) {
-            throw new Exception(ex.getMessage());
-        }
-    }
-
-    /**
-     * Elimina un ingrediente del sistema.
-     * @param idIngrediente ID del ingrediente a borrar.
-     * @throws Exception Si el ingrediente está siendo usado o no existe.
-     */
-    public void eliminarIngrediente(Long idIngrediente) throws Exception {
-        try {
-            ingredienteBO.eliminar(idIngrediente);
-        } catch (Exception ex) {
-            throw new Exception(ex.getMessage());
-        }
-    }
-
-    /**
-     * Regresa a la pantalla principal de ingredientes y refresca la tabla.
-     */
-    public void regresarAGestionIngredientes() {
-        ocultarTodasLasPantallas();
-        mostrarGestionarIngredientes();
-    }
-    
 }
