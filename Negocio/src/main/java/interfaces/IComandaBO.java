@@ -5,13 +5,14 @@
 package interfaces;
 
 import dtos.ComandaDTO;
+import dtos.MesaDTO;
 import excepciones.NegocioException;
 import java.util.List;
 
 /**
  * Interfaz para la lógica de negocio de la entidad Comanda. Define las
- * operaciones básicas para guardar, consultar, actualizar, eliminar y buscar
- * comandas dentro del sistema.
+ * operaciones necesarias para registrar, consultar, editar, entregar, cancelar
+ * y buscar comandas dentro del sistema, así como la gestión básica de mesas.
  *
  * @author regina, mariana e isaac.
  */
@@ -45,14 +46,22 @@ public interface IComandaBO {
     public ComandaDTO editar(ComandaDTO comandaDTO) throws NegocioException;
 
     /**
-     * Elimina una comanda del sistema.
+     * Marca una comanda como entregada dentro del sistema.
      *
-     * @param id Identificador único de la comanda a eliminar.
-     * @return true si la comanda fue eliminada correctamente, false en caso
-     * contrario.
-     * @throws NegocioException Si ocurre un error durante la eliminación.
+     * @param id Identificador único de la comanda.
+     * @return Comanda actualizada con estado entregada.
+     * @throws NegocioException Si ocurre un error durante la operación.
      */
-    public boolean eliminar(Long id) throws NegocioException;
+    public ComandaDTO entregar(Long id) throws NegocioException;
+
+    /**
+     * Marca una comanda como cancelada dentro del sistema.
+     *
+     * @param id Identificador único de la comanda.
+     * @return Comanda actualizada con estado cancelada.
+     * @throws NegocioException Si ocurre un error durante la operación.
+     */
+    public ComandaDTO cancelar(Long id) throws NegocioException;
 
     /**
      * Busca comandas que coincidan con el filtro proporcionado.
@@ -61,5 +70,14 @@ public interface IComandaBO {
      * @return Lista de comandas que coinciden con el filtro.
      * @throws NegocioException Si ocurre un error durante la búsqueda.
      */
-    List<ComandaDTO> buscarPorFiltros(String filtro) throws NegocioException;
+    public List<ComandaDTO> buscarPorFiltros(String filtro) throws NegocioException;
+
+    /**
+     * Obtiene la lista de mesas disponibles dentro del sistema.
+     *
+     * @return Lista de mesas disponibles.
+     * @throws NegocioException Si ocurre un error durante la consulta.
+     */
+    public List<MesaDTO> obtenerMesasDisponibles() throws NegocioException;
+
 }
