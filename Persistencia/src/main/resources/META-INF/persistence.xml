@@ -5,6 +5,8 @@
     <class>entidades.Cliente</class>
     <class>entidades.ClienteFrecuente</class>
     <class>entidades.Ingrediente</class>
+    <class>entidades.DetalleProductoIngrediente</class>
+    <class>entidades.Producto</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/LePusse?zeroDateTimeBehavior=CONVERT_TO_NULL"/>
       <property name="javax.persistence.jdbc.user" value="root"/>

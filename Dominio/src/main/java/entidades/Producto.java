@@ -168,7 +168,13 @@ public class Producto implements Serializable{
     }
 
     public void setDetallesIngredientes(List<DetalleProductoIngrediente> detallesIngredientes) {
-        this.detallesIngredientes = detallesIngredientes;
+        this.detallesIngredientes.clear();
+
+        if (detallesIngredientes != null) {
+            for (DetalleProductoIngrediente detalle : detallesIngredientes) {
+                agregarDetalleIngrediente(detalle);
+            }
+        }
     }
 
     /**
