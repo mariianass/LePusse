@@ -420,10 +420,6 @@ public class Coordinador {
         }
     }
 
-    // =========================================================
-    // PRODUCTOS
-    // =========================================================
-
     /**
      * Hace visible la pantalla principal de gestión de productos.
      */

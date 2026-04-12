@@ -153,6 +153,9 @@ public class MenuLateralPanel extends JPanel{
         if (texto.equals("Clientes Frecuentes")) {
             boton.addActionListener(e -> coordinador.mostrarGestionarClientesFrecuentes());
         }
+        if (texto.equals("Productos")) {
+            boton.addActionListener(e -> coordinador.mostrarGestionarProductos());
+        }
 
         boton.setAlignmentX(Component.LEFT_ALIGNMENT);
         return boton;
