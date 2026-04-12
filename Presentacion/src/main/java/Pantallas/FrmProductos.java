@@ -278,6 +278,10 @@ public class FrmProductos extends JFrame {
             modeloTabla.setRowCount(0);
 
             List<ProductoDTO> productos = coordinador.obtenerProductos();
+            
+            if (productos == null || productos.isEmpty()){
+                return;
+            }
 
             for (ProductoDTO producto : productos) {
                 modeloTabla.addRow(new Object[]{
@@ -292,12 +296,7 @@ public class FrmProductos extends JFrame {
             }
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Error al cargar los productos: " + e.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
+            System.err.println("Error al cargar productos: " + e.getMessage());
         }
     }
 
@@ -319,6 +318,10 @@ public class FrmProductos extends JFrame {
             modeloTabla.setRowCount(0);
 
             List<ProductoDTO> productosFiltrados = coordinador.buscarProductosPorNombreYTipo(texto, tipoDTO);
+            
+            if (productosFiltrados == null || productosFiltrados.isEmpty()){
+                return;
+            }
 
             for (ProductoDTO producto : productosFiltrados) {
                 modeloTabla.addRow(new Object[]{
@@ -333,12 +336,8 @@ public class FrmProductos extends JFrame {
             }
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Error al filtrar los productos: " + e.getMessage(),
-                    "Error de Búsqueda",
-                    JOptionPane.ERROR_MESSAGE
-            );
+            System.err.println("Error al cargar productos: " + e.getMessage());
+    
         }
     }
 

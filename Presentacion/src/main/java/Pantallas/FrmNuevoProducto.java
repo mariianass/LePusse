@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package Pantallas;
 
 import Componentes.BotonRedondeado;
@@ -10,6 +6,7 @@ import Controlador.Coordinador;
 import Estilos.Dimensiones;
 import Estilos.PaletaColores;
 import dtos.DetalleProductoIngredienteDTO;
+import dtos.IngredienteDTO;
 import dtos.ProductoDTO;
 import enumsDTO.DisponibilidadProductoDTO;
 import enumsDTO.TipoProductoDTO;
@@ -25,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -34,14 +32,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 
-/**
- * Pantalla para registrar un nuevo producto.
- *
- * @author regina, mariana e isaac
- */
 public class FrmNuevoProducto extends JFrame {
 
     private final Coordinador coordinador;
@@ -98,17 +95,26 @@ public class FrmNuevoProducto extends JFrame {
     }
 
     private JPanel crearPanelFormulario() {
-        JPanel formulario = new JPanel(new GridBagLayout());
+        JPanel formulario = new JPanel();
+        formulario.setLayout(new BorderLayout());
         formulario.setBackground(PaletaColores.BLANCO_SUAVE);
         formulario.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(215, 205, 195), 1),
-                new EmptyBorder(20, 24, 18, 24)
+                new EmptyBorder(24, 28, 22, 28)
         ));
+
+        JPanel contenidoVertical = new JPanel();
+        contenidoVertical.setOpaque(false);
+        contenidoVertical.setLayout(new javax.swing.BoxLayout(contenidoVertical, javax.swing.BoxLayout.Y_AXIS));
+
+        JPanel panelSuperior = new JPanel(new GridBagLayout());
+        panelSuperior.setOpaque(false);
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(8, 12, 8, 12);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
 
         JLabel lblTitulo = new JLabel("Nuevo Producto");
         lblTitulo.setFont(new Font("Segoe UI", Font.PLAIN, 20));
@@ -117,8 +123,7 @@ public class FrmNuevoProducto extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
-        formulario.add(lblTitulo, gbc);
-
+        panelSuperior.add(lblTitulo, gbc);
         gbc.gridwidth = 1;
 
         txtNombreProducto = new JTextField();
@@ -133,17 +138,16 @@ public class FrmNuevoProducto extends JFrame {
         estilizarCampo(txtRutaImagen);
         estilizarAreaTexto(txtDescripcion);
 
-        agregarCampo(formulario, gbc, 0, 1, "Nombre del Producto", true, txtNombreProducto);
-        agregarCampo(formulario, gbc, 1, 1, "Precio", true, txtPrecio);
-
-        agregarCampo(formulario, gbc, 0, 3, "Tipo de Producto", true, cmbTipoProducto);
+        agregarCampo(panelSuperior, gbc, 0, 1, "Nombre del Producto", true, txtNombreProducto);
+        agregarCampo(panelSuperior, gbc, 1, 1, "Precio", true, txtPrecio);
+        agregarCampo(panelSuperior, gbc, 0, 3, "Tipo de Producto", true, cmbTipoProducto);
 
         JPanel panelFoto = new JPanel(new BorderLayout(8, 0));
         panelFoto.setOpaque(false);
         txtRutaImagen.setEditable(false);
 
         BotonRedondeado btnSeleccionarFoto = new BotonRedondeado("Seleccionar Foto", 18);
-        btnSeleccionarFoto.setPreferredSize(new Dimension(150, 35));
+        btnSeleccionarFoto.setPreferredSize(new Dimension(165, 35));
         btnSeleccionarFoto.setBackground(PaletaColores.DORADO);
         btnSeleccionarFoto.setForeground(PaletaColores.MARRON_OSCURO);
         btnSeleccionarFoto.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -152,25 +156,34 @@ public class FrmNuevoProducto extends JFrame {
         panelFoto.add(txtRutaImagen, BorderLayout.CENTER);
         panelFoto.add(btnSeleccionarFoto, BorderLayout.EAST);
 
-        agregarCampo(formulario, gbc, 1, 3, "Foto del Producto", false, panelFoto);
+        agregarCampo(panelSuperior, gbc, 1, 3, "Foto del Producto", false, panelFoto);
 
         gbc.gridx = 0;
         gbc.gridy = 5;
         gbc.gridwidth = 2;
         gbc.insets = new Insets(10, 12, 4, 12);
-        formulario.add(crearEtiqueta("Descripción", true), gbc);
+        panelSuperior.add(crearEtiqueta("Descripción", true), gbc);
+
+        JScrollPane scrollDescripcion = new JScrollPane(txtDescripcion);
+        scrollDescripcion.setPreferredSize(new Dimension(0, 120));
+        scrollDescripcion.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
+        scrollDescripcion.setBorder(BorderFactory.createLineBorder(PaletaColores.LINEA_SUAVE, 1));
+        scrollDescripcion.getViewport().setBackground(PaletaColores.BLANCO);
 
         gbc.gridy = 6;
         gbc.insets = new Insets(0, 12, 8, 12);
-        formulario.add(new JScrollPane(txtDescripcion), gbc);
+        panelSuperior.add(scrollDescripcion, gbc);
 
-        gbc.gridy = 7;
-        gbc.insets = new Insets(14, 12, 4, 12);
-        formulario.add(crearEtiquetaSimple("Ingredientes Requeridos"), gbc);
+        panelSuperior.setAlignmentX(LEFT_ALIGNMENT);
 
-        gbc.gridy = 8;
-        gbc.insets = new Insets(0, 12, 8, 12);
-        formulario.add(crearPanelIngredientes(), gbc);
+        JPanel panelIngredientes = crearPanelIngredientes();
+        panelIngredientes.setAlignmentX(LEFT_ALIGNMENT);
+
+        contenidoVertical.add(panelSuperior);
+        contenidoVertical.add(javax.swing.Box.createVerticalStrut(18));
+        contenidoVertical.add(panelIngredientes);
+
+        formulario.add(contenidoVertical, BorderLayout.CENTER);
 
         JPanel panelBotones = new JPanel();
         panelBotones.setOpaque(false);
@@ -192,34 +205,36 @@ public class FrmNuevoProducto extends JFrame {
         panelBotones.add(btnCancelar);
         panelBotones.add(btnGuardar);
 
-        gbc.gridy = 9;
-        gbc.insets = new Insets(18, 12, 0, 12);
-        formulario.add(panelBotones, gbc);
+        formulario.add(panelBotones, BorderLayout.SOUTH);
 
         return formulario;
     }
 
     private JPanel crearPanelIngredientes() {
-        JPanel panel = new JPanel(new BorderLayout(0, 10));
-        panel.setOpaque(false);
+        JPanel contenedor = new JPanel(new BorderLayout(0, 10));
+        contenedor.setOpaque(false);
+        contenedor.setBorder(new EmptyBorder(8, 12, 0, 12));
+        contenedor.setPreferredSize(new Dimension(0, 260));
+        contenedor.setMaximumSize(new Dimension(Integer.MAX_VALUE, 260));
+        contenedor.setMinimumSize(new Dimension(0, 260));
+
+        JLabel lblIngredientes = crearEtiquetaSimple("Ingredientes Requeridos");
 
         BotonRedondeado btnAgregarIngrediente = new BotonRedondeado("Agregar Ingrediente +", 18);
-        btnAgregarIngrediente.setPreferredSize(new Dimension(190, 38));
+        btnAgregarIngrediente.setPreferredSize(new Dimension(230, 42));
         btnAgregarIngrediente.setBackground(PaletaColores.DORADO);
         btnAgregarIngrediente.setForeground(PaletaColores.MARRON_OSCURO);
         btnAgregarIngrediente.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnAgregarIngrediente.addActionListener(e -> {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Aquí después conectaremos la selección de ingredientes.",
-                    "Pendiente",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-        });
+        btnAgregarIngrediente.addActionListener(e -> abrirSeleccionIngrediente());
 
-        JPanel panelSuperior = new JPanel(new BorderLayout());
-        panelSuperior.setOpaque(false);
-        panelSuperior.add(btnAgregarIngrediente, BorderLayout.WEST);
+        JPanel parteSuperior = new JPanel(new BorderLayout(0, 8));
+        parteSuperior.setOpaque(false);
+        parteSuperior.add(lblIngredientes, BorderLayout.NORTH);
+
+        JPanel filaBoton = new JPanel(new BorderLayout());
+        filaBoton.setOpaque(false);
+        filaBoton.add(btnAgregarIngrediente, BorderLayout.WEST);
+        parteSuperior.add(filaBoton, BorderLayout.SOUTH);
 
         String[] columnas = {"Nombre", "Unidad de Medida", "Cantidad Requerida"};
         modeloIngredientes = new DefaultTableModel(null, columnas) {
@@ -230,18 +245,246 @@ public class FrmNuevoProducto extends JFrame {
         };
 
         tablaIngredientes = new JTable(modeloIngredientes);
-        tablaIngredientes.setRowHeight(35);
-        tablaIngredientes.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        tablaIngredientes.setRowHeight(32);
+        tablaIngredientes.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         tablaIngredientes.setForeground(PaletaColores.TEXTO_MARRON);
         tablaIngredientes.setBackground(PaletaColores.BLANCO);
+        tablaIngredientes.setShowVerticalLines(true);
+        tablaIngredientes.setShowHorizontalLines(true);
+        tablaIngredientes.setGridColor(PaletaColores.LINEA_SUAVE);
+        tablaIngredientes.setFillsViewportHeight(true);
+        tablaIngredientes.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-        JScrollPane scroll = new JScrollPane(tablaIngredientes);
-        scroll.setPreferredSize(new Dimension(600, 160));
+        javax.swing.table.JTableHeader header = tablaIngredientes.getTableHeader();
+        header.setPreferredSize(new Dimension(0, 30));
+        header.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        header.setReorderingAllowed(false);
 
-        panel.add(panelSuperior, BorderLayout.NORTH);
-        panel.add(scroll, BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(
+                tablaIngredientes,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+        );
+        scroll.setBorder(BorderFactory.createLineBorder(PaletaColores.LINEA_SUAVE, 1));
+        scroll.getViewport().setBackground(PaletaColores.BLANCO);
+        scroll.setPreferredSize(new Dimension(0, 180));
+        scroll.setMinimumSize(new Dimension(0, 180));
 
-        return panel;
+        contenedor.add(parteSuperior, BorderLayout.NORTH);
+        contenedor.add(scroll, BorderLayout.CENTER);
+
+        return contenedor;
+    }
+
+    private void abrirSeleccionIngrediente() {
+        try {
+            List<IngredienteDTO> ingredientes = coordinador.obtenerIngredientes();
+
+            if (ingredientes == null || ingredientes.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "No hay ingredientes registrados para seleccionar.",
+                        "Ingredientes",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+                return;
+            }
+
+            JDialog dialogo = new JDialog(this, "Seleccionar Ingrediente", true);
+            dialogo.setSize(700, 420);
+            dialogo.setLocationRelativeTo(this);
+            dialogo.setLayout(new BorderLayout());
+
+            JPanel contenedor = new JPanel(new BorderLayout(10, 10));
+            contenedor.setBorder(new EmptyBorder(15, 15, 15, 15));
+            contenedor.setBackground(PaletaColores.BLANCO_SUAVE);
+
+            String[] columnas = {"ID", "Nombre", "Unidad de Medida", "Stock Actual"};
+            DefaultTableModel modeloSeleccion = new DefaultTableModel(null, columnas) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
+
+            JTable tablaSeleccion = new JTable(modeloSeleccion);
+            tablaSeleccion.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            tablaSeleccion.setRowHeight(30);
+            tablaSeleccion.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+
+            for (IngredienteDTO ingrediente : ingredientes) {
+                modeloSeleccion.addRow(new Object[]{
+                    ingrediente.getIdIngrediente(),
+                    ingrediente.getNombre(),
+                    ingrediente.getUnidadMedida() != null ? ingrediente.getUnidadMedida().toString() : "-",
+                    ingrediente.getStockActual() != null ? ingrediente.getStockActual() : 0
+                });
+            }
+
+            tablaSeleccion.getColumnModel().getColumn(0).setMinWidth(0);
+            tablaSeleccion.getColumnModel().getColumn(0).setMaxWidth(0);
+            tablaSeleccion.getColumnModel().getColumn(0).setPreferredWidth(0);
+
+            JScrollPane scroll = new JScrollPane(tablaSeleccion);
+
+            JPanel panelBotones = new JPanel();
+            panelBotones.setOpaque(false);
+
+            BotonRedondeado btnCancelar = new BotonRedondeado("Cancelar", 18);
+            btnCancelar.setPreferredSize(new Dimension(120, 38));
+            btnCancelar.setBackground(new Color(232, 216, 182));
+            btnCancelar.setForeground(PaletaColores.TEXTO_MARRON);
+            btnCancelar.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            btnCancelar.addActionListener(e -> dialogo.dispose());
+
+            BotonRedondeado btnAgregar = new BotonRedondeado("Agregar", 18);
+            btnAgregar.setPreferredSize(new Dimension(120, 38));
+            btnAgregar.setBackground(PaletaColores.MARRON_OSCURO);
+            btnAgregar.setForeground(PaletaColores.BLANCO);
+            btnAgregar.setFont(new Font("Segoe UI", Font.BOLD, 12));
+            btnAgregar.addActionListener(e -> {
+                int filaSeleccionada = tablaSeleccion.getSelectedRow();
+
+                if (filaSeleccionada == -1) {
+                    JOptionPane.showMessageDialog(
+                            dialogo,
+                            "Selecciona un ingrediente.",
+                            "Validación",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+                    return;
+                }
+
+                Long idIngrediente = (Long) modeloSeleccion.getValueAt(filaSeleccionada, 0);
+                IngredienteDTO ingredienteSeleccionado = buscarIngredientePorIdEnLista(ingredientes, idIngrediente);
+
+                if (ingredienteSeleccionado == null) {
+                    JOptionPane.showMessageDialog(
+                            dialogo,
+                            "No se pudo recuperar el ingrediente seleccionado.",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                    return;
+                }
+
+                String cantidadTexto = JOptionPane.showInputDialog(
+                        dialogo,
+                        "Ingrese la cantidad requerida para \"" + ingredienteSeleccionado.getNombre() + "\":"
+                );
+
+                if (cantidadTexto == null) {
+                    return;
+                }
+
+                cantidadTexto = cantidadTexto.trim();
+
+                if (cantidadTexto.isEmpty()) {
+                    JOptionPane.showMessageDialog(
+                            dialogo,
+                            "La cantidad requerida es obligatoria.",
+                            "Validación",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+                    return;
+                }
+
+                try {
+                    Integer cantidad = Integer.valueOf(cantidadTexto);
+
+                    if (cantidad <= 0) {
+                        JOptionPane.showMessageDialog(
+                                dialogo,
+                                "La cantidad requerida debe ser mayor que cero.",
+                                "Validación",
+                                JOptionPane.WARNING_MESSAGE
+                        );
+                        return;
+                    }
+
+                    agregarDetalleIngrediente(ingredienteSeleccionado, cantidad);
+                    dialogo.dispose();
+
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(
+                            dialogo,
+                            "La cantidad requerida debe ser un número entero válido.",
+                            "Validación",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+                }
+            });
+
+            panelBotones.add(btnCancelar);
+            panelBotones.add(btnAgregar);
+
+            contenedor.add(scroll, BorderLayout.CENTER);
+            contenedor.add(panelBotones, BorderLayout.SOUTH);
+
+            dialogo.add(contenedor, BorderLayout.CENTER);
+            dialogo.setVisible(true);
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No se pudieron cargar los ingredientes: " + obtenerMensajeRaiz(e),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    private IngredienteDTO buscarIngredientePorIdEnLista(List<IngredienteDTO> ingredientes, Long idIngrediente) {
+        for (IngredienteDTO ingrediente : ingredientes) {
+            if (ingrediente.getIdIngrediente() != null && ingrediente.getIdIngrediente().equals(idIngrediente)) {
+                return ingrediente;
+            }
+        }
+        return null;
+    }
+
+    private void agregarDetalleIngrediente(IngredienteDTO ingrediente, Integer cantidadRequerida) {
+        for (DetalleProductoIngredienteDTO detalle : detallesIngredientes) {
+            if (detalle.getIngrediente() != null
+                    && detalle.getIngrediente().getIdIngrediente() != null
+                    && detalle.getIngrediente().getIdIngrediente().equals(ingrediente.getIdIngrediente())) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Ese ingrediente ya fue agregado al producto.",
+                        "Ingrediente duplicado",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+        }
+
+        DetalleProductoIngredienteDTO nuevoDetalle = new DetalleProductoIngredienteDTO();
+        nuevoDetalle.setIdDetalleProductoIngrediente(null);
+        nuevoDetalle.setIngrediente(ingrediente);
+        nuevoDetalle.setCantidadRequerida(cantidadRequerida);
+
+        detallesIngredientes.add(nuevoDetalle);
+        recargarTablaIngredientes();
+    }
+
+    private void recargarTablaIngredientes() {
+        modeloIngredientes.setRowCount(0);
+
+        for (DetalleProductoIngredienteDTO detalle : detallesIngredientes) {
+            IngredienteDTO ingrediente = detalle.getIngrediente();
+
+            modeloIngredientes.addRow(new Object[]{
+                ingrediente != null ? ingrediente.getNombre() : "-",
+                ingrediente != null && ingrediente.getUnidadMedida() != null
+                        ? ingrediente.getUnidadMedida().toString()
+                        : "-",
+                detalle.getCantidadRequerida()
+            });
+        }
+
+        tablaIngredientes.revalidate();
+        tablaIngredientes.repaint();
     }
 
     private void seleccionarImagen() {
@@ -256,10 +499,46 @@ public class FrmNuevoProducto extends JFrame {
 
     private void guardarProducto() {
         try {
+            String nombre = txtNombreProducto.getText().trim();
+            String descripcion = txtDescripcion.getText().trim();
+            String precioTexto = txtPrecio.getText().trim();
+
+            if (nombre.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "El nombre del producto es obligatorio.", "Validación", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (precioTexto.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "El precio es obligatorio.", "Validación", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (descripcion.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "La descripción es obligatoria.", "Validación", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (detallesIngredientes.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Debes agregar al menos un ingrediente al producto.",
+                        "Validación",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+
+            Double precio = Double.valueOf(precioTexto);
+
+            if (precio <= 0) {
+                JOptionPane.showMessageDialog(this, "El precio debe ser mayor que cero.", "Validación", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
             ProductoDTO producto = new ProductoDTO();
-            producto.setNombre(txtNombreProducto.getText().trim());
-            producto.setDescripcion(txtDescripcion.getText().trim());
-            producto.setPrecio(Double.valueOf(txtPrecio.getText().trim()));
+            producto.setNombre(nombre);
+            producto.setDescripcion(descripcion);
+            producto.setPrecio(precio);
             producto.setTipo((TipoProductoDTO) cmbTipoProducto.getSelectedItem());
             producto.setRutaImagen(txtRutaImagen.getText().trim().isEmpty() ? null : txtRutaImagen.getText().trim());
             producto.setActivo(Boolean.TRUE);
@@ -285,13 +564,34 @@ public class FrmNuevoProducto extends JFrame {
                     JOptionPane.ERROR_MESSAGE
             );
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    e.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
+            e.printStackTrace();
+
+            String mensaje = obtenerMensajeRaiz(e);
+
+            if (mensaje != null && mensaje.contains("The abstract schema type 'Producto' is unknown")) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "JPA no está reconociendo la entidad Producto. Revisa tu persistence.xml y agrega la clase entidades.Producto dentro de la persistence unit.",
+                        "Error de configuración",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            } else {
+                JOptionPane.showMessageDialog(
+                        this,
+                        mensaje != null ? mensaje : "Ocurrió un error al guardar el producto.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
         }
+    }
+
+    private String obtenerMensajeRaiz(Throwable e) {
+        Throwable causa = e;
+        while (causa.getCause() != null) {
+            causa = causa.getCause();
+        }
+        return causa.getMessage() != null ? causa.getMessage() : e.getMessage();
     }
 
     private void agregarCampo(JPanel panel, GridBagConstraints gbc, int columna, int filaBase,
@@ -300,6 +600,7 @@ public class FrmNuevoProducto extends JFrame {
         gbc.gridx = columna;
         gbc.gridy = filaBase;
         gbc.weightx = 1.0;
+        gbc.weighty = 0.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(10, 12, 4, 12);
@@ -360,9 +661,6 @@ public class FrmNuevoProducto extends JFrame {
         area.setBackground(PaletaColores.BLANCO);
         area.setLineWrap(true);
         area.setWrapStyleWord(true);
-        area.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(PaletaColores.LINEA_SUAVE, 1),
-                new EmptyBorder(8, 8, 8, 8)
-        ));
+        area.setBorder(new EmptyBorder(8, 8, 8, 8));
     }
 }
