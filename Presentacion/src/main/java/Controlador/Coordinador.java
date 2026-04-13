@@ -602,10 +602,6 @@ public class Coordinador {
         }
     }
 
-    // =========================================================
-    // UTILIDAD GENERAL
-    // =========================================================
-
     /**
      * Oculta todas las pantallas activas del sistema.
      */
