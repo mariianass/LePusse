@@ -27,7 +27,7 @@ import javax.swing.border.EmptyBorder;
  *
  * @author Mariana
  */
-public class FrmRegistrarClienteFrecuente extends JFrame {
+public class frmRegistrarClienteFrecuente extends JFrame {
 
     private final Coordinador coordinador;
 
@@ -38,7 +38,7 @@ public class FrmRegistrarClienteFrecuente extends JFrame {
     private JTextField txtTelefono;
     private JTextField txtCorreo;
 
-    public FrmRegistrarClienteFrecuente(Coordinador coordinador) {
+    public frmRegistrarClienteFrecuente(Coordinador coordinador) {
         this.coordinador = coordinador;
         setTitle("Restaurante Le Pusse - Registrar Cliente Frecuente");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

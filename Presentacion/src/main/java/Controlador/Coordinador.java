@@ -12,7 +12,7 @@ import Pantallas.FrmMenuAcceso;
 import Pantallas.FrmNuevoIngrediente;
 import Pantallas.FrmNuevoProducto;
 import Pantallas.FrmProductos;
-import Pantallas.FrmRegistrarClienteFrecuente;
+import Pantallas.frmRegistrarClienteFrecuente;
 import dtos.ClienteFrecuenteDTO;
 import dtos.IngredienteDTO;
 import dtos.ProductoDTO;
@@ -37,7 +37,7 @@ public class Coordinador {
     // Capa Presentación (Pantallas)
     private FrmMenuAcceso frmMenuAcceso;
     private FrmClientesFrecuentes frmGestionarClientesFrecuentes;
-    private FrmRegistrarClienteFrecuente frmRegistrarClientesFrecuentes;
+    private frmRegistrarClienteFrecuente frmRegistrarClientesFrecuentes;
     private FrmEditarClienteFrecuente frmEditarClienteFrecuente;
 
     private FrmIngredientes frmIngredientes;
@@ -107,7 +107,7 @@ public class Coordinador {
         ocultarTodasLasPantallas();
 
         if (frmRegistrarClientesFrecuentes == null) {
-            frmRegistrarClientesFrecuentes = new FrmRegistrarClienteFrecuente(this);
+            frmRegistrarClientesFrecuentes = new frmRegistrarClienteFrecuente(this);
         }
 
         frmRegistrarClientesFrecuentes.setVisible(true);
