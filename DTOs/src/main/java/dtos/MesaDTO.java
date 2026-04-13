@@ -5,6 +5,7 @@
 package dtos;
 
 import enums.EstadoMesa;
+import enumsDTO.EstadoMesaDTO;
 import java.io.Serializable;
 
 /**
@@ -18,7 +19,7 @@ public class MesaDTO implements Serializable {
 
     private Long idMesa;
     private Integer numeroMesa;
-    private EstadoMesa estado;
+    private EstadoMesaDTO estado;
 
     /**
      * Constructor por defecto de MesaDTO.
@@ -33,7 +34,7 @@ public class MesaDTO implements Serializable {
      * @param numeroMesa Número asignado a la mesa.
      * @param estado Estado actual de la mesa.
      */
-    public MesaDTO(Long idMesa, Integer numeroMesa, EstadoMesa estado) {
+    public MesaDTO(Long idMesa, Integer numeroMesa, EstadoMesaDTO estado) {
         this.idMesa = idMesa;
         this.numeroMesa = numeroMesa;
         this.estado = estado;
@@ -55,11 +56,11 @@ public class MesaDTO implements Serializable {
         this.numeroMesa = numeroMesa;
     }
 
-    public EstadoMesa getEstado() {
+    public EstadoMesaDTO getEstado() {
         return estado;
     }
 
-    public void setEstado(EstadoMesa estado) {
+    public void setEstado(EstadoMesaDTO estado) {
         this.estado = estado;
     }
 
