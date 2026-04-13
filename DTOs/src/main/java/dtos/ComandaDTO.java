@@ -5,6 +5,7 @@
 package dtos;
 
 import enums.EstadoComanda;
+import enumsDTO.EstadoComandaDTO;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,7 +22,7 @@ public class ComandaDTO implements Serializable {
     private Long idComanda;
     private String folio;
     private LocalDateTime fechaHoraCreacion;
-    private EstadoComanda estado;
+    private EstadoComandaDTO estado;
     private Double totalVenta;
 
     private Long idMesa;
@@ -43,6 +44,7 @@ public class ComandaDTO implements Serializable {
      *
      * @param idComanda Identificador único de la comanda.
      * @param folio Folio de la comanda.
+     * @param fechaHoraCreacion Fecha y hora de creación de la comanda.
      * @param estado Estado actual de la comanda.
      * @param totalVenta Total de venta de la comanda.
      * @param idMesa Identificador de la mesa.
@@ -51,7 +53,7 @@ public class ComandaDTO implements Serializable {
      * @param nombreCliente Nombre del cliente.
      * @param detalles Lista de detalles de la comanda.
      */
-    public ComandaDTO(Long idComanda, String folio, LocalDateTime fechaHoraCreacion, EstadoComanda estado, Double totalVenta,
+    public ComandaDTO(Long idComanda, String folio, LocalDateTime fechaHoraCreacion, EstadoComandaDTO estado, Double totalVenta,
             Long idMesa, Integer numeroMesa, Long idCliente, String nombreCliente, List<DetalleComandaDTO> detalles) {
         this.idComanda = idComanda;
         this.folio = folio;
@@ -89,11 +91,11 @@ public class ComandaDTO implements Serializable {
         this.fechaHoraCreacion = fechaHoraCreacion;
     }
 
-    public EstadoComanda getEstado() {
+    public EstadoComandaDTO getEstado() {
         return estado;
     }
 
-    public void setEstado(EstadoComanda estado) {
+    public void setEstado(EstadoComandaDTO estado) {
         this.estado = estado;
     }
 
