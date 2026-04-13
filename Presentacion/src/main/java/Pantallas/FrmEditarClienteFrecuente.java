@@ -125,10 +125,8 @@ public class FrmEditarClienteFrecuente extends JFrame {
 
         agregarCampo(formulario, gbc, 0, 1, "Primer Nombre", true, txtPrimerNombre);
         agregarCampo(formulario, gbc, 1, 1, "Segundo Nombre", false, txtSegundoNombre);
-
         agregarCampo(formulario, gbc, 0, 3, "Apellido Paterno", true, txtApellidoPaterno);
         agregarCampo(formulario, gbc, 1, 3, "Apellido Materno", true, txtApellidoMaterno);
-
         agregarCampo(formulario, gbc, 0, 5, "Número de Teléfono", true, txtTelefono);
         agregarCampo(formulario, gbc, 0, 7, "Correo Electrónico", false, txtCorreo);
 
@@ -136,30 +134,17 @@ public class FrmEditarClienteFrecuente extends JFrame {
         panelBotones.setOpaque(false);
 
         BotonRedondeado btnEliminar = new BotonRedondeado("Eliminar", 18);
-        btnEliminar.setPreferredSize(new Dimension(125, 40));
-        btnEliminar.setBackground(new Color(200, 70, 70)); // rojo elegante
-        btnEliminar.setForeground(PaletaColores.BLANCO);
-        btnEliminar.setFont(new Font("Segoe UI", Font.BOLD, 13));
-
+        btnEliminar.setBackground(new Color(200, 70, 70));
+        btnEliminar.setForeground(Color.WHITE);
         btnEliminar.addActionListener(e -> eliminarCliente());
 
         BotonRedondeado btnCancelar = new BotonRedondeado("Cancelar", 18);
-        btnCancelar.setPreferredSize(new Dimension(130, 40));
-        btnCancelar.setBackground(new Color(232, 216, 182));
-        btnCancelar.setForeground(PaletaColores.TEXTO_MARRON);
-        btnCancelar.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-
-        BotonRedondeado btnGuardar = new BotonRedondeado("Guardar", 18);
-        btnGuardar.setPreferredSize(new Dimension(125, 40));
-        btnGuardar.setBackground(PaletaColores.MARRON_OSCURO);
-        btnGuardar.setForeground(PaletaColores.BLANCO);
-        btnGuardar.setFont(new Font("Segoe UI", Font.BOLD, 13));
-
         btnCancelar.addActionListener(e -> {
             coordinador.regresarAGestionClientes();
             dispose();
         });
 
+        BotonRedondeado btnGuardar = new BotonRedondeado("Guardar", 18);
         btnGuardar.addActionListener(e -> guardarCambios());
 
         panelBotones.add(btnEliminar);
@@ -169,112 +154,73 @@ public class FrmEditarClienteFrecuente extends JFrame {
         gbc.gridx = 1;
         gbc.gridy = 8;
         gbc.anchor = GridBagConstraints.EAST;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.insets = new Insets(18, 12, 0, 12);
         formulario.add(panelBotones, gbc);
 
         panelExterno.add(formulario, BorderLayout.CENTER);
-
         return panelExterno;
     }
 
-    private void agregarCampo(JPanel panel, GridBagConstraints gbc, int columna, int filaBase,
-            String textoEtiqueta, boolean obligatorio, JTextField campo) {
-
-        gbc.gridx = columna;
-        gbc.gridy = filaBase;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(10, 12, 4, 12);
-
-        panel.add(crearEtiqueta(textoEtiqueta, obligatorio), gbc);
-
-        gbc.gridy = filaBase + 1;
-        gbc.insets = new Insets(0, 12, 8, 12);
-        panel.add(campo, gbc);
-    }
-
-    private JPanel crearEtiqueta(String texto, boolean obligatorio) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setOpaque(false);
-
-        JLabel lblTexto = new JLabel(texto);
-        lblTexto.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        lblTexto.setForeground(PaletaColores.TEXTO_MARRON);
-        panel.add(lblTexto, BorderLayout.WEST);
-
-        if (obligatorio) {
-            JLabel lblAsterisco = new JLabel(" *");
-            lblAsterisco.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            lblAsterisco.setForeground(new Color(220, 60, 90));
-            panel.add(lblAsterisco, BorderLayout.EAST);
-        }
-
-        return panel;
-    }
-
-    private void estilizarCampo(JTextField campo) {
-        campo.setPreferredSize(new Dimension(235, 34));
-        campo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        campo.setForeground(PaletaColores.TEXTO_MARRON);
-        campo.setBackground(PaletaColores.BLANCO);
-        campo.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(PaletaColores.LINEA_SUAVE, 1),
-                new EmptyBorder(4, 8, 4, 8)
-        ));
-    }
-
     private void cargarDatosCliente() {
-        if (clienteDTO == null) {
+        if (clienteDTO == null) return;
+
+        txtPrimerNombre.setText(clienteDTO.getNombre());
+        txtApellidoPaterno.setText(clienteDTO.getApellidoPaterno());
+        txtApellidoMaterno.setText(clienteDTO.getApellidoMaterno());
+        txtTelefono.setText(clienteDTO.getTelefono()); // YA DESENCRIPTADO
+        txtCorreo.setText(clienteDTO.getCorreoElectronico());
+    }
+
+    // 🔥 MÉTODO CLAVE CORREGIDO
+    private void guardarCambios() {
+
+        String nombre = txtPrimerNombre.getText().trim();
+        String apP = txtApellidoPaterno.getText().trim();
+        String apM = txtApellidoMaterno.getText().trim();
+        String telefono = txtTelefono.getText().trim();
+        String correo = txtCorreo.getText().trim();
+
+        // VALIDACIONES
+        if (nombre.isEmpty() || apP.isEmpty() || apM.isEmpty() || telefono.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Complete todos los campos obligatorios.");
             return;
         }
 
-        txtPrimerNombre.setText(clienteDTO.getNombre() != null ? clienteDTO.getNombre() : "");
-        txtApellidoPaterno.setText(clienteDTO.getApellidoPaterno() != null ? clienteDTO.getApellidoPaterno() : "");
-        txtApellidoMaterno.setText(clienteDTO.getApellidoMaterno() != null ? clienteDTO.getApellidoMaterno() : "");
-        txtTelefono.setText(clienteDTO.getTelefono() != null ? clienteDTO.getTelefono() : "");
-        txtCorreo.setText(clienteDTO.getCorreoElectronico() != null ? clienteDTO.getCorreoElectronico() : "");
-        txtSegundoNombre.setText("");
-    }
+        if (!telefono.matches("\\d{10}")) {
+            JOptionPane.showMessageDialog(this, "El teléfono debe tener exactamente 10 dígitos.");
+            return;
+        }
 
-    private void guardarCambios() {
-        if (txtPrimerNombre.getText().trim().isEmpty()
-                || txtApellidoPaterno.getText().trim().isEmpty()
-                || txtApellidoMaterno.getText().trim().isEmpty()
-                || txtTelefono.getText().trim().isEmpty()) {
-
-            JOptionPane.showMessageDialog(this, "Complete todos los campos obligatorios.");
+        if (!correo.isEmpty() && !correo.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            JOptionPane.showMessageDialog(this, "Correo electrónico inválido.");
             return;
         }
 
         int opcion = JOptionPane.showConfirmDialog(
                 this,
                 "¿Confirmas los cambios?",
-                "Seleccionar una opción",
-                JOptionPane.YES_NO_CANCEL_OPTION
+                "Confirmación",
+                JOptionPane.YES_NO_OPTION
         );
 
-        if (opcion != JOptionPane.YES_OPTION) {
-            return;
-        }
+        if (opcion != JOptionPane.YES_OPTION) return;
 
         try {
-            clienteDTO.setNombre(txtPrimerNombre.getText().trim());
-            clienteDTO.setApellidoPaterno(txtApellidoPaterno.getText().trim());
-            clienteDTO.setApellidoMaterno(txtApellidoMaterno.getText().trim());
-            clienteDTO.setTelefono(txtTelefono.getText().trim());
-
-            String correo = txtCorreo.getText().trim();
+            clienteDTO.setNombre(nombre);
+            clienteDTO.setApellidoPaterno(apP);
+            clienteDTO.setApellidoMaterno(apM);
+            clienteDTO.setTelefono(telefono); // 🔥 AQUÍ VA NORMAL (BO lo cifra)
             clienteDTO.setCorreoElectronico(correo.isEmpty() ? null : correo);
 
             coordinador.actualizarClienteFrecuente(clienteDTO);
 
-            JOptionPane.showMessageDialog(this, "¡Cliente actualizado exitosamente!");
+            JOptionPane.showMessageDialog(this, "Cliente actualizado correctamente.");
             coordinador.regresarDesdeEditarCliente();
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al actualizar: " + e.getMessage());
+            JOptionPane.showMessageDialog(this,
+                    "Error al actualizar: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -286,20 +232,26 @@ public class FrmEditarClienteFrecuente extends JFrame {
                 JOptionPane.YES_NO_OPTION
         );
 
-        if (confirmacion != JOptionPane.YES_OPTION) {
-            return;
-        }
+        if (confirmacion != JOptionPane.YES_OPTION) return;
 
         try {
             coordinador.eliminarCliente(clienteDTO.getIdCliente());
-
             JOptionPane.showMessageDialog(this, "Cliente eliminado correctamente");
-
             coordinador.regresarDesdeEditarCliente();
-
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error al eliminar: " + e.getMessage());
         }
     }
 
+    private void agregarCampo(JPanel panel, GridBagConstraints gbc, int col, int row, String texto, boolean obligatorio, JTextField campo) {
+        gbc.gridx = col;
+        gbc.gridy = row;
+        panel.add(new JLabel(texto), gbc);
+        gbc.gridy = row + 1;
+        panel.add(campo, gbc);
+    }
+
+    private void estilizarCampo(JTextField campo) {
+        campo.setPreferredSize(new Dimension(235, 34));
+    }
 }

@@ -11,6 +11,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -26,6 +28,8 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -34,11 +38,12 @@ import javax.swing.table.JTableHeader;
  *
  * @author Mariana
  */
-public class FrmClientesFrecuentes extends JFrame{
-    
+public class FrmClientesFrecuentes extends JFrame {
+
     private final Coordinador coordinador;
     private JTable tablaClientes;
     private DefaultTableModel modeloTabla;
+    private JTextField txtBuscar;
 
     public FrmClientesFrecuentes(Coordinador coordinador) {
         this.coordinador = coordinador;
@@ -93,7 +98,7 @@ public class FrmClientesFrecuentes extends JFrame{
         izquierda.setOpaque(false);
         izquierda.setLayout(new BoxLayout(izquierda, BoxLayout.X_AXIS));
 
-        JTextField txtBuscar = new JTextField("Buscar por nombre...");
+        txtBuscar = new JTextField("Buscar cliente...");
         txtBuscar.setPreferredSize(new Dimension(340, 42));
         txtBuscar.setMaximumSize(new Dimension(340, 42));
         txtBuscar.setMinimumSize(new Dimension(340, 42));
@@ -104,24 +109,40 @@ public class FrmClientesFrecuentes extends JFrame{
                 BorderFactory.createLineBorder(PaletaColores.LINEA_SUAVE, 1),
                 new EmptyBorder(0, 14, 0, 14)
         ));
-        
-        // Configuracion del filtro dinamico
-        txtBuscar.addMouseListener(new MouseAdapter() {
+
+        txtBuscar.addFocusListener(new FocusAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                if (txtBuscar.getText().equals("Buscar por nombre...")) {
+            public void focusGained(FocusEvent e) {
+                if ("Buscar cliente...".equals(txtBuscar.getText())) {
                     txtBuscar.setText("");
+                    txtBuscar.setForeground(PaletaColores.TEXTO_MARRON);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (txtBuscar.getText().trim().isEmpty()) {
+                    txtBuscar.setText("Buscar cliente...");
+                    txtBuscar.setForeground(new Color(180, 155, 130));
                 }
             }
         });
-        
-        txtBuscar.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+
+        txtBuscar.getDocument().addDocumentListener(new DocumentListener() {
             @Override
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { accion(); }
+            public void insertUpdate(DocumentEvent e) {
+                accion();
+            }
+
             @Override
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { accion(); }
+            public void removeUpdate(DocumentEvent e) {
+                accion();
+            }
+
             @Override
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { accion(); }
+            public void changedUpdate(DocumentEvent e) {
+                accion();
+            }
 
             private void accion() {
                 String texto = txtBuscar.getText();
@@ -131,11 +152,17 @@ public class FrmClientesFrecuentes extends JFrame{
 
         izquierda.add(txtBuscar);
         izquierda.add(Box.createRigidArea(new Dimension(16, 0)));
-        izquierda.add(crearBotonFiltro("Nombre", true));
-        izquierda.add(Box.createRigidArea(new Dimension(10, 0)));
-        izquierda.add(crearBotonFiltro("Teléfono", false));
-        izquierda.add(Box.createRigidArea(new Dimension(10, 0)));
-        izquierda.add(crearBotonFiltro("Correo", false));
+
+        BotonRedondeado lblInfo = new BotonRedondeado("Nombre / Teléfono / Correo", 18);
+        lblInfo.setPreferredSize(new Dimension(220, 40));
+        lblInfo.setMaximumSize(new Dimension(220, 40));
+        lblInfo.setMinimumSize(new Dimension(220, 40));
+        lblInfo.setBackground(PaletaColores.DORADO);
+        lblInfo.setForeground(PaletaColores.MARRON_OSCURO);
+        lblInfo.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblInfo.setEnabled(false);
+
+        izquierda.add(lblInfo);
 
         BotonRedondeado btnNuevo = new BotonRedondeado("Nuevo Cliente", 20);
         btnNuevo.setPreferredSize(new Dimension(145, 40));
@@ -155,24 +182,6 @@ public class FrmClientesFrecuentes extends JFrame{
         superior.add(panelBoton, BorderLayout.EAST);
 
         return superior;
-    }
-
-    private BotonRedondeado crearBotonFiltro(String texto, boolean activo) {
-        BotonRedondeado boton = new BotonRedondeado(texto, 18);
-        boton.setPreferredSize(new Dimension(110, 40));
-        boton.setMaximumSize(new Dimension(110, 40));
-        boton.setMinimumSize(new Dimension(110, 40));
-        boton.setFont(new Font("Segoe UI", Font.BOLD, 13));
-
-        if (activo) {
-            boton.setBackground(PaletaColores.MARRON_OSCURO);
-            boton.setForeground(PaletaColores.BLANCO);
-        } else {
-            boton.setBackground(PaletaColores.DORADO);
-            boton.setForeground(PaletaColores.MARRON_OSCURO);
-        }
-
-        return boton;
     }
 
     private JPanel crearPanelTabla() {
@@ -247,8 +256,13 @@ public class FrmClientesFrecuentes extends JFrame{
         tablaClientes.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                int filaSeleccionada = tablaClientes.getSelectedRow();
+
+                if (filaSeleccionada == -1) {
+                    return;
+                }
+
                 if (e.getClickCount() == 2) {
-                    int filaSeleccionada = tablaClientes.getSelectedRow();
                     Long idCliente = (Long) modeloTabla.getValueAt(filaSeleccionada, 0);
                     coordinador.mostrarEditarClienteFrecuente(idCliente);
                 }
@@ -271,20 +285,7 @@ public class FrmClientesFrecuentes extends JFrame{
             List<ClienteFrecuenteDTO> clientes = coordinador.obtenerClientesFrecuentes();
 
             for (ClienteFrecuenteDTO cliente : clientes) {
-                Object[] fila = {
-                    cliente.getIdCliente(),
-                    construirNombreCompleto(cliente),
-                    cliente.getTelefono() != null ? cliente.getTelefono() : "-",
-                    (cliente.getCorreoElectronico() != null && !cliente.getCorreoElectronico().isBlank())
-                            ? cliente.getCorreoElectronico() : "-",
-                    cliente.getFechaRegistro() != null ? cliente.getFechaRegistro().toString() : "-",
-                    cliente.getNumeroVisitas() != null ? cliente.getNumeroVisitas() : 0,
-                    cliente.getTotalGastado() != null ? "$" + String.format("%.2f", cliente.getTotalGastado()) : "$0.00",
-                    cliente.getPuntosFidelidad() != null ? cliente.getPuntosFidelidad() + " pts" : "0 pts",
-                    ""
-                };
-
-                modeloTabla.addRow(fila);
+                agregarFilaCliente(cliente);
             }
 
         } catch (Exception e) {
@@ -295,6 +296,23 @@ public class FrmClientesFrecuentes extends JFrame{
                     JOptionPane.ERROR_MESSAGE
             );
         }
+    }
+
+    private void agregarFilaCliente(ClienteFrecuenteDTO cliente) {
+        Object[] fila = {
+            cliente.getIdCliente(),
+            construirNombreCompleto(cliente),
+            cliente.getTelefono() != null ? cliente.getTelefono() : "-",
+            (cliente.getCorreoElectronico() != null && !cliente.getCorreoElectronico().isBlank())
+                    ? cliente.getCorreoElectronico() : "-",
+            cliente.getFechaRegistro() != null ? cliente.getFechaRegistro().toString() : "-",
+            cliente.getNumeroVisitas() != null ? cliente.getNumeroVisitas() : 0,
+            cliente.getTotalGastado() != null ? "$" + String.format("%.2f", cliente.getTotalGastado()) : "$0.00",
+            cliente.getPuntosFidelidad() != null ? cliente.getPuntosFidelidad() + " pts" : "0 pts",
+            ""
+        };
+
+        modeloTabla.addRow(fila);
     }
 
     private String construirNombreCompleto(ClienteFrecuenteDTO cliente) {
@@ -322,33 +340,29 @@ public class FrmClientesFrecuentes extends JFrame{
     public void recargarTabla() {
         cargarClientesEnTabla();
     }
-    
+
     private void filtrarClientes(String texto) {
         try {
-            if (texto.isEmpty() || texto.equals("Buscar por nombre...")) {
-                cargarClientesEnTabla(); 
+            if (texto == null || texto.trim().isEmpty() || texto.equals("Buscar cliente...")) {
+                cargarClientesEnTabla();
                 return;
             }
+
             modeloTabla.setRowCount(0);
-            List<ClienteFrecuenteDTO> filtrados = coordinador.buscarClientesPorFiltro(texto);
+            List<ClienteFrecuenteDTO> filtrados = coordinador.buscarClientesPorFiltro(texto.trim());
 
             for (ClienteFrecuenteDTO cliente : filtrados) {
-                Object[] fila = {
-                    cliente.getIdCliente(),
-                    construirNombreCompleto(cliente),
-                    cliente.getTelefono() != null ? cliente.getTelefono() : "-",
-                    cliente.getCorreoElectronico() != null ? cliente.getCorreoElectronico() : "-",
-                    cliente.getFechaRegistro() != null ? cliente.getFechaRegistro().toString() : "-",
-                    cliente.getNumeroVisitas() != null ? cliente.getNumeroVisitas() : 0,
-                    cliente.getTotalGastado() != null ? "$" + String.format("%.2f", cliente.getTotalGastado()) : "$0.00",
-                    cliente.getPuntosFidelidad() != null ? cliente.getPuntosFidelidad() + " pts" : "0 pts",
-                    ""
-                };
-                modeloTabla.addRow(fila);
+                agregarFilaCliente(cliente);
             }
+
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al filtrar los clientes: " + e.getMessage(), "Error de Búsqueda", JOptionPane.ERROR_MESSAGE);      
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Error al filtrar los clientes: " + e.getMessage(),
+                    "Error de Búsqueda",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
     }
-
+    
 }

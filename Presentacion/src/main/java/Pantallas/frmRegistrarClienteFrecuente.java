@@ -27,10 +27,10 @@ import javax.swing.border.EmptyBorder;
  *
  * @author Mariana
  */
-public class FrmRegistrarClienteFrecuente extends JFrame{
-    
+public class FrmRegistrarClienteFrecuente extends JFrame {
+
     private final Coordinador coordinador;
-    
+
     private JTextField txtPrimerNombre;
     private JTextField txtSegundoNombre;
     private JTextField txtApellidoPaterno;
@@ -142,9 +142,8 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
         btnRegistrar.setBackground(PaletaColores.MARRON_OSCURO);
         btnRegistrar.setForeground(PaletaColores.BLANCO);
         btnRegistrar.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        
+
         btnRegistrar.addActionListener(e -> {
-            // Extraer los datos de los campos de texto
             String pNombre = txtPrimerNombre.getText().trim();
             String sNombre = txtSegundoNombre.getText().trim();
             String aPaterno = txtApellidoPaterno.getText().trim();
@@ -153,33 +152,36 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
             String correo = txtCorreo.getText().trim();
 
             if (Validadores.validarCliente(this, pNombre, aPaterno, aMaterno, tel, correo)) {
-                // Crear y llenar el DTO
                 ClienteFrecuenteDTO nuevoCliente = new ClienteFrecuenteDTO();
-                nuevoCliente.setNombre(pNombre.concat(" "+sNombre));
+                nuevoCliente.setNombre(construirNombre(pNombre, sNombre));
                 nuevoCliente.setApellidoPaterno(aPaterno);
                 nuevoCliente.setApellidoMaterno(aMaterno);
                 nuevoCliente.setTelefono(tel);
-                nuevoCliente.setCorreoElectronico(correo);
+                nuevoCliente.setCorreoElectronico(correo.isEmpty() ? null : correo);
                 nuevoCliente.setFechaRegistro(LocalDate.now());
+
                 try {
-                    // Mandar el DTO al coordinador para procesar el registro
                     coordinador.registrarClienteFrecuente(nuevoCliente);
-                    JOptionPane.showMessageDialog(null, "¡Cliente registrado exitosamente!", 
-                        "Registro Correcto", JOptionPane.INFORMATION_MESSAGE);
-                    // Limpiamos los campos y regresamos a la pantalla de clientes frecuentes
-                    limpiarCampos(); 
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "¡Cliente registrado exitosamente!",
+                            "Registro Correcto",
+                            JOptionPane.INFORMATION_MESSAGE
+                    );
+                    limpiarCampos();
                     coordinador.regresarAGestionClientes();
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(null, "Error al registrar cliente", 
-                        "Error de Registro", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Error al registrar cliente: " + ex.getMessage(),
+                            "Error de Registro",
+                            JOptionPane.ERROR_MESSAGE
+                    );
                 }
             }
         });
-        
-        
-        btnCancelar.addActionListener(e -> {
-            coordinador.regresarAGestionClientes();
-        });
+
+        btnCancelar.addActionListener(e -> coordinador.regresarAGestionClientes());
 
         panelBotones.add(btnCancelar);
         panelBotones.add(btnRegistrar);
@@ -194,6 +196,23 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
         panelExterno.add(formulario, BorderLayout.CENTER);
 
         return panelExterno;
+    }
+
+    private String construirNombre(String primerNombre, String segundoNombre) {
+        StringBuilder nombre = new StringBuilder();
+
+        if (primerNombre != null && !primerNombre.isBlank()) {
+            nombre.append(primerNombre.trim());
+        }
+
+        if (segundoNombre != null && !segundoNombre.isBlank()) {
+            if (nombre.length() > 0) {
+                nombre.append(" ");
+            }
+            nombre.append(segundoNombre.trim());
+        }
+
+        return nombre.toString();
     }
 
     private void agregarCampo(JPanel panel, GridBagConstraints gbc, int columna, int filaBase,
@@ -253,6 +272,4 @@ public class FrmRegistrarClienteFrecuente extends JFrame{
         txtTelefono.setText("");
         txtCorreo.setText("");
     }
-
-    
 }

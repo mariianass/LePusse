@@ -10,6 +10,7 @@ import interfaces.IClienteDAO;
 import interfaces.IClienteFrecuenteBO;
 import java.util.ArrayList;
 import java.util.List;
+import utilidades.CifradorTelefono;
 import static validadores.ValidadorClienteFrecuente.validar;
 
 /**
@@ -173,13 +174,27 @@ public class ClienteFrecuenteBO implements IClienteFrecuenteBO {
     @Override
     public List<ClienteFrecuenteDTO> buscarPorFiltros(String filtro) throws NegocioException {
         try {
-            List<Cliente> clientes = clienteDAO.buscarPorFiltros(filtro);
+            List<Cliente> clientes = clienteDAO.obtenerTodos();
             List<ClienteFrecuenteDTO> clientesFrecuentesDTO = new ArrayList<>();
+
+            String filtroLimpio = filtro == null ? "" : filtro.trim().toLowerCase();
 
             if (clientes != null) {
                 for (Cliente cliente : clientes) {
                     if (cliente instanceof ClienteFrecuente) {
-                        clientesFrecuentesDTO.add(convertirDTO((ClienteFrecuente) cliente));
+                        ClienteFrecuenteDTO dto = convertirDTO((ClienteFrecuente) cliente);
+
+                        if (filtroLimpio.isEmpty()
+                                || contieneTexto(dto.getNombre(), filtroLimpio)
+                                || contieneTexto(dto.getApellidoPaterno(), filtroLimpio)
+                                || contieneTexto(dto.getApellidoMaterno(), filtroLimpio)
+                                || contieneTexto(dto.getCorreoElectronico(), filtroLimpio)
+                                || contieneTexto(dto.getTelefono(), filtroLimpio)
+                                || contieneTexto(
+                                        (dto.getNombre() + " " + dto.getApellidoPaterno() + " " + dto.getApellidoMaterno()).trim(),
+                                        filtroLimpio)) {
+                            clientesFrecuentesDTO.add(dto);
+                        }
                     }
                 }
             }
@@ -188,6 +203,10 @@ public class ClienteFrecuenteBO implements IClienteFrecuenteBO {
         } catch (PersistenciaException e) {
             throw new NegocioException("Error al buscar clientes frecuentes por filtros en negocio.", e);
         }
+    }
+
+    private boolean contieneTexto(String texto, String filtro) {
+        return texto != null && texto.toLowerCase().contains(filtro);
     }
 
     /**
@@ -210,7 +229,7 @@ public class ClienteFrecuenteBO implements IClienteFrecuenteBO {
                 clienteFrecuenteDTO.getNombre(),
                 clienteFrecuenteDTO.getApellidoPaterno(),
                 clienteFrecuenteDTO.getApellidoMaterno(),
-                clienteFrecuenteDTO.getTelefono(),
+                CifradorTelefono.encriptar(clienteFrecuenteDTO.getTelefono()),
                 clienteFrecuenteDTO.getCorreoElectronico()
         );
     }
@@ -231,7 +250,7 @@ public class ClienteFrecuenteBO implements IClienteFrecuenteBO {
                 clienteFrecuente.getNombre(),
                 clienteFrecuente.getApellidoPaterno(),
                 clienteFrecuente.getApellidoMaterno(),
-                clienteFrecuente.getTelefono(),
+                CifradorTelefono.desencriptar(clienteFrecuente.getTelefono()),
                 clienteFrecuente.getCorreoElectronico(),
                 clienteFrecuente.getFechaRegistro(),
                 clienteFrecuente.getNumeroVisitas(),
@@ -240,7 +259,7 @@ public class ClienteFrecuenteBO implements IClienteFrecuenteBO {
                 clienteFrecuente.getFechaUltimaComanda()
         );
     }
-    
+
     @Override
     public List<ClienteFrecuenteDTO> obtenerTodos() throws NegocioException {
         try {
@@ -260,5 +279,5 @@ public class ClienteFrecuenteBO implements IClienteFrecuenteBO {
             throw new NegocioException("Error al obtener todos los clientes frecuentes en negocio.", e);
         }
     }
-
+    
 }

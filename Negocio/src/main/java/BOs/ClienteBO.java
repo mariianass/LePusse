@@ -13,6 +13,7 @@ import interfaces.IClienteBO;
 import interfaces.IClienteDAO;
 import java.util.ArrayList;
 import java.util.List;
+import utilidades.CifradorTelefono;
 import static validadores.ValidadorCliente.validar;
 
 /**
@@ -151,12 +152,26 @@ public class ClienteBO implements IClienteBO {
     @Override
     public List<ClienteDTO> buscarPorFiltros(String filtro) throws NegocioException {
         try {
-            List<Cliente> clientes = clienteDAO.buscarPorFiltros(filtro);
+            List<Cliente> clientes = clienteDAO.obtenerTodos();
             List<ClienteDTO> clientesDTO = new ArrayList<>();
+
+            String filtroLimpio = filtro == null ? "" : filtro.trim().toLowerCase();
 
             if (clientes != null) {
                 for (Cliente cliente : clientes) {
-                    clientesDTO.add(convertirDTO(cliente));
+                    ClienteDTO dto = convertirDTO(cliente);
+
+                    if (filtroLimpio.isEmpty()
+                            || contieneTexto(dto.getNombre(), filtroLimpio)
+                            || contieneTexto(dto.getApellidoPaterno(), filtroLimpio)
+                            || contieneTexto(dto.getApellidoMaterno(), filtroLimpio)
+                            || contieneTexto(dto.getCorreoElectronico(), filtroLimpio)
+                            || contieneTexto(dto.getTelefono(), filtroLimpio)
+                            || contieneTexto(
+                                    (dto.getNombre() + " " + dto.getApellidoPaterno() + " " + dto.getApellidoMaterno()).trim(),
+                                    filtroLimpio)) {
+                        clientesDTO.add(dto);
+                    }
                 }
             }
 
@@ -164,6 +179,10 @@ public class ClienteBO implements IClienteBO {
         } catch (PersistenciaException e) {
             throw new NegocioException("Error al buscar clientes por filtros en negocio.", e);
         }
+    }
+
+    private boolean contieneTexto(String texto, String filtro) {
+        return texto != null && texto.toLowerCase().contains(filtro);
     }
 
     /**
@@ -182,7 +201,7 @@ public class ClienteBO implements IClienteBO {
                 clienteDTO.getNombre(),
                 clienteDTO.getApellidoPaterno(),
                 clienteDTO.getApellidoMaterno(),
-                clienteDTO.getTelefono(),
+                CifradorTelefono.encriptar(clienteDTO.getTelefono()),
                 clienteDTO.getCorreoElectronico()
         );
     }
@@ -203,7 +222,7 @@ public class ClienteBO implements IClienteBO {
                 cliente.getNombre(),
                 cliente.getApellidoPaterno(),
                 cliente.getApellidoMaterno(),
-                cliente.getTelefono(),
+                CifradorTelefono.desencriptar(cliente.getTelefono()),
                 cliente.getCorreoElectronico()
         );
     }
