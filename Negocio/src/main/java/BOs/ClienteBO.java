@@ -195,7 +195,7 @@ public class ClienteBO implements IClienteBO {
         if (clienteDTO == null) {
             return null;
         }
-
+        
         return new Cliente(
                 clienteDTO.getIdCliente(),
                 clienteDTO.getNombre(),

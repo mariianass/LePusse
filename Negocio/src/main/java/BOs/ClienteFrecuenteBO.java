@@ -219,7 +219,7 @@ public class ClienteFrecuenteBO implements IClienteFrecuenteBO {
         if (clienteFrecuenteDTO == null) {
             return null;
         }
-
+        
         return new ClienteFrecuente(
                 clienteFrecuenteDTO.getFechaRegistro(),
                 clienteFrecuenteDTO.getNumeroVisitas(),
