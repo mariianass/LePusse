@@ -86,12 +86,18 @@ public class IngredienteDAO implements IIngredienteDAO {
             if (ingrediente == null) {
                 return false;
             }
+            
+            if (!ingrediente.getDetallesIngredientes().isEmpty()) {
+                throw new PersistenciaException("No se puede eliminar el ingrediente " + ingrediente.getNombre() + " porque se utiliza en uno o mas productos.");
+            }
 
             em.getTransaction().begin();
             em.remove(ingrediente);
             em.getTransaction().commit();
             return true;
-        } catch (Exception e) {
+        } catch (PersistenciaException e) {
+             throw e; 
+         }catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
