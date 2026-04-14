@@ -2,7 +2,9 @@ package BOs;
 
 import dtos.ClienteFrecuenteDTO;
 import excepciones.NegocioException;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -10,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
@@ -18,14 +21,14 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 
 /**
- * Clase encargada de la lógica de negocio para la generación de reportes
- * de clientes frecuentes.
- * 
- * Permite obtener, filtrar y generar reportes en formato Jasper y PDF
- * a partir de la información de clientes frecuentes.
- * 
+ * Clase encargada de la lógica de negocio para la generación de reportes de
+ * clientes frecuentes.
+ *
+ * Permite obtener, filtrar y generar reportes en formato Jasper y PDF a partir
+ * de la información de clientes frecuentes.
+ *
  * Sigue el patrón Singleton para asegurar una única instancia.
- * 
+ *
  * @author Mariana, Regina, Isaac
  */
 public class ReporteClienteBO {
@@ -42,7 +45,7 @@ public class ReporteClienteBO {
 
     /**
      * Obtiene la instancia única de ReporteClienteBO.
-     * 
+     *
      * @return instancia única de ReporteClienteBO
      */
     public static ReporteClienteBO getInstance() {
@@ -54,7 +57,7 @@ public class ReporteClienteBO {
 
     /**
      * Obtiene todos los clientes frecuentes registrados.
-     * 
+     *
      * @return lista de clientes frecuentes
      * @throws NegocioException si ocurre un error en la obtención
      */
@@ -64,7 +67,7 @@ public class ReporteClienteBO {
 
     /**
      * Filtra los clientes frecuentes según un nombre y un mínimo de visitas.
-     * 
+     *
      * @param nombreFiltro texto para filtrar por nombre (puede ser parcial)
      * @param minimoVisitas número mínimo de visitas requerido
      * @return lista de clientes que cumplen con los filtros
@@ -94,38 +97,43 @@ public class ReporteClienteBO {
 
     /**
      * Genera un reporte JasperPrint de clientes frecuentes aplicando filtros.
-     * 
+     *
      * @param nombreFiltro filtro por nombre del cliente
      * @param minimoVisitas filtro por número mínimo de visitas
      * @return objeto JasperPrint listo para visualizar
      * @throws Exception si ocurre un error en la generación del reporte
      */
     public JasperPrint generarJasperClientesFrecuentes(String nombreFiltro, Integer minimoVisitas) throws Exception {
-        List<ClienteFrecuenteDTO> lista = filtrarClientes(nombreFiltro, minimoVisitas);
+    List<ClienteFrecuenteDTO> lista = filtrarClientes(nombreFiltro, minimoVisitas);
 
-        InputStream reporteStream = getClass().getClassLoader()
-                .getResourceAsStream("reportes/ReporteClientesFrecuentes.jrxml");
+    // USA LA RUTA FISICA DE TU COMPUTADORA (Copia la ruta de la carpeta si es distinta)
+    String rutaAbsoluta = "C:\\Users\\putme\\OneDrive\\Documentos\\GitHub\\LePusse\\Presentacion\\src\\main\\resources\\reportes\\ReporteClientesFrecuentes.jrxml";
+    
+    File archivo = new File(rutaAbsoluta);
+    if (!archivo.exists()) {
+        throw new Exception("El archivo no existe en la ruta fisica: " + rutaAbsoluta);
+    }
 
-        if (reporteStream == null) {
-            throw new NegocioException("No se encontró la plantilla ReporteClientesFrecuentes.jrxml");
-        }
-
-        JasperReport report = JasperCompileManager.compileReport(reporteStream);
-
+    try (FileInputStream fis = new FileInputStream(archivo)) {
+        JasperReport report = JasperCompileManager.compileReport(fis);
+        
         Map<String, Object> parametros = new HashMap<>();
         parametros.put("nombreReporte", "Reporte de Clientes Frecuentes");
-        parametros.put("fechaGeneracion", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
-        parametros.put("filtroNombre", (nombreFiltro != null && !nombreFiltro.isBlank()) ? nombreFiltro : "Todos");
+        parametros.put("fechaGeneracion", LocalDateTime.now().toString());
+        parametros.put("filtroNombre", nombreFiltro != null ? nombreFiltro : "Todos");
         parametros.put("filtroMinimoVisitas", minimoVisitas != null ? minimoVisitas : 0);
 
         JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(lista);
-
         return JasperFillManager.fillReport(report, parametros, dataSource);
+    } catch (Exception e) {
+        e.printStackTrace();
+        throw new Exception("Error cargando desde ruta absoluta: " + e.getMessage());
     }
+}
 
     /**
      * Genera y exporta el reporte de clientes frecuentes en formato PDF.
-     * 
+     *
      * @param rutaSalidaPDF ruta donde se guardará el archivo PDF
      * @param nombreFiltro filtro por nombre del cliente
      * @param minimoVisitas filtro por número mínimo de visitas
@@ -143,7 +151,7 @@ public class ReporteClienteBO {
 
     /**
      * Construye el nombre completo de un cliente a partir de sus atributos.
-     * 
+     *
      * @param cliente cliente frecuente
      * @return nombre completo formateado
      */
@@ -154,11 +162,15 @@ public class ReporteClienteBO {
             sb.append(cliente.getNombre().trim());
         }
         if (cliente.getApellidoPaterno() != null && !cliente.getApellidoPaterno().isBlank()) {
-            if (sb.length() > 0) sb.append(" ");
+            if (sb.length() > 0) {
+                sb.append(" ");
+            }
             sb.append(cliente.getApellidoPaterno().trim());
         }
         if (cliente.getApellidoMaterno() != null && !cliente.getApellidoMaterno().isBlank()) {
-            if (sb.length() > 0) sb.append(" ");
+            if (sb.length() > 0) {
+                sb.append(" ");
+            }
             sb.append(cliente.getApellidoMaterno().trim());
         }
 
@@ -167,7 +179,7 @@ public class ReporteClienteBO {
 
     /**
      * Verifica que la carpeta destino exista, y si no, la crea.
-     * 
+     *
      * @param rutaSalidaPDF ruta del archivo PDF
      * @throws NegocioException si no se puede crear la carpeta
      */
