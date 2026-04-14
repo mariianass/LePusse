@@ -5,7 +5,7 @@
 package dtos;
 
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * Representa la información de un cliente frecuente dentro del sistema. Esta
@@ -22,11 +22,11 @@ public class ClienteFrecuenteDTO implements Serializable {
     private String apellidoMaterno;
     private String telefono;
     private String correoElectronico;
-    private LocalDate fechaRegistro;
+    private LocalDateTime fechaRegistro;
     private Integer numeroVisitas;
     private Double totalGastado;
     private Integer puntosFidelidad;
-    private LocalDate fechaUltimaComanda;
+    private LocalDateTime fechaUltimaComanda;
 
     /**
      * Constructor por defecto de ClienteFrecuenteDTO.
@@ -49,7 +49,7 @@ public class ClienteFrecuenteDTO implements Serializable {
      * @param puntosFidelidad Puntos de fidelidad acumulados.
      * @param fechaUltimaComanda Fecha de la última comanda registrada.
      */
-    public ClienteFrecuenteDTO(Long idCliente, String nombre, String apellidoPaterno, String apellidoMaterno, String telefono, String correoElectronico, LocalDate fechaRegistro, Integer numeroVisitas, Double totalGastado, Integer puntosFidelidad, LocalDate fechaUltimaComanda) {
+    public ClienteFrecuenteDTO(Long idCliente, String nombre, String apellidoPaterno, String apellidoMaterno, String telefono, String correoElectronico, LocalDateTime fechaRegistro, Integer numeroVisitas, Double totalGastado, Integer puntosFidelidad, LocalDateTime fechaUltimaComanda) {
         this.idCliente = idCliente;
         this.nombre = nombre;
         this.apellidoPaterno = apellidoPaterno;
@@ -111,11 +111,11 @@ public class ClienteFrecuenteDTO implements Serializable {
         this.correoElectronico = correoElectronico;
     }
 
-    public LocalDate getFechaRegistro() {
+    public LocalDateTime getFechaRegistro() {
         return fechaRegistro;
     }
 
-    public void setFechaRegistro(LocalDate fechaRegistro) {
+    public void setFechaRegistro(LocalDateTime fechaRegistro) {
         this.fechaRegistro = fechaRegistro;
     }
 
@@ -143,11 +143,11 @@ public class ClienteFrecuenteDTO implements Serializable {
         this.puntosFidelidad = puntosFidelidad;
     }
 
-    public LocalDate getFechaUltimaComanda() {
+    public LocalDateTime getFechaUltimaComanda() {
         return fechaUltimaComanda;
     }
 
-    public void setFechaUltimaComanda(LocalDate fechaUltimaComanda) {
+    public void setFechaUltimaComanda(LocalDateTime fechaUltimaComanda) {
         this.fechaUltimaComanda = fechaUltimaComanda;
     }
 }

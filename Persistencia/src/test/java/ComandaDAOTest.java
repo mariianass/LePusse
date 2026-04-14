@@ -165,10 +165,10 @@ public class ComandaDAOTest {
             cliente.setApellidoMaterno("DAO");
             cliente.setTelefono("6441000" + sufijo);
             cliente.setCorreoElectronico("cliente" + sufijo + "@correo.com");
-            cliente.setFechaRegistro(LocalDate.now());
+            cliente.setFechaRegistro(LocalDateTime.now());
             cliente.setNumeroVisitas(1);
             cliente.setPuntosFidelidad(0);
-            cliente.setFechaUltimaComanda(LocalDate.now());
+            cliente.setFechaUltimaComanda(LocalDateTime.now());
 
             em.getTransaction().begin();
             em.persist(cliente);

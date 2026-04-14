@@ -16,7 +16,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -169,7 +169,7 @@ public class frmRegistrarClienteFrecuente extends JFrame {
                 nuevoCliente.setApellidoMaterno(aMaterno);
                 nuevoCliente.setTelefono(tel);
                 nuevoCliente.setCorreoElectronico(correo.isEmpty() ? null : correo);
-                nuevoCliente.setFechaRegistro(LocalDate.now());
+                nuevoCliente.setFechaRegistro(LocalDateTime.now());
 
                 try {
                     coordinador.registrarClienteFrecuente(nuevoCliente);

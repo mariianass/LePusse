@@ -5,12 +5,14 @@
 package entidades;
 
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+import org.hibernate.annotations.Formula;
 
 /**
  * Representa a un cliente frecuente dentro del sistema.
@@ -23,15 +25,25 @@ import javax.persistence.Table;
 @DiscriminatorValue("FRECUENTE")
 @PrimaryKeyJoinColumn(name = "id_cliente")
 public class ClienteFrecuente extends Cliente implements Serializable {
-    
+ 
     @Column(name = "fecha_registro", nullable = false)
-    private LocalDate fechaRegistro;
-    @Column(name = "numero_visitas")
+    private LocalDateTime fechaRegistro;
+    
+    @Transient
+    @Formula("(SELECT COUNT(c) FROM comandas c WHERE c.id_cliente = id_cliente")
     private Integer numeroVisitas;
-    @Column(name = "puntos_fidelidad")
+    
+    @Transient
+    @Formula("(SELECT FLOOR(SUM(c.total_venta)/20) FROM comandas c WHERE c.id_cliente = id_cliente")
     private Integer puntosFidelidad;
-    @Column(name = "fecha_ultima_comanda")
-    private LocalDate fechaUltimaComanda;
+    
+    @Transient
+    @Formula("(SELECT SUM(c.total_venta) FROM comandas c WHERE c.id_cliente = id_cliente")
+    private Double totalGastado;
+    
+    @Transient
+    @Formula("(SELECT MAX(c.fecha_hora_creacion) FROM comandas c WHERE c.id_cliente = id_cliente)")
+    private LocalDateTime fechaUltimaComanda;
 
     /**
      * Constructor por defecto requerido por JPA.
@@ -44,15 +56,10 @@ public class ClienteFrecuente extends Cliente implements Serializable {
      * No incluye los atributos heredados de Cliente.
      *
      * @param fechaRegistro Fecha de registro como cliente frecuente.
-     * @param numeroVisitas Número de visitas acumuladas.
-     * @param puntosFidelidad Puntos de fidelidad acumulados.
-     * @param fechaUltimaComanda Fecha de la última compra/comanda.
+     * 
      */
-    public ClienteFrecuente(LocalDate fechaRegistro, Integer numeroVisitas, Integer puntosFidelidad, LocalDate fechaUltimaComanda) {
+    public ClienteFrecuente(LocalDateTime fechaRegistro) {
         this.fechaRegistro = fechaRegistro;
-        this.numeroVisitas = numeroVisitas;
-        this.puntosFidelidad = puntosFidelidad;
-        this.fechaUltimaComanda = fechaUltimaComanda;
     }
 
     /**
@@ -60,9 +67,6 @@ public class ClienteFrecuente extends Cliente implements Serializable {
      * de ClienteFrecuente como los atributos heredados de Cliente.
      *
      * @param fechaRegistro Fecha de registro como cliente frecuente.
-     * @param numeroVisitas Número de visitas acumuladas.
-     * @param puntosFidelidad Puntos de fidelidad acumulados.
-     * @param fechaUltimaComanda Fecha de la última compra/comanda.
      * @param id Identificador único del cliente.
      * @param nombre Nombre(s) del cliente.
      * @param apellidoPaterno Apellido paterno del cliente.
@@ -70,19 +74,16 @@ public class ClienteFrecuente extends Cliente implements Serializable {
      * @param telefono Número de teléfono del cliente.
      * @param correoElectronico Correo electrónico del cliente.
      */
-    public ClienteFrecuente(LocalDate fechaRegistro, Integer numeroVisitas, Integer puntosFidelidad, LocalDate fechaUltimaComanda, Long id, String nombre, String apellidoPaterno, String apellidoMaterno, String telefono, String correoElectronico) {
+    public ClienteFrecuente(LocalDateTime fechaRegistro, Long id, String nombre, String apellidoPaterno, String apellidoMaterno, String telefono, String correoElectronico) {
         super(id, nombre, apellidoPaterno, apellidoMaterno, telefono, correoElectronico);
         this.fechaRegistro = fechaRegistro;
-        this.numeroVisitas = numeroVisitas;
-        this.puntosFidelidad = puntosFidelidad;
-        this.fechaUltimaComanda = fechaUltimaComanda;
     }
 
-    public LocalDate getFechaRegistro() {
+    public LocalDateTime getFechaRegistro() {
         return fechaRegistro;
     }
 
-    public void setFechaRegistro(LocalDate fechaRegistro) {
+    public void setFechaRegistro(LocalDateTime fechaRegistro) {
         this.fechaRegistro = fechaRegistro;
     }
 
@@ -102,14 +103,23 @@ public class ClienteFrecuente extends Cliente implements Serializable {
         this.puntosFidelidad = puntosFidelidad;
     }
 
-    public LocalDate getFechaUltimaComanda() {
+    public LocalDateTime getFechaUltimaComanda() {
         return fechaUltimaComanda;
     }
 
-    public void setFechaUltimaComanda(LocalDate fechaUltimaComanda) {
+    public void setFechaUltimaComanda(LocalDateTime fechaUltimaComanda) {
         this.fechaUltimaComanda = fechaUltimaComanda;
     }
 
+    public Double getTotalGastado() {
+        return totalGastado;
+    }
+
+    public void setTotalGastado(Double totalGastado) {
+        this.totalGastado = totalGastado;
+    }
+    
+    
     @Override
     public String toString() {
         return "ClienteFrecuente{" + "fechaRegistro=" + fechaRegistro + ", numeroVisitas=" + numeroVisitas + ", puntosFidelidad=" + puntosFidelidad + ", fechaUltimaComanda=" + fechaUltimaComanda + '}';

@@ -222,9 +222,6 @@ public class ClienteFrecuenteBO implements IClienteFrecuenteBO {
         
         return new ClienteFrecuente(
                 clienteFrecuenteDTO.getFechaRegistro(),
-                clienteFrecuenteDTO.getNumeroVisitas(),
-                clienteFrecuenteDTO.getPuntosFidelidad(),
-                clienteFrecuenteDTO.getFechaUltimaComanda(),
                 clienteFrecuenteDTO.getIdCliente(),
                 clienteFrecuenteDTO.getNombre(),
                 clienteFrecuenteDTO.getApellidoPaterno(),
