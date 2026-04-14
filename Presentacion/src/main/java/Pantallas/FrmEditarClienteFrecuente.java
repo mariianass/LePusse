@@ -14,6 +14,8 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -132,6 +134,15 @@ public class FrmEditarClienteFrecuente extends JFrame {
 
         JPanel panelBotones = new JPanel();
         panelBotones.setOpaque(false);
+        
+        txtTelefono.addKeyListener(new KeyAdapter() {
+            public void keyTyped(KeyEvent e) {
+                char c = e.getKeyChar();
+                if (!Character.isDigit(c) || txtTelefono.getText().length() >= 10) {
+                    e.consume();
+                }
+            }
+        });
 
         BotonRedondeado btnEliminar = new BotonRedondeado("Eliminar", 18);
         btnEliminar.setBackground(new Color(200, 70, 70));

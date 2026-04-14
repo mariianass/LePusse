@@ -14,6 +14,8 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.time.LocalDate;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
@@ -130,6 +132,15 @@ public class frmRegistrarClienteFrecuente extends JFrame {
 
         JPanel panelBotones = new JPanel();
         panelBotones.setOpaque(false);
+        
+        txtTelefono.addKeyListener(new KeyAdapter() {
+            public void keyTyped(KeyEvent e) {
+                char c = e.getKeyChar();
+                if (!Character.isDigit(c) || txtTelefono.getText().length() >= 10) {
+                    e.consume();
+                }
+            }
+        });
 
         BotonRedondeado btnCancelar = new BotonRedondeado("Cancelar", 18);
         btnCancelar.setPreferredSize(new Dimension(130, 40));
