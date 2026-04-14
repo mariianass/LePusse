@@ -3,6 +3,7 @@ package Controlador;
 import BOs.ClienteFrecuenteBO;
 import BOs.IngredienteBO;
 import BOs.ProductoBO;
+import BOs.ReporteClienteBO;
 import Pantallas.FrmClientesFrecuentes;
 import Pantallas.FrmEditarClienteFrecuente;
 import Pantallas.FrmEditarIngrediente;
@@ -22,6 +23,7 @@ import enumsDTO.TipoProductoDTO;
 import enumsDTO.UnidadMedidaDTO;
 import java.util.List;
 import javax.swing.JOptionPane;
+import net.sf.jasperreports.engine.JasperPrint;
 
 /**
  * Clase controladora central del sistema Restaurante Le Pusse.
@@ -35,6 +37,7 @@ public class Coordinador {
     private final ClienteFrecuenteBO clienteFrecuenteBO;
     private final IngredienteBO ingredienteBO;
     private final ProductoBO productoBO;
+    private final ReporteClienteBO reporteClienteBO;
 
     // Capa Presentación (Pantallas)
     private FrmMenuAcceso frmMenuAcceso;
@@ -59,6 +62,7 @@ public class Coordinador {
         this.clienteFrecuenteBO = ClienteFrecuenteBO.getInstance();
         this.ingredienteBO = IngredienteBO.getInstance();
         this.productoBO = ProductoBO.getInstance();
+        this.reporteClienteBO = ReporteClienteBO.getInstance();
     }
 
     /**
@@ -615,6 +619,22 @@ public class Coordinador {
 
         frmReportes.setVisible(true);
         frmReportes.toFront();
+    }
+    
+    public JasperPrint generarVistaReporteClientes(String nombre, Integer minimoVisitas) throws Exception {
+        try {
+            return reporteClienteBO.generarJasperClientesFrecuentes(nombre, minimoVisitas);
+        } catch (Exception ex) {
+            throw new Exception("Error al generar la vista del reporte de clientes.", ex);
+        }
+    }
+
+    public void generarPDFReporteClientes(String rutaSalidaPDF, String nombre, Integer minimoVisitas) throws Exception {
+        try {
+            reporteClienteBO.generarReportePDF(rutaSalidaPDF, nombre, minimoVisitas);
+        } catch (Exception ex) {
+            throw new Exception("Error al generar el PDF del reporte de clientes.", ex);
+        }
     }
     
 
