@@ -13,14 +13,13 @@ import javax.swing.border.LineBorder;
 
 /**
  * Interfaz de Acceso al Sistema
- * 
+ *
  * @author Mariana
  */
 public class FrmMenuAcceso extends JFrame {
-    
+
     private final Coordinador coordinador;
 
-    
     public FrmMenuAcceso(Coordinador coordinador) {
         this.coordinador = coordinador;
         initComponents();
@@ -122,19 +121,19 @@ public class FrmMenuAcceso extends JFrame {
 
         tarjeta.add(lblTitulo);
         tarjeta.add(lblIcono);
-        
+
         JPanel panelBoton = new JPanel();
         panelBoton.setOpaque(false);
         panelBoton.add(btnIngresar);
-        
+
         tarjeta.add(panelBoton);
-        
+
         btnIngresar.addActionListener(e -> {
-        if (titulo.equals("Administrador")) {
-            coordinador.mostrarGestionarClientesFrecuentes();
-        } else {
-            // Aqui llamaremos al  metodo de coordinar que llamara a la pantalla de comandas.
-        }
+            if (titulo.equals("Administrador")) {
+                coordinador.mostrarGestionarClientesFrecuentes();
+            } else {
+                coordinador.mostrarGestionarComandas();
+            }
         });
 
         return tarjeta;

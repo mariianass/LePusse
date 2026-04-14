@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package BOs;
 
 import dtos.ClienteFrecuenteDTO;
@@ -10,25 +6,27 @@ import java.io.File;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import net.sf.jasperreports.engine.JRException;
+import java.util.HashMap;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 
 /**
- * Lógica de negocio para generar el reporte de clientes frecuentes en PDF
- * usando JasperReports.
+ * Clase encargada de la lógica de negocio para la generación de reportes
+ * de clientes frecuentes.
  * 
- * Esta clase obtiene la información desde ClienteFrecuenteBO y la exporta
- * a un archivo PDF a partir de una plantilla .jrxml.
+ * Permite obtener, filtrar y generar reportes en formato Jasper y PDF
+ * a partir de la información de clientes frecuentes.
  * 
- * @author regina, mariana e isaac
+ * Sigue el patrón Singleton para asegurar una única instancia.
+ * 
+ * @author Mariana, Regina, Isaac
  */
 public class ReporteClienteBO {
 
@@ -36,7 +34,7 @@ public class ReporteClienteBO {
     private final ClienteFrecuenteBO clienteFrecuenteBO;
 
     /**
-     * Constructor privado para Singleton.
+     * Constructor privado para implementar el patrón Singleton.
      */
     private ReporteClienteBO() {
         this.clienteFrecuenteBO = ClienteFrecuenteBO.getInstance();
@@ -44,8 +42,8 @@ public class ReporteClienteBO {
 
     /**
      * Obtiene la instancia única de ReporteClienteBO.
-     *
-     * @return instancia única
+     * 
+     * @return instancia única de ReporteClienteBO
      */
     public static ReporteClienteBO getInstance() {
         if (instanciaReporteClienteBO == null) {
@@ -55,147 +53,122 @@ public class ReporteClienteBO {
     }
 
     /**
-     * Obtiene los datos actuales del reporte de clientes frecuentes.
-     *
+     * Obtiene todos los clientes frecuentes registrados.
+     * 
      * @return lista de clientes frecuentes
-     * @throws NegocioException si ocurre un error al obtener los datos
+     * @throws NegocioException si ocurre un error en la obtención
      */
     public List<ClienteFrecuenteDTO> obtenerDatosReporte() throws NegocioException {
         return clienteFrecuenteBO.obtenerTodos();
     }
 
     /**
-     * Genera el reporte PDF de clientes frecuentes.
-     *
-     * @param rutaSalidaPDF ruta completa donde se guardará el archivo PDF
-     * @throws NegocioException si ocurre un error al generar el reporte
+     * Filtra los clientes frecuentes según un nombre y un mínimo de visitas.
+     * 
+     * @param nombreFiltro texto para filtrar por nombre (puede ser parcial)
+     * @param minimoVisitas número mínimo de visitas requerido
+     * @return lista de clientes que cumplen con los filtros
+     * @throws NegocioException si ocurre un error en la consulta
      */
-    public void generarReportePDF(String rutaSalidaPDF) throws NegocioException {
-        List<ClienteFrecuenteDTO> clientes = obtenerDatosReporte();
-        generarReportePDF(rutaSalidaPDF, clientes);
+    public List<ClienteFrecuenteDTO> filtrarClientes(String nombreFiltro, Integer minimoVisitas) throws NegocioException {
+        List<ClienteFrecuenteDTO> todos = clienteFrecuenteBO.obtenerTodos();
+        List<ClienteFrecuenteDTO> filtrados = new ArrayList<>();
+
+        String nombreLimpio = nombreFiltro != null ? nombreFiltro.trim().toLowerCase() : "";
+        int minimo = minimoVisitas != null ? minimoVisitas : 0;
+
+        for (ClienteFrecuenteDTO c : todos) {
+            String nombreCompleto = construirNombreCompleto(c).toLowerCase();
+            int visitas = c.getNumeroVisitas() != null ? c.getNumeroVisitas() : 0;
+
+            boolean cumpleNombre = nombreLimpio.isEmpty() || nombreCompleto.contains(nombreLimpio);
+            boolean cumpleVisitas = visitas >= minimo;
+
+            if (cumpleNombre && cumpleVisitas) {
+                filtrados.add(c);
+            }
+        }
+
+        return filtrados;
     }
 
     /**
-     * Genera el reporte PDF de clientes frecuentes usando una lista dada.
-     *
-     * @param rutaSalidaPDF ruta completa donde se guardará el archivo PDF
-     * @param clientes lista de clientes frecuentes
-     * @throws NegocioException si ocurre un error al generar el reporte
+     * Genera un reporte JasperPrint de clientes frecuentes aplicando filtros.
+     * 
+     * @param nombreFiltro filtro por nombre del cliente
+     * @param minimoVisitas filtro por número mínimo de visitas
+     * @return objeto JasperPrint listo para visualizar
+     * @throws Exception si ocurre un error en la generación del reporte
      */
-    public void generarReportePDF(String rutaSalidaPDF, List<ClienteFrecuenteDTO> clientes) throws NegocioException {
+    public JasperPrint generarJasperClientesFrecuentes(String nombreFiltro, Integer minimoVisitas) throws Exception {
+        List<ClienteFrecuenteDTO> lista = filtrarClientes(nombreFiltro, minimoVisitas);
+
+        InputStream reporteStream = getClass().getClassLoader()
+                .getResourceAsStream("reportes/ReporteClientesFrecuentes.jrxml");
+
+        if (reporteStream == null) {
+            throw new NegocioException("No se encontró la plantilla ReporteClientesFrecuentes.jrxml");
+        }
+
+        JasperReport report = JasperCompileManager.compileReport(reporteStream);
+
+        Map<String, Object> parametros = new HashMap<>();
+        parametros.put("nombreReporte", "Reporte de Clientes Frecuentes");
+        parametros.put("fechaGeneracion", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+        parametros.put("filtroNombre", (nombreFiltro != null && !nombreFiltro.isBlank()) ? nombreFiltro : "Todos");
+        parametros.put("filtroMinimoVisitas", minimoVisitas != null ? minimoVisitas : 0);
+
+        JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(lista);
+
+        return JasperFillManager.fillReport(report, parametros, dataSource);
+    }
+
+    /**
+     * Genera y exporta el reporte de clientes frecuentes en formato PDF.
+     * 
+     * @param rutaSalidaPDF ruta donde se guardará el archivo PDF
+     * @param nombreFiltro filtro por nombre del cliente
+     * @param minimoVisitas filtro por número mínimo de visitas
+     * @throws Exception si ocurre un error durante la generación o exportación
+     */
+    public void generarReportePDF(String rutaSalidaPDF, String nombreFiltro, Integer minimoVisitas) throws Exception {
         if (rutaSalidaPDF == null || rutaSalidaPDF.trim().isEmpty()) {
             throw new NegocioException("La ruta de salida del PDF es obligatoria.");
         }
 
-        if (clientes == null) {
-            throw new NegocioException("La lista de clientes para el reporte no puede ser nula.");
-        }
-
-        try {
-            InputStream reporteStream = getClass().getClassLoader()
-                    .getResourceAsStream("reportes/reporte_clientes_frecuentes.jrxml");
-
-            if (reporteStream == null) {
-                throw new NegocioException(
-                        "No se encontró la plantilla del reporte en resources/reportes/reporte_clientes_frecuentes.jrxml"
-                );
-            }
-
-            JasperReport jasperReport = JasperCompileManager.compileReport(reporteStream);
-
-            Map<String, Object> parametros = construirParametros(clientes);
-
-            JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(clientes);
-
-            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parametros, dataSource);
-
-            asegurarCarpetaDestino(rutaSalidaPDF);
-
-            JasperExportManager.exportReportToPdfFile(jasperPrint, rutaSalidaPDF);
-
-        } catch (JRException e) {
-            throw new NegocioException("Error al generar el reporte PDF de clientes frecuentes.", e);
-        }
+        JasperPrint jasperPrint = generarJasperClientesFrecuentes(nombreFiltro, minimoVisitas);
+        asegurarCarpetaDestino(rutaSalidaPDF);
+        JasperExportManager.exportReportToPdfFile(jasperPrint, rutaSalidaPDF);
     }
 
     /**
-     * Construye los parámetros que usará el reporte Jasper.
-     *
-     * @param clientes lista de clientes frecuentes
-     * @return mapa de parámetros
+     * Construye el nombre completo de un cliente a partir de sus atributos.
+     * 
+     * @param cliente cliente frecuente
+     * @return nombre completo formateado
      */
-    private Map<String, Object> construirParametros(List<ClienteFrecuenteDTO> clientes) {
-        Map<String, Object> parametros = new HashMap<>();
+    private String construirNombreCompleto(ClienteFrecuenteDTO cliente) {
+        StringBuilder sb = new StringBuilder();
 
-        parametros.put("tituloReporte", "Reporte de Clientes Frecuentes");
-        parametros.put("fechaGeneracion", LocalDateTime.now()
-                .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
-        parametros.put("totalClientes", clientes.size());
-        parametros.put("totalVisitas", calcularTotalVisitas(clientes));
-        parametros.put("totalPuntos", calcularTotalPuntos(clientes));
-        parametros.put("totalGastado", calcularTotalGastado(clientes));
-
-        return parametros;
-    }
-
-    /**
-     * Calcula el total de visitas de todos los clientes.
-     *
-     * @param clientes lista de clientes
-     * @return total de visitas
-     */
-    private int calcularTotalVisitas(List<ClienteFrecuenteDTO> clientes) {
-        int total = 0;
-
-        for (ClienteFrecuenteDTO cliente : clientes) {
-            if (cliente.getNumeroVisitas() != null) {
-                total += cliente.getNumeroVisitas();
-            }
+        if (cliente.getNombre() != null && !cliente.getNombre().isBlank()) {
+            sb.append(cliente.getNombre().trim());
+        }
+        if (cliente.getApellidoPaterno() != null && !cliente.getApellidoPaterno().isBlank()) {
+            if (sb.length() > 0) sb.append(" ");
+            sb.append(cliente.getApellidoPaterno().trim());
+        }
+        if (cliente.getApellidoMaterno() != null && !cliente.getApellidoMaterno().isBlank()) {
+            if (sb.length() > 0) sb.append(" ");
+            sb.append(cliente.getApellidoMaterno().trim());
         }
 
-        return total;
+        return sb.length() > 0 ? sb.toString() : "-";
     }
 
     /**
-     * Calcula el total de puntos de fidelidad.
-     *
-     * @param clientes lista de clientes
-     * @return total de puntos
-     */
-    private int calcularTotalPuntos(List<ClienteFrecuenteDTO> clientes) {
-        int total = 0;
-
-        for (ClienteFrecuenteDTO cliente : clientes) {
-            if (cliente.getPuntosFidelidad() != null) {
-                total += cliente.getPuntosFidelidad();
-            }
-        }
-
-        return total;
-    }
-
-    /**
-     * Calcula el total gastado acumulado.
-     *
-     * @param clientes lista de clientes
-     * @return total gastado
-     */
-    private double calcularTotalGastado(List<ClienteFrecuenteDTO> clientes) {
-        double total = 0.0;
-
-        for (ClienteFrecuenteDTO cliente : clientes) {
-            if (cliente.getTotalGastado() != null) {
-                total += cliente.getTotalGastado();
-            }
-        }
-
-        return total;
-    }
-
-    /**
-     * Crea la carpeta destino si no existe.
-     *
-     * @param rutaSalidaPDF ruta completa del PDF
+     * Verifica que la carpeta destino exista, y si no, la crea.
+     * 
+     * @param rutaSalidaPDF ruta del archivo PDF
      * @throws NegocioException si no se puede crear la carpeta
      */
     private void asegurarCarpetaDestino(String rutaSalidaPDF) throws NegocioException {
@@ -204,7 +177,6 @@ public class ReporteClienteBO {
 
         if (carpetaPadre != null && !carpetaPadre.exists()) {
             boolean creada = carpetaPadre.mkdirs();
-
             if (!creada) {
                 throw new NegocioException("No se pudo crear la carpeta destino del reporte.");
             }

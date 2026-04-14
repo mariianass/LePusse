@@ -1,9 +1,12 @@
 package Controlador;
 
 import BOs.ClienteFrecuenteBO;
+import BOs.ComandaBO;
 import BOs.IngredienteBO;
 import BOs.ProductoBO;
+import BOs.ReporteClienteBO;
 import Pantallas.FrmClientesFrecuentes;
+import Pantallas.FrmComandas;
 import Pantallas.FrmEditarClienteFrecuente;
 import Pantallas.FrmEditarIngrediente;
 import Pantallas.FrmEditarProducto;
@@ -15,6 +18,7 @@ import Pantallas.FrmProductos;
 import Pantallas.FrmReportes;
 import Pantallas.frmRegistrarClienteFrecuente;
 import dtos.ClienteFrecuenteDTO;
+import dtos.ComandaDTO;
 import dtos.IngredienteDTO;
 import dtos.ProductoDTO;
 import enums.UnidadMedida;
@@ -22,21 +26,25 @@ import enumsDTO.TipoProductoDTO;
 import enumsDTO.UnidadMedidaDTO;
 import java.util.List;
 import javax.swing.JOptionPane;
+import net.sf.jasperreports.engine.JasperPrint;
 
 /**
- * Clase controladora central del sistema Restaurante Le Pusse.
- * Gestiona la navegación entre pantallas y la comunicación con la lógica de negocio.
+ * Clase controladora central del sistema Restaurante Le Pusse. Gestiona la
+ * navegación entre pantallas y la comunicación con la lógica de negocio.
  *
  * @author Mariana, Isaac y Regina
  */
 public class Coordinador {
 
     // Capa Negocio (BOs)
+    private final ComandaBO comandaBO;
     private final ClienteFrecuenteBO clienteFrecuenteBO;
     private final IngredienteBO ingredienteBO;
     private final ProductoBO productoBO;
+    private final ReporteClienteBO reporteClienteBO;
 
     // Capa Presentación (Pantallas)
+    private FrmComandas frmComandas;
     private FrmMenuAcceso frmMenuAcceso;
     private FrmClientesFrecuentes frmGestionarClientesFrecuentes;
     private frmRegistrarClienteFrecuente frmRegistrarClientesFrecuentes;
@@ -49,16 +57,18 @@ public class Coordinador {
     private FrmProductos frmProductos;
     private FrmNuevoProducto frmNuevoProducto;
     private FrmEditarProducto frmEditarProducto;
-    
+
     private FrmReportes frmReportes;
 
     /**
      * Constructor que inicializa la lógica de negocio.
      */
     public Coordinador() {
+        this.comandaBO = ComandaBO.getInstance();
         this.clienteFrecuenteBO = ClienteFrecuenteBO.getInstance();
         this.ingredienteBO = IngredienteBO.getInstance();
         this.productoBO = ProductoBO.getInstance();
+        this.reporteClienteBO = ReporteClienteBO.getInstance();
     }
 
     /**
@@ -86,9 +96,111 @@ public class Coordinador {
     }
 
     // =========================================================
+    // COMANDAS
+    // =========================================================
+    /**
+     * Hace visible la pantalla principal de gestión de comandas.
+     */
+    public void mostrarGestionarComandas() {
+        ocultarTodasLasPantallas();
+
+        if (frmComandas == null) {
+            frmComandas = new FrmComandas(this);
+        }
+
+        frmComandas.setVisible(true);
+        frmComandas.toFront();
+        frmComandas.recargarTabla();
+    }
+
+    /**
+     * Obtiene todas las comandas registradas.
+     *
+     * @return Lista de comandas.
+     * @throws Exception Si ocurre un error.
+     */
+    public List<ComandaDTO> obtenerComandas() throws Exception {
+        try {
+            return comandaBO.buscarPorFiltros("");
+        } catch (Exception ex) {
+            throw new Exception("Error al obtener las comandas.", ex);
+        }
+    }
+
+    /**
+     * Busca comandas por filtro.
+     *
+     * @param filtro Texto de búsqueda.
+     * @return Lista de comandas filtradas.
+     * @throws Exception Si ocurre un error.
+     */
+    public List<ComandaDTO> buscarComandasPorFiltro(String filtro) throws Exception {
+        try {
+            return comandaBO.buscarPorFiltros(filtro);
+        } catch (Exception ex) {
+            throw new Exception("Error al filtrar las comandas.", ex);
+        }
+    }
+
+    /**
+     * Marca una comanda como entregada.
+     *
+     * @param idComanda ID de la comanda.
+     * @throws Exception Si ocurre un error.
+     */
+    public void entregarComanda(Long idComanda) throws Exception {
+        try {
+            comandaBO.entregar(idComanda);
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage(), ex);
+        }
+    }
+
+    /**
+     * Marca una comanda como cancelada.
+     *
+     * @param idComanda ID de la comanda.
+     * @throws Exception Si ocurre un error.
+     */
+    public void cancelarComanda(Long idComanda) throws Exception {
+        try {
+            comandaBO.cancelar(idComanda);
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage(), ex);
+        }
+    }
+
+    /**
+     * Muestra la pantalla para registrar una nueva comanda.
+     *
+     * Temporalmente muestra un mensaje hasta implementar la captura completa.
+     */
+    public void mostrarNuevaComanda() {
+        JOptionPane.showMessageDialog(
+                null,
+                "Pantalla de nueva comanda pendiente de implementación.",
+                "Información",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+    /**
+     * Muestra la pantalla para editar una comanda.
+     *
+     * @param idComanda ID de la comanda.
+     */
+    public void mostrarEditarComanda(Long idComanda) {
+        JOptionPane.showMessageDialog(
+                null,
+                "Pantalla de edición de comanda pendiente de implementación. ID: " + idComanda,
+                "Información",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+    // =========================================================
     // CLIENTES FRECUENTES
     // =========================================================
-
     /**
      * Hace visible la pantalla principal de gestión de clientes frecuentes.
      */
@@ -255,7 +367,6 @@ public class Coordinador {
     // =========================================================
     // INGREDIENTES
     // =========================================================
-
     /**
      * Hace visible la pantalla principal de gestión de ingredientes.
      */
@@ -605,7 +716,7 @@ public class Coordinador {
             throw new Exception(ex.getMessage(), ex);
         }
     }
-    
+
     public void mostrarReportes() {
         ocultarTodasLasPantallas();
 
@@ -616,7 +727,22 @@ public class Coordinador {
         frmReportes.setVisible(true);
         frmReportes.toFront();
     }
-    
+
+    public JasperPrint generarVistaReporteClientes(String nombre, Integer minimoVisitas) throws Exception {
+        try {
+            return reporteClienteBO.generarJasperClientesFrecuentes(nombre, minimoVisitas);
+        } catch (Exception ex) {
+            throw new Exception("Error al generar la vista del reporte de clientes.", ex);
+        }
+    }
+
+    public void generarPDFReporteClientes(String rutaSalidaPDF, String nombre, Integer minimoVisitas) throws Exception {
+        try {
+            reporteClienteBO.generarReportePDF(rutaSalidaPDF, nombre, minimoVisitas);
+        } catch (Exception ex) {
+            throw new Exception("Error al generar el PDF del reporte de clientes.", ex);
+        }
+    }
 
     /**
      * Oculta todas las pantallas activas del sistema.
@@ -624,6 +750,9 @@ public class Coordinador {
     private void ocultarTodasLasPantallas() {
         if (frmMenuAcceso != null) {
             frmMenuAcceso.setVisible(false);
+        }
+        if (frmComandas != null) {
+            frmComandas.setVisible(false);
         }
         if (frmGestionarClientesFrecuentes != null) {
             frmGestionarClientesFrecuentes.setVisible(false);

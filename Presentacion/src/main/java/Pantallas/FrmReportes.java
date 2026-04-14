@@ -15,12 +15,17 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.io.File;
 import javax.swing.BorderFactory;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.view.JasperViewer;
 
 /**
  * Pantalla de reportes
@@ -35,6 +40,7 @@ public class FrmReportes extends JFrame {
     private BotonRedondeado btnReporteComandas;
     private BotonRedondeado btnReporteClientes;
     private BotonRedondeado btnConsultar;
+    private BotonRedondeado btnDescargarPDF;
 
     private JDateChooser dcFechaInicio;
     private JDateChooser dcFechaFin;
@@ -111,6 +117,16 @@ public class FrmReportes extends JFrame {
         btnConsultar.setForeground(Color.WHITE);
         btnConsultar.setFont(new Font("Segoe UI", Font.BOLD, 15));
         panelTarjeta.add(btnConsultar);
+        
+        btnDescargarPDF = new BotonRedondeado("Descargar PDF", 18);
+        btnDescargarPDF.setBounds(235, 360, 180, 50);
+        btnDescargarPDF.setBackground(PaletaColores.DORADO);
+        btnDescargarPDF.setForeground(PaletaColores.MARRON_OSCURO);
+        btnDescargarPDF.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        panelTarjeta.add(btnDescargarPDF);
+
+        btnConsultar.addActionListener(e -> consultarReporte());
+        btnDescargarPDF.addActionListener(e -> descargarPDF());
 
         zonaCentral.add(btnReporteComandas);
         zonaCentral.add(btnReporteClientes);
@@ -188,6 +204,86 @@ public class FrmReportes extends JFrame {
             btnReporteClientes.setForeground(Color.WHITE);
             btnReporteComandas.setBackground(PaletaColores.BLANCO_SUAVE);
             btnReporteComandas.setForeground(PaletaColores.DORADO);
+        }
+    }
+    
+    private void consultarReporte() {
+        try {
+            if (tipoActual == TipoReporte.CLIENTES) {
+                String nombre = txtNombreCliente != null ? txtNombreCliente.getText().trim() : "";
+                Integer minimoVisitas = obtenerMinimoVisitas();
+
+                JasperPrint jasperPrint = coordinador.generarVistaReporteClientes(nombre, minimoVisitas);
+                JasperViewer.viewReport(jasperPrint, false);
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "El reporte de comandas aún no está disponible.",
+                        "Información",
+                        JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Error al consultar el reporte: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void descargarPDF() {
+        try {
+            if (tipoActual == TipoReporte.CLIENTES) {
+                String nombre = txtNombreCliente != null ? txtNombreCliente.getText().trim() : "";
+                Integer minimoVisitas = obtenerMinimoVisitas();
+
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Guardar reporte PDF");
+                fileChooser.setSelectedFile(new File("ReporteClientesFrecuentes.pdf"));
+
+                int opcion = fileChooser.showSaveDialog(this);
+
+                if (opcion == JFileChooser.APPROVE_OPTION) {
+                    String ruta = fileChooser.getSelectedFile().getAbsolutePath();
+
+                    if (!ruta.toLowerCase().endsWith(".pdf")) {
+                        ruta += ".pdf";
+                    }
+
+                    coordinador.generarPDFReporteClientes(ruta, nombre, minimoVisitas);
+
+                    JOptionPane.showMessageDialog(this,
+                            "Reporte PDF generado correctamente.",
+                            "Éxito",
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "El reporte de comandas aún no está disponible.",
+                        "Información",
+                        JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Error al generar el PDF: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private Integer obtenerMinimoVisitas() throws Exception {
+        String texto = txtMinimoVisitas != null ? txtMinimoVisitas.getText().trim() : "";
+
+        if (texto.isEmpty()) {
+            return 0;
+        }
+
+        try {
+            int valor = Integer.parseInt(texto);
+            if (valor < 0) {
+                throw new Exception("El número mínimo de visitas no puede ser negativo.");
+            }
+            return valor;
+        } catch (NumberFormatException e) {
+            throw new Exception("El número mínimo de visitas debe ser un entero válido.");
         }
     }
 }
