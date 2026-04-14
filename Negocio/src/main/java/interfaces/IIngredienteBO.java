@@ -5,7 +5,7 @@
 package interfaces;
 
 import dtos.IngredienteDTO;
-import enums.UnidadMedida;
+import enumsDTO.UnidadMedidaDTO;
 import excepciones.NegocioException;
 import java.util.List;
 
@@ -16,7 +16,7 @@ import java.util.List;
  */
 public interface IIngredienteBO {
     
-    List<IngredienteDTO> buscarPorNombreYUnidad(String nombre, UnidadMedida unidad) throws NegocioException;
+    List<IngredienteDTO> buscarPorNombreYUnidad(String nombre, UnidadMedidaDTO unidad) throws NegocioException;
     IngredienteDTO buscarPorId(Long id) throws NegocioException;
     IngredienteDTO guardar(IngredienteDTO ingredienteDTO) throws NegocioException;
     IngredienteDTO editar(IngredienteDTO ingredienteDTO) throws NegocioException;

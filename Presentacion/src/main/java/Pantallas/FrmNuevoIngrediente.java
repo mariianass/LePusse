@@ -192,7 +192,7 @@ public class FrmNuevoIngrediente extends JFrame {
 
         btnCancelar.addActionListener(e -> {
             dispose();
-            coordinador.mostrarGestionarIngredientes();
+            coordinador.regresarAGestionIngredientes();
         });
 
         BotonRedondeado btnGuardar = new BotonRedondeado("Guardar", 18);
@@ -290,7 +290,7 @@ public class FrmNuevoIngrediente extends JFrame {
                     JOptionPane.INFORMATION_MESSAGE);
 
             dispose();
-            coordinador.mostrarGestionarIngredientes();
+            coordinador.regresarAGestionIngredientes();
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, 

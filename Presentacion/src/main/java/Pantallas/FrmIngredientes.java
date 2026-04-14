@@ -4,23 +4,20 @@
 */
 package Pantallas;
 
-import Componentes.BotonEditar;
 import Componentes.BotonRedondeado;
 import Componentes.MenuLateralPanel;
 import Controlador.Coordinador;
 import Estilos.Dimensiones;
 import Estilos.PaletaColores;
 import dtos.IngredienteDTO;
+import enumsDTO.UnidadMedidaDTO;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -58,7 +55,6 @@ public class FrmIngredientes extends JFrame {
     private JTextField txtBuscar;
     private JComboBox<String> cmbUnidadMedida;
 
-    private List<IngredienteDTO> ingredientes;
     
     // Booleano para control de comportamiento, si es pantalla principal de ingredientes o solo de seleccion.
     // Si es false, es la pantalla normal de ingredientes, donde aparece el buscador y el boton agregar
@@ -67,7 +63,6 @@ public class FrmIngredientes extends JFrame {
 
     public FrmIngredientes(Coordinador coordinador, boolean modoSeleccion) {
         this.coordinador = coordinador;
-        this.ingredientes = new ArrayList<>();
         this.modoSeleccion = modoSeleccion;
 
         setTitle("Restaurante Le Pusse - " + (modoSeleccion ? "Seleccionar Ingrediente" : "Ingredientes"));
@@ -289,22 +284,20 @@ public class FrmIngredientes extends JFrame {
     }
     
     private void enviarIngredienteAProducto(Long id) {
-        IngredienteDTO seleccionado = ingredientes.stream()
-                .filter(i -> i.getIdIngrediente().equals(id))
-                .findFirst()
-                .orElse(null);
+        try {
+        IngredienteDTO seleccionado = coordinador.buscarIngredientePorId(id);
 
-        if (seleccionado != null) {
-            // Mandamos el ingrediente al coordinador para que se agregue al producto
-            // Cerramos la ventana de selección para regresar a la de productos
+        if (seleccionado != null) {      
             this.dispose();
         }
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "Error al seleccionar el ingrediente: " + e.getMessage());
+    }
     }
 
     private void cargarIngredientes() {
         try {
-            ingredientes = coordinador.obtenerIngredientes();
-            llenarTabla(ingredientes);
+            llenarTabla(coordinador.obtenerIngredientes());
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error al cargar: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -313,26 +306,27 @@ public class FrmIngredientes extends JFrame {
     private void aplicarFiltros() {
         if (cmbUnidadMedida.getSelectedItem() == null) return;
 
-        String texto = txtBuscar.getText().trim().toLowerCase();
-        String unidadSeleccionada = cmbUnidadMedida.getSelectedItem().toString();
+        String textoBuscado = txtBuscar.getText().trim();
+        String seleccionCombo = cmbUnidadMedida.getSelectedItem().toString();
 
-        boolean buscarTodo = texto.isEmpty() || "buscar por nombre...".equals(texto);
-        boolean todasLasUnidades = "Todas las unidades".equals(unidadSeleccionada);
+        if ("buscar por nombre...".equalsIgnoreCase(textoBuscado)) {
+            textoBuscado = "";
+        }
 
-        List<IngredienteDTO> filtrados = new ArrayList<>();
-
-        for (IngredienteDTO ing : ingredientes) {
-            String nombre = (ing.getNombre() != null) ? ing.getNombre().toLowerCase() : "";
-            String unidadIngrediente = (ing.getUnidadMedida() != null) ? ing.getUnidadMedida().toString() : "";
-
-            boolean coincideNombre = buscarTodo || nombre.contains(texto);
-            boolean coincideUnidad = todasLasUnidades || unidadIngrediente.equalsIgnoreCase(unidadSeleccionada);
-
-            if (coincideNombre && coincideUnidad) {
-                filtrados.add(ing);
+        UnidadMedidaDTO unidadEnum = null;
+        if (!"Todas las unidades".equals(seleccionCombo)) {
+            try {
+                unidadEnum = UnidadMedidaDTO.valueOf(seleccionCombo.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                unidadEnum = null;
             }
         }
-        llenarTabla(filtrados);
+        try {
+            List<IngredienteDTO> filtrados = coordinador.buscarIngredientesPorNombreYUnidad(textoBuscado, unidadEnum);
+            llenarTabla(filtrados);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error al filtrar: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void llenarTabla(List<IngredienteDTO> ingredientes) {
