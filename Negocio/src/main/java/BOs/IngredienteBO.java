@@ -82,9 +82,9 @@ public class IngredienteBO implements IIngredienteBO {
      * @throws NegocioException Si ocurre un error durante la búsqueda.
      */
     @Override
-    public List<IngredienteDTO> buscarPorNombreYUnidad(String nombre, UnidadMedida unidad) throws NegocioException {
+    public List<IngredienteDTO> buscarPorNombreYUnidad(String nombre, UnidadMedidaDTO unidad) throws NegocioException {
         try {
-            List<Ingrediente> ingredientes = ingredienteDAO.buscarPorNombreYUnidad(nombre, unidad);
+            List<Ingrediente> ingredientes = ingredienteDAO.buscarPorNombreYUnidad(nombre, convertirUnidadMedidaEntidad(unidad));
             List<IngredienteDTO> ingredientesDTO = new ArrayList<>();
 
             if (ingredientes != null) {

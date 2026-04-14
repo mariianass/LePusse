@@ -106,11 +106,10 @@ public class FrmEditarIngrediente extends JFrame {
         agregarFila(formulario, gbc, 3, "Unidad de Medida", cbUnidadMedida);
         agregarFila(formulario, gbc, 5, "Cantidad en Inventario", txtStock);
 
-        // Espaciador para mantener la estructura de 2 columnas de Clientes
         gbc.gridx = 1; gbc.gridy = 1; gbc.weightx = 0.5;
         formulario.add(new javax.swing.Box.Filler(new Dimension(0,0), new Dimension(0,0), new Dimension(32767,0)), gbc);
 
-        // Panel de Botones alineado a la derecha
+
         JPanel pnlBotones = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 10, 0));
         pnlBotones.setOpaque(false);
 
@@ -123,7 +122,7 @@ public class FrmEditarIngrediente extends JFrame {
         BotonRedondeado btnCancelar = new BotonRedondeado("Cancelar", 18);
         btnCancelar.setBackground(new Color(232, 216, 182));
         btnCancelar.setPreferredSize(new Dimension(120, 40));
-        btnCancelar.addActionListener(e -> coordinador.mostrarGestionarIngredientes());
+        btnCancelar.addActionListener(e -> coordinador.regresarAGestionIngredientes());
 
         BotonRedondeado btnGuardar = new BotonRedondeado("Guardar", 18);
         btnGuardar.setBackground(PaletaColores.MARRON_OSCURO);
@@ -187,10 +186,10 @@ public class FrmEditarIngrediente extends JFrame {
                     ingredienteDTO.setUnidadMedida((UnidadMedidaDTO) cbUnidadMedida.getSelectedItem());
                     ingredienteDTO.setStockActual(Double.parseDouble(txtStock.getText()));
                     
-                    coordinador.actualizarIngrediente(ingredienteDTO); // Ahora dentro de try-catch
+                    coordinador.actualizarIngrediente(ingredienteDTO); 
                     
                     JOptionPane.showMessageDialog(this, "Guardado correctamente");
-                    coordinador.mostrarGestionarIngredientes();
+                    coordinador.regresarAGestionIngredientes();
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(this, "Error al guardar: " + e.getMessage());
                 }
@@ -203,7 +202,7 @@ public class FrmEditarIngrediente extends JFrame {
             try {
                 coordinador.eliminarIngrediente(ingredienteDTO.getIdIngrediente());
                 JOptionPane.showMessageDialog(this, "Eliminado correctamente");
-                coordinador.mostrarGestionarIngredientes();
+                coordinador.regresarAGestionIngredientes();
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, "Error al eliminar: " + e.getMessage());
             }

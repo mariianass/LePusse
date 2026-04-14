@@ -12,12 +12,14 @@ import Pantallas.FrmMenuAcceso;
 import Pantallas.FrmNuevoIngrediente;
 import Pantallas.FrmNuevoProducto;
 import Pantallas.FrmProductos;
+import Pantallas.FrmReportes;
 import Pantallas.frmRegistrarClienteFrecuente;
 import dtos.ClienteFrecuenteDTO;
 import dtos.IngredienteDTO;
 import dtos.ProductoDTO;
 import enums.UnidadMedida;
 import enumsDTO.TipoProductoDTO;
+import enumsDTO.UnidadMedidaDTO;
 import java.util.List;
 import javax.swing.JOptionPane;
 
@@ -47,6 +49,8 @@ public class Coordinador {
     private FrmProductos frmProductos;
     private FrmNuevoProducto frmNuevoProducto;
     private FrmEditarProducto frmEditarProducto;
+    
+    private FrmReportes frmReportes;
 
     /**
      * Constructor que inicializa la lógica de negocio.
@@ -289,7 +293,7 @@ public class Coordinador {
      * @return Lista filtrada.
      * @throws Exception Si ocurre un error.
      */
-    public List<IngredienteDTO> buscarIngredientesPorNombreYUnidad(String nombre, UnidadMedida unidad) throws Exception {
+    public List<IngredienteDTO> buscarIngredientesPorNombreYUnidad(String nombre, UnidadMedidaDTO unidad) throws Exception {
         try {
             return ingredienteBO.buscarPorNombreYUnidad(nombre, unidad);
         } catch (Exception ex) {
@@ -601,6 +605,18 @@ public class Coordinador {
             throw new Exception(ex.getMessage(), ex);
         }
     }
+    
+    public void mostrarReportes() {
+        ocultarTodasLasPantallas();
+
+        if (frmReportes == null) {
+            frmReportes = new FrmReportes(this);
+        }
+
+        frmReportes.setVisible(true);
+        frmReportes.toFront();
+    }
+    
 
     /**
      * Oculta todas las pantallas activas del sistema.
@@ -635,6 +651,9 @@ public class Coordinador {
         }
         if (frmEditarProducto != null) {
             frmEditarProducto.setVisible(false);
+        }
+        if (frmReportes != null) {
+            frmReportes.setVisible(false);
         }
     }
 }
