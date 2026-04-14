@@ -6,6 +6,8 @@ package entidades;
 
 import enums.UnidadMedida;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -13,6 +15,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
@@ -43,6 +46,9 @@ public class Ingrediente implements Serializable {
     
     @Column(name = "umbral", nullable = false)
     private Double umbral;
+    
+    @OneToMany(mappedBy = "ingrediente")
+    private List<DetalleProductoIngrediente> detallesIngredientes = new ArrayList<>();
 
     /**
      * Constructor por defecto requerido por JPA.
@@ -106,6 +112,15 @@ public class Ingrediente implements Serializable {
     public void setUmbral(Double umbral) {
         this.umbral = umbral;
     }
+
+    public List<DetalleProductoIngrediente> getDetallesIngredientes() {
+        return detallesIngredientes;
+    }
+
+    public void setDetallesIngredientes(List<DetalleProductoIngrediente> detallesIngredientes) {
+        this.detallesIngredientes = detallesIngredientes;
+    }
+    
 
     @Override
     public String toString() {
