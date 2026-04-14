@@ -732,6 +732,7 @@ public class Coordinador {
         try {
             return reporteClienteBO.generarJasperClientesFrecuentes(nombre, minimoVisitas);
         } catch (Exception ex) {
+            ex.printStackTrace();
             throw new Exception("Error al generar la vista del reporte de clientes.", ex);
         }
     }

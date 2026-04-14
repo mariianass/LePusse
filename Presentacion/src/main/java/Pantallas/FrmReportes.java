@@ -222,6 +222,7 @@ public class FrmReportes extends JFrame {
                         JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             JOptionPane.showMessageDialog(this,
                     "Error al consultar el reporte: " + e.getMessage(),
                     "Error",

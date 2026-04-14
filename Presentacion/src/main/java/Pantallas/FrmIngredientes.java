@@ -286,7 +286,7 @@ public class FrmIngredientes extends JFrame {
     private void enviarIngredienteAProducto(Long id) {
         try {
         IngredienteDTO seleccionado = coordinador.buscarIngredientePorId(id);
-
+        
         if (seleccionado != null) {      
             this.dispose();
         }
