@@ -363,6 +363,17 @@ public class Coordinador {
             throw new Exception("Error al filtrar los clientes.", ex);
         }
     }
+    
+    public void registrarClienteGeneral() {
+        try {
+            clienteFrecuenteBO.registrarClienteGeneral();
+            if (frmGestionarClientesFrecuentes != null) {
+                frmGestionarClientesFrecuentes.recargarTabla();
+            }
+        } catch (Exception ex) {
+
+        }
+    }
 
     // =========================================================
     // INGREDIENTES

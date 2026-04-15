@@ -6,8 +6,10 @@ package DAOs;
 
 import conexion.ConexionBD;
 import entidades.Cliente;
+import entidades.ClienteFrecuente;
 import excepciones.PersistenciaException;
 import interfaces.IClienteDAO;
+import java.time.LocalDateTime;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -148,6 +150,33 @@ public class ClienteDAO implements IClienteDAO {
             return query.getResultList();
         } catch (Exception e) {
             throw new PersistenciaException("Error al obtener todos los clientes.", e);
+        } finally {
+            em.close();
+        }
+    }
+    
+    @Override
+    public Cliente registrarClienteGeneral() throws PersistenciaException {
+        EntityManager em = ConexionBD.crearConexion();
+        ClienteFrecuente clienteG = new ClienteFrecuente();
+
+        clienteG.setNombre("Cliente General");
+        clienteG.setApellidoPaterno(""); 
+        clienteG.setApellidoMaterno("");
+        clienteG.setTelefono("");
+        clienteG.setCorreoElectronico("");
+        clienteG.setFechaRegistro(LocalDateTime.now()); 
+
+        try {
+            em.getTransaction().begin();
+            em.persist(clienteG);
+            em.getTransaction().commit();
+            return clienteG;
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw new PersistenciaException("Error al registrar el Cliente General: " + e.getMessage(), e);
         } finally {
             em.close();
         }

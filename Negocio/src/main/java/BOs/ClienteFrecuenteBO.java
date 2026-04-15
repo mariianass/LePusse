@@ -277,4 +277,12 @@ public class ClienteFrecuenteBO implements IClienteFrecuenteBO {
         }
     }
     
+    public void registrarClienteGeneral() throws Exception {
+        try {
+            clienteDAO.registrarClienteGeneral();
+        } catch (PersistenciaException e) {
+            throw new Exception("Error en la capa de negocio al registrar cliente general: " + e.getMessage());
+        }
+    }
+    
 }

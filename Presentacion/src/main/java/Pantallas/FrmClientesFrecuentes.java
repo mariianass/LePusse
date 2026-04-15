@@ -173,9 +173,21 @@ public class FrmClientesFrecuentes extends JFrame {
         btnNuevo.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
         btnNuevo.addActionListener(e -> coordinador.mostrarRegistroClienteFrecuente());
+        
+        BotonRedondeado btnGeneral = new BotonRedondeado("Cliente General", 20);
+        btnGeneral.setPreferredSize(new Dimension(155, 40));
+        btnGeneral.setBackground(PaletaColores.TEXTO_MARRON); 
+        btnGeneral.setForeground(Color.WHITE);
+        btnGeneral.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        
+        btnGeneral.addActionListener(e -> {
+            coordinador.registrarClienteGeneral(); 
+        });
 
         JPanel panelBoton = new JPanel();
         panelBoton.setOpaque(false);
+        panelBoton.add(btnGeneral); 
+        panelBoton.add(Box.createRigidArea(new Dimension(10, 0))); 
         panelBoton.add(btnNuevo);
 
         superior.add(izquierda, BorderLayout.WEST);
