@@ -10,6 +10,7 @@ import Controlador.Coordinador;
 import Estilos.Dimensiones;
 import Estilos.PaletaColores;
 import dtos.DetalleProductoIngredienteDTO;
+import dtos.IngredienteDTO;
 import dtos.ProductoDTO;
 import enumsDTO.TipoProductoDTO;
 import java.awt.BorderLayout;
@@ -22,17 +23,20 @@ import java.awt.Insets;
 import java.io.File;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
-import javax.swing.JComboBox;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
@@ -45,6 +49,7 @@ public class FrmEditarProducto extends JFrame {
 
     private final Coordinador coordinador;
     private final ProductoDTO productoDTO;
+    private final ArrayList<DetalleProductoIngredienteDTO> detallesIngredientes;
 
     private JTextField txtNombreProducto;
     private JTextField txtPrecio;
@@ -58,6 +63,7 @@ public class FrmEditarProducto extends JFrame {
     public FrmEditarProducto(Coordinador coordinador, ProductoDTO productoDTO) {
         this.coordinador = coordinador;
         this.productoDTO = productoDTO;
+        this.detallesIngredientes = new ArrayList<>();
 
         setTitle("Restaurante Le Pusse - Editar Producto");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -110,6 +116,7 @@ public class FrmEditarProducto extends JFrame {
         gbc.insets = new Insets(8, 12, 8, 12);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
 
         JLabel lblTitulo = new JLabel("Editar Producto");
         lblTitulo.setFont(new Font("Segoe UI", Font.PLAIN, 20));
@@ -141,7 +148,6 @@ public class FrmEditarProducto extends JFrame {
 
         agregarCampo(formulario, gbc, 0, 1, "Nombre del Producto", true, txtNombreProducto);
         agregarCampo(formulario, gbc, 1, 1, "Precio", true, txtPrecio);
-
         agregarCampo(formulario, gbc, 0, 3, "Tipo de Producto", true, cmbTipoProducto);
 
         JPanel panelFoto = new JPanel(new BorderLayout(8, 0));
@@ -166,9 +172,15 @@ public class FrmEditarProducto extends JFrame {
         gbc.insets = new Insets(10, 12, 4, 12);
         formulario.add(crearEtiqueta("Descripción", true), gbc);
 
+        JScrollPane scrollDescripcion = new JScrollPane(txtDescripcion);
+        scrollDescripcion.setPreferredSize(new Dimension(0, 120));
+        scrollDescripcion.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
+        scrollDescripcion.setBorder(BorderFactory.createLineBorder(PaletaColores.LINEA_SUAVE, 1));
+        scrollDescripcion.getViewport().setBackground(PaletaColores.BLANCO);
+
         gbc.gridy = 6;
         gbc.insets = new Insets(0, 12, 8, 12);
-        formulario.add(new JScrollPane(txtDescripcion), gbc);
+        formulario.add(scrollDescripcion, gbc);
 
         gbc.gridy = 7;
         gbc.insets = new Insets(8, 12, 8, 12);
@@ -180,7 +192,12 @@ public class FrmEditarProducto extends JFrame {
 
         gbc.gridy = 9;
         gbc.insets = new Insets(0, 12, 8, 12);
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
         formulario.add(crearPanelIngredientes(), gbc);
+
+        gbc.weighty = 0.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
         JPanel panelBotones = new JPanel();
         panelBotones.setOpaque(false);
@@ -212,32 +229,34 @@ public class FrmEditarProducto extends JFrame {
 
         gbc.gridy = 10;
         gbc.insets = new Insets(18, 12, 0, 12);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         formulario.add(panelBotones, gbc);
 
         return formulario;
     }
 
     private JPanel crearPanelIngredientes() {
-        JPanel panel = new JPanel(new BorderLayout(0, 10));
-        panel.setOpaque(false);
+        JPanel contenedor = new JPanel(new BorderLayout(0, 10));
+        contenedor.setOpaque(false);
+        contenedor.setBorder(new EmptyBorder(8, 12, 0, 12));
+        contenedor.setPreferredSize(new Dimension(0, 260));
+        contenedor.setMaximumSize(new Dimension(Integer.MAX_VALUE, 260));
+        contenedor.setMinimumSize(new Dimension(0, 260));
 
         BotonRedondeado btnAgregarIngrediente = new BotonRedondeado("Agregar Ingrediente +", 18);
-        btnAgregarIngrediente.setPreferredSize(new Dimension(190, 38));
+        btnAgregarIngrediente.setPreferredSize(new Dimension(230, 42));
         btnAgregarIngrediente.setBackground(PaletaColores.DORADO);
         btnAgregarIngrediente.setForeground(PaletaColores.MARRON_OSCURO);
         btnAgregarIngrediente.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnAgregarIngrediente.addActionListener(e -> {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Aquí después conectaremos la selección de ingredientes.",
-                    "Pendiente",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-        });
+        btnAgregarIngrediente.addActionListener(e -> abrirSeleccionIngrediente());
 
-        JPanel panelSuperior = new JPanel(new BorderLayout());
-        panelSuperior.setOpaque(false);
-        panelSuperior.add(btnAgregarIngrediente, BorderLayout.WEST);
+        JPanel parteSuperior = new JPanel(new BorderLayout(0, 8));
+        parteSuperior.setOpaque(false);
+
+        JPanel filaBoton = new JPanel(new BorderLayout());
+        filaBoton.setOpaque(false);
+        filaBoton.add(btnAgregarIngrediente, BorderLayout.WEST);
+        parteSuperior.add(filaBoton, BorderLayout.SOUTH);
 
         String[] columnas = {"Nombre", "Unidad de Medida", "Cantidad Requerida"};
         modeloIngredientes = new DefaultTableModel(null, columnas) {
@@ -248,18 +267,157 @@ public class FrmEditarProducto extends JFrame {
         };
 
         tablaIngredientes = new JTable(modeloIngredientes);
-        tablaIngredientes.setRowHeight(35);
-        tablaIngredientes.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        tablaIngredientes.setRowHeight(32);
+        tablaIngredientes.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         tablaIngredientes.setForeground(PaletaColores.TEXTO_MARRON);
         tablaIngredientes.setBackground(PaletaColores.BLANCO);
+        tablaIngredientes.setShowVerticalLines(true);
+        tablaIngredientes.setShowHorizontalLines(true);
+        tablaIngredientes.setGridColor(PaletaColores.LINEA_SUAVE);
+        tablaIngredientes.setFillsViewportHeight(true);
+        tablaIngredientes.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-        JScrollPane scroll = new JScrollPane(tablaIngredientes);
-        scroll.setPreferredSize(new Dimension(600, 160));
+        tablaIngredientes.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                int fila = tablaIngredientes.rowAtPoint(e.getPoint());
+                if (fila == -1) {
+                    return;
+                }
 
-        panel.add(panelSuperior, BorderLayout.NORTH);
-        panel.add(scroll, BorderLayout.CENTER);
+                tablaIngredientes.setRowSelectionInterval(fila, fila);
 
-        return panel;
+                if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+                    editarCantidadIngredienteSeleccionado();
+                }
+
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    mostrarMenuContextualIngredientes(e.getX(), e.getY());
+                }
+            }
+        });
+
+        javax.swing.table.JTableHeader header = tablaIngredientes.getTableHeader();
+        header.setPreferredSize(new Dimension(0, 30));
+        header.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        header.setReorderingAllowed(false);
+
+        JScrollPane scroll = new JScrollPane(
+                tablaIngredientes,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+        );
+        scroll.setBorder(BorderFactory.createLineBorder(PaletaColores.LINEA_SUAVE, 1));
+        scroll.getViewport().setBackground(PaletaColores.BLANCO);
+        scroll.setPreferredSize(new Dimension(0, 180));
+        scroll.setMinimumSize(new Dimension(0, 180));
+
+        contenedor.add(parteSuperior, BorderLayout.NORTH);
+        contenedor.add(scroll, BorderLayout.CENTER);
+
+        return contenedor;
+    }
+
+    private void mostrarMenuContextualIngredientes(int x, int y) {
+        JPopupMenu menu = new JPopupMenu();
+
+        JMenuItem itemEditar = new JMenuItem("Editar cantidad");
+        itemEditar.addActionListener(e -> editarCantidadIngredienteSeleccionado());
+
+        JMenuItem itemEliminar = new JMenuItem("Eliminar ingrediente");
+        itemEliminar.addActionListener(e -> eliminarIngredienteSeleccionado());
+
+        menu.add(itemEditar);
+        menu.add(itemEliminar);
+        menu.show(tablaIngredientes, x, y);
+    }
+
+    private void abrirSeleccionIngrediente() {
+        try {
+            FrmIngredientes selector = new FrmIngredientes(coordinador, true, this);
+            selector.setVisible(true);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No se pudieron cargar los ingredientes: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    public void agregarIngredienteSeleccionado(IngredienteDTO ingrediente) {
+        if (ingrediente == null) {
+            return;
+        }
+
+        for (DetalleProductoIngredienteDTO detalle : detallesIngredientes) {
+            if (detalle.getIngrediente() != null
+                    && detalle.getIngrediente().getIdIngrediente() != null
+                    && detalle.getIngrediente().getIdIngrediente().equals(ingrediente.getIdIngrediente())) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Ese ingrediente ya fue agregado al producto.",
+                        "Ingrediente duplicado",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+        }
+
+        String cantidadTexto = JOptionPane.showInputDialog(
+                this,
+                "Ingrese la cantidad requerida para \"" + ingrediente.getNombre() + "\":",
+                "Cantidad requerida",
+                JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (cantidadTexto == null) {
+            return;
+        }
+
+        cantidadTexto = cantidadTexto.trim();
+
+        if (cantidadTexto.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "La cantidad requerida es obligatoria.",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        try {
+            Integer cantidad = Integer.valueOf(cantidadTexto);
+
+            if (cantidad <= 0) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "La cantidad requerida debe ser mayor que cero.",
+                        "Validación",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+
+            DetalleProductoIngredienteDTO nuevoDetalle = new DetalleProductoIngredienteDTO();
+            nuevoDetalle.setIdDetalleProductoIngrediente(null);
+            nuevoDetalle.setIngrediente(ingrediente);
+            nuevoDetalle.setCantidadRequerida(cantidad);
+
+            detallesIngredientes.add(nuevoDetalle);
+            recargarTablaIngredientes();
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "La cantidad requerida debe ser un número entero válido.",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+        }
     }
 
     private void cargarDatosProducto() {
@@ -274,21 +432,12 @@ public class FrmEditarProducto extends JFrame {
         txtDescripcion.setText(productoDTO.getDescripcion() != null ? productoDTO.getDescripcion() : "");
         chkActivo.setSelected(productoDTO.getActivo() != null && productoDTO.getActivo());
 
-        modeloIngredientes.setRowCount(0);
-
+        detallesIngredientes.clear();
         if (productoDTO.getDetallesIngredientes() != null) {
-            for (DetalleProductoIngredienteDTO detalle : productoDTO.getDetallesIngredientes()) {
-                String nombre = detalle.getIngrediente() != null ? detalle.getIngrediente().getNombre() : "-";
-                String unidad = (detalle.getIngrediente() != null && detalle.getIngrediente().getUnidadMedida() != null)
-                        ? detalle.getIngrediente().getUnidadMedida().toString() : "-";
-
-                modeloIngredientes.addRow(new Object[]{
-                    nombre,
-                    unidad,
-                    detalle.getCantidadRequerida()
-                });
-            }
+            detallesIngredientes.addAll(productoDTO.getDetallesIngredientes());
         }
+
+        recargarTablaIngredientes();
     }
 
     private void seleccionarImagen() {
@@ -303,16 +452,49 @@ public class FrmEditarProducto extends JFrame {
 
     private void guardarCambios() {
         try {
-            productoDTO.setNombre(txtNombreProducto.getText().trim());
-            productoDTO.setDescripcion(txtDescripcion.getText().trim());
-            productoDTO.setPrecio(Double.valueOf(txtPrecio.getText().trim()));
+            String nombre = txtNombreProducto.getText().trim();
+            String descripcion = txtDescripcion.getText().trim();
+            String precioTexto = txtPrecio.getText().trim();
+
+            if (nombre.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "El nombre del producto es obligatorio.", "Validación", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (precioTexto.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "El precio es obligatorio.", "Validación", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (descripcion.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "La descripción es obligatoria.", "Validación", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (detallesIngredientes.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Debes agregar al menos un ingrediente al producto.",
+                        "Validación",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+
+            Double precio = Double.valueOf(precioTexto);
+
+            if (precio <= 0) {
+                JOptionPane.showMessageDialog(this, "El precio debe ser mayor que cero.", "Validación", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            productoDTO.setNombre(nombre);
+            productoDTO.setDescripcion(descripcion);
+            productoDTO.setPrecio(precio);
             productoDTO.setTipo((TipoProductoDTO) cmbTipoProducto.getSelectedItem());
             productoDTO.setRutaImagen(txtRutaImagen.getText().trim().isEmpty() ? null : txtRutaImagen.getText().trim());
             productoDTO.setActivo(chkActivo.isSelected());
-
-            if (productoDTO.getDetallesIngredientes() == null) {
-                productoDTO.setDetallesIngredientes(new ArrayList<>());
-            }
+            productoDTO.setDetallesIngredientes(new ArrayList<>(detallesIngredientes));
 
             coordinador.actualizarProducto(productoDTO);
 
@@ -374,6 +556,118 @@ public class FrmEditarProducto extends JFrame {
                     JOptionPane.ERROR_MESSAGE
             );
         }
+    }
+
+    private void editarCantidadIngredienteSeleccionado() {
+        int filaSeleccionada = tablaIngredientes.getSelectedRow();
+
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Selecciona un ingrediente de la tabla.",
+                    "Editar cantidad",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        DetalleProductoIngredienteDTO detalle = detallesIngredientes.get(filaSeleccionada);
+        IngredienteDTO ingrediente = detalle.getIngrediente();
+
+        String cantidadTexto = JOptionPane.showInputDialog(
+                this,
+                "Editar cantidad requerida para \"" + (ingrediente != null ? ingrediente.getNombre() : "Ingrediente") + "\":",
+                detalle.getCantidadRequerida()
+        );
+
+        if (cantidadTexto == null) {
+            return;
+        }
+
+        cantidadTexto = cantidadTexto.trim();
+
+        if (cantidadTexto.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "La cantidad requerida es obligatoria.",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        try {
+            Integer nuevaCantidad = Integer.valueOf(cantidadTexto);
+
+            if (nuevaCantidad <= 0) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "La cantidad requerida debe ser mayor que cero.",
+                        "Validación",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+
+            detalle.setCantidadRequerida(nuevaCantidad);
+            recargarTablaIngredientes();
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "La cantidad requerida debe ser un número entero válido.",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+        }
+    }
+
+    private void eliminarIngredienteSeleccionado() {
+        int filaSeleccionada = tablaIngredientes.getSelectedRow();
+
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Selecciona un ingrediente de la tabla.",
+                    "Eliminar ingrediente",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        int confirmacion = JOptionPane.showConfirmDialog(
+                this,
+                "¿Deseas eliminar el ingrediente seleccionado?",
+                "Confirmar eliminación",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirmacion != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        detallesIngredientes.remove(filaSeleccionada);
+        recargarTablaIngredientes();
+    }
+
+    private void recargarTablaIngredientes() {
+        modeloIngredientes.setRowCount(0);
+
+        for (DetalleProductoIngredienteDTO detalle : detallesIngredientes) {
+            String nombre = detalle.getIngrediente() != null ? detalle.getIngrediente().getNombre() : "-";
+            String unidad = (detalle.getIngrediente() != null && detalle.getIngrediente().getUnidadMedida() != null)
+                    ? detalle.getIngrediente().getUnidadMedida().toString()
+                    : "-";
+
+            modeloIngredientes.addRow(new Object[]{
+                nombre,
+                unidad,
+                detalle.getCantidadRequerida()
+            });
+        }
+
+        tablaIngredientes.revalidate();
+        tablaIngredientes.repaint();
     }
 
     private void agregarCampo(JPanel panel, GridBagConstraints gbc, int columna, int filaBase,

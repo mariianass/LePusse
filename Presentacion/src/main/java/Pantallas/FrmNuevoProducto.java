@@ -254,6 +254,36 @@ public class FrmNuevoProducto extends JFrame {
         tablaIngredientes.setGridColor(PaletaColores.LINEA_SUAVE);
         tablaIngredientes.setFillsViewportHeight(true);
         tablaIngredientes.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        
+        tablaIngredientes.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                int fila = tablaIngredientes.getSelectedRow();
+                if (fila == -1) {
+                    return;
+                }
+
+                if (e.getClickCount() == 2) {
+                    editarCantidadIngredienteSeleccionado();
+                }
+
+                if (javax.swing.SwingUtilities.isRightMouseButton(e)) {
+                    tablaIngredientes.setRowSelectionInterval(fila, fila);
+
+                    javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
+
+                    javax.swing.JMenuItem itemEditar = new javax.swing.JMenuItem("Editar cantidad");
+                    itemEditar.addActionListener(ev -> editarCantidadIngredienteSeleccionado());
+
+                    javax.swing.JMenuItem itemEliminar = new javax.swing.JMenuItem("Eliminar ingrediente");
+                    itemEliminar.addActionListener(ev -> eliminarIngredienteSeleccionado());
+
+                    menu.add(itemEditar);
+                    menu.add(itemEliminar);
+                    menu.show(tablaIngredientes, e.getX(), e.getY());
+                }
+            }
+        });
 
         javax.swing.table.JTableHeader header = tablaIngredientes.getTableHeader();
         header.setPreferredSize(new Dimension(0, 30));
@@ -521,6 +551,98 @@ public class FrmNuevoProducto extends JFrame {
                 );
             }
         }
+    }
+    
+    private void editarCantidadIngredienteSeleccionado() {
+        int filaSeleccionada = tablaIngredientes.getSelectedRow();
+
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Selecciona un ingrediente de la tabla.",
+                    "Editar cantidad",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        DetalleProductoIngredienteDTO detalle = detallesIngredientes.get(filaSeleccionada);
+        IngredienteDTO ingrediente = detalle.getIngrediente();
+
+        String cantidadTexto = JOptionPane.showInputDialog(
+                this,
+                "Editar cantidad requerida para \"" + (ingrediente != null ? ingrediente.getNombre() : "Ingrediente") + "\":",
+                detalle.getCantidadRequerida()
+        );
+
+        if (cantidadTexto == null) {
+            return;
+        }
+
+        cantidadTexto = cantidadTexto.trim();
+
+        if (cantidadTexto.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "La cantidad requerida es obligatoria.",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        try {
+            Integer nuevaCantidad = Integer.valueOf(cantidadTexto);
+
+            if (nuevaCantidad <= 0) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "La cantidad requerida debe ser mayor que cero.",
+                        "Validación",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+
+            detalle.setCantidadRequerida(nuevaCantidad);
+            recargarTablaIngredientes();
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "La cantidad requerida debe ser un número entero válido.",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+        }
+    }
+    
+    private void eliminarIngredienteSeleccionado() {
+        int filaSeleccionada = tablaIngredientes.getSelectedRow();
+
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Selecciona un ingrediente de la tabla.",
+                    "Eliminar ingrediente",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        int confirmacion = JOptionPane.showConfirmDialog(
+                this,
+                "¿Deseas eliminar el ingrediente seleccionado?",
+                "Confirmar eliminación",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirmacion != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        detallesIngredientes.remove(filaSeleccionada);
+        recargarTablaIngredientes();
     }
 
     private String obtenerMensajeRaiz(Throwable e) {

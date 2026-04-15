@@ -54,7 +54,9 @@ public class FrmIngredientes extends JFrame {
     private DefaultTableModel modeloTabla;
     private JTextField txtBuscar;
     private JComboBox<String> cmbUnidadMedida;
+    
     private FrmNuevoProducto frmNuevoProducto;
+    private FrmEditarProducto frmEditarProducto;
 
     
     // Booleano para control de comportamiento, si es pantalla principal de ingredientes o solo de seleccion.
@@ -84,6 +86,25 @@ public class FrmIngredientes extends JFrame {
         this.coordinador = coordinador;
         this.modoSeleccion = modoSeleccion;
         this.frmNuevoProducto = frmNuevoProducto;
+
+        setTitle("Restaurante Le Pusse - " + (modoSeleccion ? "Seleccionar Ingrediente" : "Ingredientes"));
+        setDefaultCloseOperation(modoSeleccion ? JFrame.DISPOSE_ON_CLOSE : JFrame.EXIT_ON_CLOSE);
+        setSize(Dimensiones.ANCHO_VENTANA, Dimensiones.ALTO_VENTANA);
+        setMinimumSize(new Dimension(Dimensiones.ANCHO_VENTANA, Dimensiones.ALTO_VENTANA));
+        setResizable(false);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
+
+        add(new MenuLateralPanel("Ingredientes", coordinador), BorderLayout.WEST);
+        add(crearContenidoPrincipal(), BorderLayout.CENTER);
+
+        cargarIngredientes();
+    }
+    
+    public FrmIngredientes(Coordinador coordinador, boolean modoSeleccion, FrmEditarProducto frmEditarProducto) {
+        this.coordinador = coordinador;
+        this.modoSeleccion = modoSeleccion;
+        this.frmEditarProducto = frmEditarProducto;
 
         setTitle("Restaurante Le Pusse - " + (modoSeleccion ? "Seleccionar Ingrediente" : "Ingredientes"));
         setDefaultCloseOperation(modoSeleccion ? JFrame.DISPOSE_ON_CLOSE : JFrame.EXIT_ON_CLOSE);
@@ -310,6 +331,9 @@ public class FrmIngredientes extends JFrame {
             if (seleccionado != null) {
                 if (frmNuevoProducto != null) {
                     frmNuevoProducto.agregarIngredienteSeleccionado(seleccionado);
+                }
+                if (frmEditarProducto != null) {
+                    frmEditarProducto.agregarIngredienteSeleccionado(seleccionado);
                 }
                 this.dispose();
             }
