@@ -9,12 +9,18 @@ import Componentes.MenuLateralEmpleadoPanel;
 import Controlador.Coordinador;
 import Estilos.Dimensiones;
 import Estilos.PaletaColores;
+import dtos.ComandaDTO;
+import enumsDTO.EstadoComandaDTO;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -25,9 +31,9 @@ import javax.swing.table.JTableHeader;
 import javax.swing.SwingConstants;
 
 /**
- * Pantalla principal para la gestión de comandas.
- * Muestra la vista principal del módulo de comandas para empleado,
- * manteniendo la identidad visual del sistema.
+ * Pantalla principal para la gestión de comandas. Muestra la vista principal
+ * del módulo de comandas para empleado, manteniendo la identidad visual del
+ * sistema.
  *
  * @author regina, mariana e isaac
  */
@@ -51,6 +57,9 @@ public class FrmComandas extends JFrame {
 
         add(new MenuLateralEmpleadoPanel(coordinador), BorderLayout.WEST);
         add(crearContenidoPrincipal(), BorderLayout.CENTER);
+
+        cargarComandasEnTabla();
+
     }
 
     /**
@@ -197,9 +206,43 @@ public class FrmComandas extends JFrame {
         return scroll;
     }
 
+    private void cargarComandasEnTabla() {
+        try {
+            modeloTabla.setRowCount(0);
+
+            List<ComandaDTO> comandas = coordinador.obtenerComandas();
+
+            if (comandas == null || comandas.isEmpty()) {
+                return;
+            }
+
+            for (ComandaDTO comanda : comandas) {
+                modeloTabla.addRow(new Object[]{
+                    comanda.getFolio(),
+                    comanda.getFechaHoraCreacion() != null ? comanda.getFechaHoraCreacion().toLocalDate() : null,
+                    comanda.getFechaHoraCreacion() != null ? comanda.getFechaHoraCreacion().toLocalTime() : null,
+                    comanda.getNumeroMesa(),
+                    comanda.getNombreCliente() != null ? comanda.getNombreCliente() : "Cliente General",
+                    comanda.getTotalVenta(),
+                    comanda.getEstado(),
+                    ""
+                });
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Error al cargar las comandas: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
     /**
      * Recarga la información visible de la pantalla.
      */
     public void recargarTabla() {
+        cargarComandasEnTabla();
     }
 }

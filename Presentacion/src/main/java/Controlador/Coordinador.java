@@ -121,9 +121,9 @@ public class Coordinador {
      */
     public List<ComandaDTO> obtenerComandas() throws Exception {
         try {
-            return comandaBO.buscarPorFiltros("");
+            return comandaBO.buscarPorFiltros(null);
         } catch (Exception ex) {
-            throw new Exception("Error al obtener las comandas.", ex);
+            throw new Exception("Error al obtener las comandas: " + ex.getMessage(), ex);
         }
     }
 

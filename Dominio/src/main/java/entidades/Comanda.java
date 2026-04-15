@@ -61,7 +61,7 @@ public class Comanda implements Serializable {
     @JoinColumn(name = "id_cliente", nullable = true)
     private Cliente cliente;
 
-    @OneToMany(mappedBy = "comanda", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "comanda", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<DetalleComanda> detalles = new ArrayList<>();
 
     /**
@@ -83,8 +83,8 @@ public class Comanda implements Serializable {
      * @param cliente El cliente asociado a la comanda.
      * @param detalles La lista de detalles registrados en la comanda.
      */
-    public Comanda(Long idComanda, String folio, LocalDateTime fechaHoraCreacion, EstadoComanda estado, 
-                   Double totalVenta, Mesa mesa, Cliente cliente, List<DetalleComanda> detalles) {
+    public Comanda(Long idComanda, String folio, LocalDateTime fechaHoraCreacion, EstadoComanda estado,
+            Double totalVenta, Mesa mesa, Cliente cliente, List<DetalleComanda> detalles) {
         this.idComanda = idComanda;
         this.folio = folio;
         this.fechaHoraCreacion = fechaHoraCreacion;
