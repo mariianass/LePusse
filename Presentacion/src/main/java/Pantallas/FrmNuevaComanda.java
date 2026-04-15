@@ -9,8 +9,11 @@ import Componentes.MenuLateralEmpleadoPanel;
 import Controlador.Coordinador;
 import Estilos.Dimensiones;
 import Estilos.PaletaColores;
+import dtos.ClienteFrecuenteDTO;
+import dtos.MesaDTO;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -19,12 +22,15 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -34,9 +40,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
 /**
- * Pantalla para registrar una nueva comanda dentro del sistema.
- * Mantiene la identidad visual del módulo de comandas para empleado
- * y presenta la estructura base del formulario de captura.
+ * Pantalla para registrar una nueva comanda dentro del sistema. Mantiene la
+ * identidad visual del módulo de comandas para empleado y presenta la
+ * estructura base del formulario de captura.
  *
  * Esta versión se enfoca únicamente en la construcción visual de la vista.
  *
@@ -50,8 +56,8 @@ public class FrmNuevaComanda extends JFrame {
     private JTextField txtFecha;
     private JTextField txtHora;
 
-    private JComboBox<String> cmbMesa;
-    private JComboBox<String> cmbCliente;
+    private JComboBox<MesaDTO> cmbMesa;
+    private JComboBox<ClienteFrecuenteDTO> cmbCliente;
 
     private JTable tablaDetalle;
     private DefaultTableModel modeloTabla;
@@ -78,6 +84,8 @@ public class FrmNuevaComanda extends JFrame {
         add(crearContenidoPrincipal(), BorderLayout.CENTER);
 
         cargarFechaYHoraActual();
+        configurarRenderersCombos();
+        cargarDatosIniciales();
     }
 
     /**
@@ -183,9 +191,6 @@ public class FrmNuevaComanda extends JFrame {
 
         cmbMesa = new JComboBox<>();
         cmbCliente = new JComboBox<>();
-
-        cmbMesa.addItem("");
-        cmbCliente.addItem("");
 
         estilizarCombo(cmbMesa);
         estilizarCombo(cmbCliente);
@@ -354,6 +359,126 @@ public class FrmNuevaComanda extends JFrame {
     }
 
     /**
+     * Carga la información inicial necesaria para la captura de la comanda.
+     * Incluye mesas disponibles y clientes frecuentes.
+     */
+    private void cargarDatosIniciales() {
+        cargarMesasDisponibles();
+        cargarClientesFrecuentes();
+    }
+
+    /**
+     * Carga las mesas disponibles en el combo correspondiente.
+     */
+    private void cargarMesasDisponibles() {
+        try {
+            cmbMesa.removeAllItems();
+            cmbMesa.addItem(null);
+
+            List<MesaDTO> mesas = coordinador.obtenerMesasDisponibles();
+
+            if (mesas != null) {
+                for (MesaDTO mesa : mesas) {
+                    cmbMesa.addItem(mesa);
+                }
+            }
+
+            cmbMesa.setSelectedItem(null);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No se pudieron cargar las mesas disponibles: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    /**
+     * Carga los clientes frecuentes en el combo correspondiente. La selección
+     * de cliente es opcional.
+     */
+    private void cargarClientesFrecuentes() {
+        try {
+            cmbCliente.removeAllItems();
+            cmbCliente.addItem(null);
+
+            List<ClienteFrecuenteDTO> clientes = coordinador.obtenerClientesParaComanda();
+
+            if (clientes != null) {
+                for (ClienteFrecuenteDTO cliente : clientes) {
+                    cmbCliente.addItem(cliente);
+                }
+            }
+
+            cmbCliente.setSelectedItem(null);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No se pudieron cargar los clientes: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    /**
+     * Configura la forma en que se muestran las mesas y clientes en los combos.
+     */
+    private void configurarRenderersCombos() {
+        cmbMesa.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(
+                    javax.swing.JList<?> list,
+                    Object value,
+                    int index,
+                    boolean isSelected,
+                    boolean cellHasFocus) {
+
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+                if (value == null) {
+                    setText("");
+                } else {
+                    MesaDTO mesa = (MesaDTO) value;
+                    setText("Mesa " + mesa.getNumeroMesa());
+                }
+
+                return this;
+            }
+        });
+
+        cmbCliente.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(
+                    javax.swing.JList<?> list,
+                    Object value,
+                    int index,
+                    boolean isSelected,
+                    boolean cellHasFocus) {
+
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+                if (value == null) {
+                    setText("");
+                } else {
+                    ClienteFrecuenteDTO cliente = (ClienteFrecuenteDTO) value;
+
+                    String nombreCompleto = cliente.getNombre() + " "
+                            + cliente.getApellidoPaterno() + " "
+                            + cliente.getApellidoMaterno();
+
+                    setText(nombreCompleto.trim().replaceAll("\\s+", " "));
+                }
+
+                return this;
+            }
+        });
+    }
+
+    /**
      * Agrega una etiqueta y un campo dentro de un panel con GridBagLayout.
      *
      * @param panel Panel destino.
@@ -442,7 +567,9 @@ public class FrmNuevaComanda extends JFrame {
      * @param combo Combo a estilizar.
      */
     private void estilizarCombo(JComboBox<?> combo) {
-        combo.setPreferredSize(new Dimension(235, 34));
+        combo.setPreferredSize(new Dimension(320, 34));
+        combo.setMinimumSize(new Dimension(320, 34));
+        combo.setMaximumSize(new Dimension(320, 34));
         combo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         combo.setForeground(PaletaColores.TEXTO_MARRON);
         combo.setBackground(PaletaColores.BLANCO);

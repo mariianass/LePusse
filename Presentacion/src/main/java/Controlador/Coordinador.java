@@ -21,6 +21,7 @@ import Pantallas.frmRegistrarClienteFrecuente;
 import dtos.ClienteFrecuenteDTO;
 import dtos.ComandaDTO;
 import dtos.IngredienteDTO;
+import dtos.MesaDTO;
 import dtos.ProductoDTO;
 import enums.UnidadMedida;
 import enumsDTO.TipoProductoDTO;
@@ -197,6 +198,34 @@ public class Coordinador {
                 "Información",
                 JOptionPane.INFORMATION_MESSAGE
         );
+    }
+
+    /**
+     * Obtiene las mesas disponibles para registrar una nueva comanda.
+     *
+     * @return Lista de mesas disponibles.
+     * @throws Exception Si ocurre un error.
+     */
+    public List<MesaDTO> obtenerMesasDisponibles() throws Exception {
+        try {
+            return comandaBO.obtenerMesasDisponibles();
+        } catch (Exception ex) {
+            throw new Exception("Error al obtener las mesas disponibles.", ex);
+        }
+    }
+
+    /**
+     * Obtiene los clientes frecuentes para selección opcional en la comanda.
+     *
+     * @return Lista de clientes frecuentes.
+     * @throws Exception Si ocurre un error.
+     */
+    public List<ClienteFrecuenteDTO> obtenerClientesParaComanda() throws Exception {
+        try {
+            return clienteFrecuenteBO.obtenerTodos();
+        } catch (Exception ex) {
+            throw new Exception("Error al obtener los clientes para la comanda.", ex);
+        }
     }
 
     // =========================================================
