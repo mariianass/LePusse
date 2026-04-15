@@ -15,6 +15,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -317,7 +318,7 @@ public class FrmClientesFrecuentes extends JFrame {
             cliente.getTelefono() != null ? cliente.getTelefono() : "-",
             (cliente.getCorreoElectronico() != null && !cliente.getCorreoElectronico().isBlank())
                     ? cliente.getCorreoElectronico() : "-",
-            cliente.getFechaRegistro() != null ? cliente.getFechaRegistro().toString() : "-",
+            cliente.getFechaRegistro() != null ? cliente.getFechaRegistro().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "-",
             cliente.getNumeroVisitas() != null ? cliente.getNumeroVisitas() : 0,
             cliente.getTotalGastado() != null ? "$" + String.format("%.2f", cliente.getTotalGastado()) : "$0.00",
             cliente.getPuntosFidelidad() != null ? cliente.getPuntosFidelidad() + " pts" : "0 pts",
