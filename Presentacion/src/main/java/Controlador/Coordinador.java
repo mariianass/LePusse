@@ -12,6 +12,7 @@ import Pantallas.FrmEditarIngrediente;
 import Pantallas.FrmEditarProducto;
 import Pantallas.FrmIngredientes;
 import Pantallas.FrmMenuAcceso;
+import Pantallas.FrmNuevaComanda;
 import Pantallas.FrmNuevoIngrediente;
 import Pantallas.FrmNuevoProducto;
 import Pantallas.FrmProductos;
@@ -45,6 +46,7 @@ public class Coordinador {
 
     // Capa Presentación (Pantallas)
     private FrmComandas frmComandas;
+    private FrmNuevaComanda frmNuevaComanda;
     private FrmMenuAcceso frmMenuAcceso;
     private FrmClientesFrecuentes frmGestionarClientesFrecuentes;
     private frmRegistrarClienteFrecuente frmRegistrarClientesFrecuentes;
@@ -172,16 +174,15 @@ public class Coordinador {
 
     /**
      * Muestra la pantalla para registrar una nueva comanda.
-     *
-     * Temporalmente muestra un mensaje hasta implementar la captura completa.
      */
     public void mostrarNuevaComanda() {
-        JOptionPane.showMessageDialog(
-                null,
-                "Pantalla de nueva comanda pendiente de implementación.",
-                "Información",
-                JOptionPane.INFORMATION_MESSAGE
-        );
+        ocultarTodasLasPantallas();
+
+        if (frmNuevaComanda == null) {
+            frmNuevaComanda = new FrmNuevaComanda(this);
+        }
+
+        frmNuevaComanda.setVisible(true);
     }
 
     /**
@@ -363,7 +364,7 @@ public class Coordinador {
             throw new Exception("Error al filtrar los clientes.", ex);
         }
     }
-    
+
     public void registrarClienteGeneral() {
         try {
             clienteFrecuenteBO.registrarClienteGeneral();
@@ -765,6 +766,9 @@ public class Coordinador {
         }
         if (frmComandas != null) {
             frmComandas.setVisible(false);
+        }
+        if (frmNuevaComanda != null) {
+            frmNuevaComanda.setVisible(false);
         }
         if (frmGestionarClientesFrecuentes != null) {
             frmGestionarClientesFrecuentes.setVisible(false);
