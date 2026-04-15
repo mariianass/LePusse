@@ -10,6 +10,7 @@ import Componentes.MenuLateralPanel;
 import Controlador.Coordinador;
 import Estilos.Dimensiones;
 import Estilos.PaletaColores;
+import Validadores.Validadores;
 import com.toedter.calendar.JDateChooser;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -211,7 +212,13 @@ public class FrmReportes extends JFrame {
         try {
             if (tipoActual == TipoReporte.CLIENTES) {
                 String nombre = txtNombreCliente != null ? txtNombreCliente.getText().trim() : "";
-                Integer minimoVisitas = obtenerMinimoVisitas();
+                String visitasTexto = (txtMinimoVisitas != null) ? txtMinimoVisitas.getText().trim() : "";
+                
+                if (!Validadores.validarFiltrosCliente(this, nombre, visitasTexto)) {
+                    return; 
+                }
+                
+                Integer minimoVisitas = visitasTexto.isEmpty() ? 0 : Integer.parseInt(visitasTexto);
 
                 JasperPrint jasperPrint = coordinador.generarVistaReporteClientes(nombre, minimoVisitas);
                 JasperViewer.viewReport(jasperPrint, false);
@@ -234,7 +241,14 @@ public class FrmReportes extends JFrame {
         try {
             if (tipoActual == TipoReporte.CLIENTES) {
                 String nombre = txtNombreCliente != null ? txtNombreCliente.getText().trim() : "";
-                Integer minimoVisitas = obtenerMinimoVisitas();
+                String visitasTexto = (txtMinimoVisitas != null) ? txtMinimoVisitas.getText().trim() : "";
+
+            if (!Validadores.validarFiltrosCliente(this, nombre, visitasTexto)) {
+                return;
+            }
+
+            Integer minimoVisitas = visitasTexto.isEmpty() ? 0 : Integer.parseInt(visitasTexto);
+                
 
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setDialogTitle("Guardar reporte PDF");
@@ -270,21 +284,5 @@ public class FrmReportes extends JFrame {
         }
     }
 
-    private Integer obtenerMinimoVisitas() throws Exception {
-        String texto = txtMinimoVisitas != null ? txtMinimoVisitas.getText().trim() : "";
 
-        if (texto.isEmpty()) {
-            return 0;
-        }
-
-        try {
-            int valor = Integer.parseInt(texto);
-            if (valor < 0) {
-                throw new Exception("El número mínimo de visitas no puede ser negativo.");
-            }
-            return valor;
-        } catch (NumberFormatException e) {
-            throw new Exception("El número mínimo de visitas debe ser un entero válido.");
-        }
-    }
 }

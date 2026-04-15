@@ -120,5 +120,40 @@ public class Validadores {
         JOptionPane.showMessageDialog(parent, mensaje, titulo, tipo);
     }
     
+    /**
+    * Valida los filtros para el reporte de clientes.
+    * @param parent Componente padre para el diálogo.
+    * @param nombre El nombre del cliente (Opcional).
+    * @param visitasStr El texto ingresado en el campo de visitas.
+    * @return true si los datos son válidos.
+    */
+   public static boolean validarFiltrosCliente(Component parent, String nombre, String visitasStr) {
+
+       if (!nombre.isEmpty()) {
+           if (!nombre.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]{2,100}$")) {
+               mostrarMensaje(parent, "El nombre a filtrar debe contener solo letras y tener al menos 2 caracteres.", 
+                              "Filtro de Nombre Inválido", JOptionPane.WARNING_MESSAGE);
+               return false;
+           }
+       }
+
+       if (!visitasStr.isEmpty()) {
+           try {
+               int visitas = Integer.parseInt(visitasStr);
+               if (visitas < 0) {
+                   mostrarMensaje(parent, "El número mínimo de visitas no puede ser negativo.", 
+                                  "Valor Inválido", JOptionPane.ERROR_MESSAGE);
+                   return false;
+               }
+           } catch (NumberFormatException e) {
+               mostrarMensaje(parent, "El número de visitas debe ser un número entero válido.", 
+                              "Formato Incorrecto", JOptionPane.ERROR_MESSAGE);
+               return false;
+           }
+       }
+
+       return true;
+   }
+    
     
 }
