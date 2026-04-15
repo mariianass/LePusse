@@ -102,8 +102,8 @@ public class ReporteClienteBO {
     public JasperPrint generarJasperClientesFrecuentes(String nombreFiltro, Integer minimoVisitas) throws Exception {
     List<ClienteFrecuenteDTO> lista = filtrarClientes(nombreFiltro, minimoVisitas);
 
-    // USA LA RUTA FISICA DE TU COMPUTADORA (Copia la ruta de la carpeta si es distinta)
-    String rutaAbsoluta = "C:\\Users\\putme\\OneDrive\\Documentos\\GitHub\\LePusse\\Presentacion\\src\\main\\resources\\reportes\\ReporteClientesFrecuentes.jrxml";
+    // ruta de donde esta el archivo
+    String rutaAbsoluta = "\\reportes\\ReporteClientesFrecuentes.jrxml";
     
     File archivo = new File(rutaAbsoluta);
     if (!archivo.exists()) {

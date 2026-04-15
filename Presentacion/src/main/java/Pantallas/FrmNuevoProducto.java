@@ -275,7 +275,7 @@ public class FrmNuevoProducto extends JFrame {
 
         return contenedor;
     }
-
+    
     private void abrirSeleccionIngrediente() {
         try {
             List<IngredienteDTO> ingredientes = coordinador.obtenerIngredientes();
@@ -290,139 +290,8 @@ public class FrmNuevoProducto extends JFrame {
                 return;
             }
 
-            JDialog dialogo = new JDialog(this, "Seleccionar Ingrediente", true);
-            dialogo.setSize(700, 420);
-            dialogo.setLocationRelativeTo(this);
-            dialogo.setLayout(new BorderLayout());
-
-            JPanel contenedor = new JPanel(new BorderLayout(10, 10));
-            contenedor.setBorder(new EmptyBorder(15, 15, 15, 15));
-            contenedor.setBackground(PaletaColores.BLANCO_SUAVE);
-
-            String[] columnas = {"ID", "Nombre", "Unidad de Medida", "Stock Actual"};
-            DefaultTableModel modeloSeleccion = new DefaultTableModel(null, columnas) {
-                @Override
-                public boolean isCellEditable(int row, int column) {
-                    return false;
-                }
-            };
-
-            JTable tablaSeleccion = new JTable(modeloSeleccion);
-            tablaSeleccion.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            tablaSeleccion.setRowHeight(30);
-            tablaSeleccion.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-
-            for (IngredienteDTO ingrediente : ingredientes) {
-                modeloSeleccion.addRow(new Object[]{
-                    ingrediente.getIdIngrediente(),
-                    ingrediente.getNombre(),
-                    ingrediente.getUnidadMedida() != null ? ingrediente.getUnidadMedida().toString() : "-",
-                    ingrediente.getStockActual() != null ? ingrediente.getStockActual() : 0
-                });
-            }
-
-            tablaSeleccion.getColumnModel().getColumn(0).setMinWidth(0);
-            tablaSeleccion.getColumnModel().getColumn(0).setMaxWidth(0);
-            tablaSeleccion.getColumnModel().getColumn(0).setPreferredWidth(0);
-
-            JScrollPane scroll = new JScrollPane(tablaSeleccion);
-
-            JPanel panelBotones = new JPanel();
-            panelBotones.setOpaque(false);
-
-            BotonRedondeado btnCancelar = new BotonRedondeado("Cancelar", 18);
-            btnCancelar.setPreferredSize(new Dimension(120, 38));
-            btnCancelar.setBackground(new Color(232, 216, 182));
-            btnCancelar.setForeground(PaletaColores.TEXTO_MARRON);
-            btnCancelar.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-            btnCancelar.addActionListener(e -> dialogo.dispose());
-
-            BotonRedondeado btnAgregar = new BotonRedondeado("Agregar", 18);
-            btnAgregar.setPreferredSize(new Dimension(120, 38));
-            btnAgregar.setBackground(PaletaColores.MARRON_OSCURO);
-            btnAgregar.setForeground(PaletaColores.BLANCO);
-            btnAgregar.setFont(new Font("Segoe UI", Font.BOLD, 12));
-            btnAgregar.addActionListener(e -> {
-                int filaSeleccionada = tablaSeleccion.getSelectedRow();
-
-                if (filaSeleccionada == -1) {
-                    JOptionPane.showMessageDialog(
-                            dialogo,
-                            "Selecciona un ingrediente.",
-                            "Validación",
-                            JOptionPane.WARNING_MESSAGE
-                    );
-                    return;
-                }
-
-                Long idIngrediente = (Long) modeloSeleccion.getValueAt(filaSeleccionada, 0);
-                IngredienteDTO ingredienteSeleccionado = buscarIngredientePorIdEnLista(ingredientes, idIngrediente);
-
-                if (ingredienteSeleccionado == null) {
-                    JOptionPane.showMessageDialog(
-                            dialogo,
-                            "No se pudo recuperar el ingrediente seleccionado.",
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE
-                    );
-                    return;
-                }
-
-                String cantidadTexto = JOptionPane.showInputDialog(
-                        dialogo,
-                        "Ingrese la cantidad requerida para \"" + ingredienteSeleccionado.getNombre() + "\":"
-                );
-
-                if (cantidadTexto == null) {
-                    return;
-                }
-
-                cantidadTexto = cantidadTexto.trim();
-
-                if (cantidadTexto.isEmpty()) {
-                    JOptionPane.showMessageDialog(
-                            dialogo,
-                            "La cantidad requerida es obligatoria.",
-                            "Validación",
-                            JOptionPane.WARNING_MESSAGE
-                    );
-                    return;
-                }
-
-                try {
-                    Integer cantidad = Integer.valueOf(cantidadTexto);
-
-                    if (cantidad <= 0) {
-                        JOptionPane.showMessageDialog(
-                                dialogo,
-                                "La cantidad requerida debe ser mayor que cero.",
-                                "Validación",
-                                JOptionPane.WARNING_MESSAGE
-                        );
-                        return;
-                    }
-
-                    agregarDetalleIngrediente(ingredienteSeleccionado, cantidad);
-                    dialogo.dispose();
-
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(
-                            dialogo,
-                            "La cantidad requerida debe ser un número entero válido.",
-                            "Validación",
-                            JOptionPane.WARNING_MESSAGE
-                    );
-                }
-            });
-
-            panelBotones.add(btnCancelar);
-            panelBotones.add(btnAgregar);
-
-            contenedor.add(scroll, BorderLayout.CENTER);
-            contenedor.add(panelBotones, BorderLayout.SOUTH);
-
-            dialogo.add(contenedor, BorderLayout.CENTER);
-            dialogo.setVisible(true);
+            FrmIngredientes selector = new FrmIngredientes(coordinador, true, this);
+            selector.setVisible(true);
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(
@@ -466,6 +335,74 @@ public class FrmNuevoProducto extends JFrame {
 
         detallesIngredientes.add(nuevoDetalle);
         recargarTablaIngredientes();
+    }
+    
+    public void agregarIngredienteSeleccionado(IngredienteDTO ingrediente) {
+        if (ingrediente == null) {
+            return;
+        }
+
+        for (DetalleProductoIngredienteDTO detalle : detallesIngredientes) {
+            if (detalle.getIngrediente() != null
+                    && detalle.getIngrediente().getIdIngrediente() != null
+                    && detalle.getIngrediente().getIdIngrediente().equals(ingrediente.getIdIngrediente())) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Ese ingrediente ya fue agregado al producto.",
+                        "Ingrediente duplicado",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+        }
+
+        String cantidadTexto = JOptionPane.showInputDialog(
+                this,
+                "Ingrese la cantidad requerida para \"" + ingrediente.getNombre() + "\":",
+                "Cantidad requerida",
+                JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (cantidadTexto == null) {
+            return;
+        }
+
+        cantidadTexto = cantidadTexto.trim();
+
+        if (cantidadTexto.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "La cantidad requerida es obligatoria.",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        try {
+            Integer cantidad = Integer.valueOf(cantidadTexto);
+
+            if (cantidad <= 0) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "La cantidad requerida debe ser mayor que cero.",
+                        "Validación",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+
+            agregarDetalleIngrediente(ingrediente, cantidad);
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "La cantidad requerida debe ser un número entero válido.",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+        }
     }
 
     private void recargarTablaIngredientes() {
