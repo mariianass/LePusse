@@ -4,7 +4,7 @@ import BOs.ClienteFrecuenteBO;
 import BOs.ComandaBO;
 import BOs.IngredienteBO;
 import BOs.ProductoBO;
-import BOs.ReporteClienteBO;
+import BOs.ReporteBO;
 import Pantallas.FrmCatalogoProductosComanda;
 import Pantallas.FrmClientesFrecuentes;
 import Pantallas.FrmComandas;
@@ -28,6 +28,8 @@ import dtos.ProductoDTO;
 import enums.UnidadMedida;
 import enumsDTO.TipoProductoDTO;
 import enumsDTO.UnidadMedidaDTO;
+import excepciones.NegocioException;
+import java.time.LocalDate;
 import java.util.List;
 import javax.swing.JOptionPane;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -45,7 +47,7 @@ public class Coordinador {
     private final ClienteFrecuenteBO clienteFrecuenteBO;
     private final IngredienteBO ingredienteBO;
     private final ProductoBO productoBO;
-    private final ReporteClienteBO reporteClienteBO;
+    private final ReporteBO reporteClienteBO;
 
     // Capa Presentación (Pantallas)
     private FrmComandas frmComandas;
@@ -74,7 +76,7 @@ public class Coordinador {
         this.clienteFrecuenteBO = ClienteFrecuenteBO.getInstance();
         this.ingredienteBO = IngredienteBO.getInstance();
         this.productoBO = ProductoBO.getInstance();
-        this.reporteClienteBO = ReporteClienteBO.getInstance();
+        this.reporteClienteBO = ReporteBO.getInstance();
     }
 
     /**
@@ -821,17 +823,32 @@ public class Coordinador {
     public JasperPrint generarVistaReporteClientes(String nombre, Integer minimoVisitas) throws Exception {
         try {
             return reporteClienteBO.generarJasperClientesFrecuentes(nombre, minimoVisitas);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new Exception("Error al generar la vista del reporte de clientes.", ex);
+        } catch (NegocioException ex) {
+            throw new NegocioException(ex.getMessage(), ex);
         }
     }
 
     public void generarPDFReporteClientes(String rutaSalidaPDF, String nombre, Integer minimoVisitas) throws Exception {
         try {
             reporteClienteBO.generarReportePDF(rutaSalidaPDF, nombre, minimoVisitas);
-        } catch (Exception ex) {
-            throw new Exception("Error al generar el PDF del reporte de clientes.", ex);
+        } catch (NegocioException ex) {
+            throw new NegocioException("Error al generar el PDF del reporte de clientes: "+ex.getMessage(), ex);
+        }
+    }
+    
+    public JasperPrint generarVistaReporteComanda (LocalDate fechaInicio,LocalDate fechaFin) throws Exception {
+        try {
+            return reporteClienteBO.generarJasperReporteComandas(fechaInicio, fechaFin);
+        } catch (NegocioException ex) {
+            throw new NegocioException(ex.getMessage(), ex);
+        }
+    }
+
+    public void generarPDFReporteComanda (String rutaSalidaPDF, String nombre, Integer minimoVisitas) throws Exception {
+        try {
+            reporteClienteBO.generarReportePDF(rutaSalidaPDF, nombre, minimoVisitas);
+        } catch (NegocioException ex) {
+            throw new NegocioException("Error al generar el PDF del reporte de clientes: "+ex.getMessage(), ex);
         }
     }
 

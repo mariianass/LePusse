@@ -2,7 +2,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-
 package Pantallas;
 
 import Componentes.BotonRedondeado;
@@ -12,11 +11,15 @@ import Estilos.Dimensiones;
 import Estilos.PaletaColores;
 import Validadores.Validadores;
 import com.toedter.calendar.JDateChooser;
+import excepciones.NegocioException;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.io.File;
+import java.time.LocalDate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -30,6 +33,7 @@ import net.sf.jasperreports.view.JasperViewer;
 
 /**
  * Pantalla de reportes
+ *
  * @author regina, mariana e isaac
  */
 public class FrmReportes extends JFrame {
@@ -48,7 +52,9 @@ public class FrmReportes extends JFrame {
     private JTextField txtNombreCliente;
     private JTextField txtMinimoVisitas;
 
-    private enum TipoReporte { COMANDAS, CLIENTES }
+    private enum TipoReporte {
+        COMANDAS, CLIENTES
+    }
     private TipoReporte tipoActual = TipoReporte.COMANDAS;
 
     public FrmReportes(Coordinador coordinador) {
@@ -83,7 +89,7 @@ public class FrmReportes extends JFrame {
 
         contenido.add(cabecera, BorderLayout.NORTH);
 
-        JPanel zonaCentral = new JPanel(null); 
+        JPanel zonaCentral = new JPanel(null);
         zonaCentral.setBackground(PaletaColores.BEIGE_PANEL);
 
         btnReporteComandas = new BotonRedondeado("Reporte de Comandas", 20);
@@ -118,7 +124,7 @@ public class FrmReportes extends JFrame {
         btnConsultar.setForeground(Color.WHITE);
         btnConsultar.setFont(new Font("Segoe UI", Font.BOLD, 15));
         panelTarjeta.add(btnConsultar);
-        
+
         btnDescargarPDF = new BotonRedondeado("Descargar PDF", 18);
         btnDescargarPDF.setBounds(235, 360, 180, 50);
         btnDescargarPDF.setBackground(PaletaColores.DORADO);
@@ -126,7 +132,13 @@ public class FrmReportes extends JFrame {
         btnDescargarPDF.setFont(new Font("Segoe UI", Font.BOLD, 15));
         panelTarjeta.add(btnDescargarPDF);
 
-        btnConsultar.addActionListener(e -> consultarReporte());
+        btnConsultar.addActionListener(e -> {
+            try {
+                consultarReporte();
+            } catch (Exception ex) {
+                Logger.getLogger(FrmReportes.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
         btnDescargarPDF.addActionListener(e -> descargarPDF());
 
         zonaCentral.add(btnReporteComandas);
@@ -180,8 +192,8 @@ public class FrmReportes extends JFrame {
         JTextField campo = new JTextField();
         campo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         campo.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(PaletaColores.LINEA_SUAVE, 1),
-            BorderFactory.createEmptyBorder(0, 10, 0, 10)
+                BorderFactory.createLineBorder(PaletaColores.LINEA_SUAVE, 1),
+                BorderFactory.createEmptyBorder(0, 10, 0, 10)
         ));
         return campo;
     }
@@ -207,31 +219,62 @@ public class FrmReportes extends JFrame {
             btnReporteComandas.setForeground(PaletaColores.DORADO);
         }
     }
-    
-    private void consultarReporte() {
+
+    private void consultarReporte() throws Exception {
         try {
             if (tipoActual == TipoReporte.CLIENTES) {
                 String nombre = txtNombreCliente != null ? txtNombreCliente.getText().trim() : "";
                 String visitasTexto = (txtMinimoVisitas != null) ? txtMinimoVisitas.getText().trim() : "";
-                
+
                 if (!Validadores.validarFiltrosCliente(this, nombre, visitasTexto)) {
-                    return; 
+                    return;
                 }
-                
+
                 Integer minimoVisitas = visitasTexto.isEmpty() ? 0 : Integer.parseInt(visitasTexto);
 
                 JasperPrint jasperPrint = coordinador.generarVistaReporteClientes(nombre, minimoVisitas);
                 JasperViewer.viewReport(jasperPrint, false);
             } else {
-                JOptionPane.showMessageDialog(this,
-                        "El reporte de comandas aún no está disponible.",
-                        "Información",
-                        JOptionPane.INFORMATION_MESSAGE);
+                java.util.Date dateIni = dcFechaInicio.getDate();
+                java.util.Date dateFin = dcFechaFin.getDate();
+
+                if (dateIni == null || dateFin == null) {
+                    JOptionPane.showMessageDialog(this,
+                            "Por favor, seleccione ambas fechas para el reporte de comandas.",
+                            "Filtros incompletos",
+                            JOptionPane.WARNING_MESSAGE);
+                    return; 
+                }
+
+                java.time.LocalDate fechaInicio = dateIni.toInstant()
+                        .atZone(java.time.ZoneId.systemDefault())
+                        .toLocalDate();
+                java.time.LocalDate fechaFin = dateFin.toInstant()
+                        .atZone(java.time.ZoneId.systemDefault())
+                        .toLocalDate();
+
+                if (fechaInicio.isAfter(fechaFin)) {
+                    JOptionPane.showMessageDialog(this,
+                            "La fecha de inicio no puede ser posterior a la fecha de fin.",
+                            "Error de fechas",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                JasperPrint jasperPrint = coordinador.generarVistaReporteComanda(fechaInicio, fechaFin);
+
+                if (jasperPrint.getPages().isEmpty()) {
+                    JOptionPane.showMessageDialog(this,
+                            "No se encontraron comandas en el rango de fechas seleccionado.",
+                            "Sin coincidencias",
+                            JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JasperViewer.viewReport(jasperPrint, false);
+                }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (NegocioException ex) {
             JOptionPane.showMessageDialog(this,
-                    "Error al consultar el reporte: " + e.getMessage(),
+                    "Error al consultar el reporte: " + ex.getMessage(),
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
@@ -243,12 +286,11 @@ public class FrmReportes extends JFrame {
                 String nombre = txtNombreCliente != null ? txtNombreCliente.getText().trim() : "";
                 String visitasTexto = (txtMinimoVisitas != null) ? txtMinimoVisitas.getText().trim() : "";
 
-            if (!Validadores.validarFiltrosCliente(this, nombre, visitasTexto)) {
-                return;
-            }
+                if (!Validadores.validarFiltrosCliente(this, nombre, visitasTexto)) {
+                    return;
+                }
 
-            Integer minimoVisitas = visitasTexto.isEmpty() ? 0 : Integer.parseInt(visitasTexto);
-                
+                Integer minimoVisitas = visitasTexto.isEmpty() ? 0 : Integer.parseInt(visitasTexto);
 
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setDialogTitle("Guardar reporte PDF");
@@ -283,6 +325,5 @@ public class FrmReportes extends JFrame {
                     JOptionPane.ERROR_MESSAGE);
         }
     }
-
 
 }
