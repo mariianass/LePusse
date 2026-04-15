@@ -110,6 +110,7 @@ public class FrmComandas extends JFrame {
         btnNuevaComanda.setBackground(PaletaColores.DORADO);
         btnNuevaComanda.setForeground(PaletaColores.MARRON_OSCURO);
         btnNuevaComanda.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnNuevaComanda.addActionListener(e -> coordinador.mostrarNuevaComanda());
 
         JPanel panelBoton = new JPanel();
         panelBoton.setOpaque(false);
