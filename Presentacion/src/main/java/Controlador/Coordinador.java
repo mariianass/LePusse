@@ -5,6 +5,7 @@ import BOs.ComandaBO;
 import BOs.IngredienteBO;
 import BOs.ProductoBO;
 import BOs.ReporteClienteBO;
+import Pantallas.FrmCatalogoProductosComanda;
 import Pantallas.FrmClientesFrecuentes;
 import Pantallas.FrmComandas;
 import Pantallas.FrmEditarClienteFrecuente;
@@ -20,6 +21,7 @@ import Pantallas.FrmReportes;
 import Pantallas.frmRegistrarClienteFrecuente;
 import dtos.ClienteFrecuenteDTO;
 import dtos.ComandaDTO;
+import dtos.DetalleComandaDTO;
 import dtos.IngredienteDTO;
 import dtos.MesaDTO;
 import dtos.ProductoDTO;
@@ -48,6 +50,7 @@ public class Coordinador {
     // Capa Presentación (Pantallas)
     private FrmComandas frmComandas;
     private FrmNuevaComanda frmNuevaComanda;
+    private FrmCatalogoProductosComanda frmCatalogoProductosComanda;
     private FrmMenuAcceso frmMenuAcceso;
     private FrmClientesFrecuentes frmGestionarClientesFrecuentes;
     private frmRegistrarClienteFrecuente frmRegistrarClientesFrecuentes;
@@ -102,6 +105,21 @@ public class Coordinador {
     // COMANDAS
     // =========================================================
     /**
+     * Registra una nueva comanda en el sistema.
+     *
+     * @param comanda DTO de la comanda a guardar.
+     * @return Comanda registrada.
+     * @throws Exception Si ocurre un error.
+     */
+    public ComandaDTO registrarComanda(ComandaDTO comanda) throws Exception {
+        try {
+            return comandaBO.guardar(comanda);
+        } catch (Exception ex) {
+            throw new Exception("Error al registrar la comanda: " + ex.getMessage(), ex);
+        }
+    }
+
+    /**
      * Hace visible la pantalla principal de gestión de comandas.
      */
     public void mostrarGestionarComandas() {
@@ -114,6 +132,37 @@ public class Coordinador {
         frmComandas.setVisible(true);
         frmComandas.toFront();
         frmComandas.recargarTabla();
+    }
+
+    /**
+     * Muestra la pantalla de catálogo de productos para nueva comanda.
+     */
+    public void mostrarCatalogoProductosComanda() {
+        if (frmCatalogoProductosComanda == null) {
+            frmCatalogoProductosComanda = new FrmCatalogoProductosComanda(this);
+        }
+
+        frmCatalogoProductosComanda.setVisible(true);
+    }
+
+    /**
+     * Recibe los productos seleccionados desde el catálogo y los envía a la
+     * pantalla de nueva comanda para actualizar su detalle.
+     *
+     * @param detallesSeleccionados Lista de detalles seleccionados.
+     */
+    public void recibirProductosSeleccionadosComanda(List<DetalleComandaDTO> detallesSeleccionados) {
+        if (frmNuevaComanda != null) {
+            frmNuevaComanda.cargarDetallesSeleccionados(detallesSeleccionados);
+            frmNuevaComanda.setVisible(true);
+            frmNuevaComanda.toFront();
+        }
+
+        if (frmCatalogoProductosComanda != null) {
+            frmCatalogoProductosComanda.setVisible(false);
+            frmCatalogoProductosComanda.dispose();
+            frmCatalogoProductosComanda = null;
+        }
     }
 
     /**

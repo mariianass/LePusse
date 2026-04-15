@@ -185,7 +185,17 @@ public class Comanda implements Serializable {
 
     @Override
     public String toString() {
-        return "Comanda{" + "idComanda=" + idComanda + ", folio=" + folio + ", fechaHoraCreacion=" + fechaHoraCreacion + ", estado=" + estado + ", totalVenta=" + totalVenta + ", mesa=" + mesa + ", cliente=" + cliente + ", detalles=" + detalles + '}';
+        return "Comanda{"
+                + "idComanda=" + idComanda
+                + ", folio=" + folio
+                + ", fechaHoraCreacion=" + fechaHoraCreacion
+                + ", estado=" + estado
+                + ", totalVenta=" + totalVenta
+                + ", idMesa=" + (mesa != null ? mesa.getIdMesa() : null)
+                + ", numeroMesa=" + (mesa != null ? mesa.getNumeroMesa() : null)
+                + ", idCliente=" + (cliente != null ? cliente.getId() : null)
+                + ", totalDetalles=" + (detalles != null ? detalles.size() : 0)
+                + '}';
     }
 
 }

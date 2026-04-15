@@ -21,6 +21,9 @@ import excepciones.NegocioException;
 import excepciones.PersistenciaException;
 import interfaces.IComandaBO;
 import interfaces.IComandaDAO;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import validadores.ValidadorComanda;
@@ -63,6 +66,18 @@ public class ComandaBO implements IComandaBO {
     @Override
     public ComandaDTO guardar(ComandaDTO comandaDTO) throws NegocioException {
         try {
+            if (comandaDTO.getFechaHoraCreacion() == null) {
+                comandaDTO.setFechaHoraCreacion(LocalDateTime.now());
+            }
+
+            if (comandaDTO.getEstado() == null) {
+                comandaDTO.setEstado(EstadoComandaDTO.ABIERTA);
+            }
+
+            if (comandaDTO.getFolio() == null || comandaDTO.getFolio().trim().isEmpty()) {
+                comandaDTO.setFolio(generarFolioAutomatico(comandaDTO.getFechaHoraCreacion().toLocalDate()));
+            }
+
             ValidadorComanda.validar(comandaDTO);
 
             Comanda comandaExistente = comandaDAO.buscarComandaActivaPorMesa(comandaDTO.getIdMesa());
@@ -78,6 +93,36 @@ public class ComandaBO implements IComandaBO {
         } catch (PersistenciaException e) {
             throw new NegocioException("Error al guardar la comanda.", e);
         }
+    }
+
+    /**
+     * Genera automáticamente el folio de una comanda con el formato
+     * OB-YYYYMMDD-XXX.
+     *
+     * @param fecha Fecha base para generar el folio.
+     * @return Folio generado.
+     * @throws PersistenciaException Si ocurre un error al consultar el último
+     * folio.
+     */
+    private String generarFolioAutomatico(LocalDate fecha) throws PersistenciaException {
+        String fechaTexto = fecha.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String ultimoFolio = comandaDAO.obtenerUltimoFolioDelDia(fecha);
+
+        int consecutivo = 1;
+
+        if (ultimoFolio != null && !ultimoFolio.trim().isEmpty()) {
+            String[] partes = ultimoFolio.split("-");
+
+            if (partes.length == 3) {
+                try {
+                    consecutivo = Integer.parseInt(partes[2]) + 1;
+                } catch (NumberFormatException e) {
+                    consecutivo = 1;
+                }
+            }
+        }
+
+        return "OB-" + fechaTexto + "-" + String.format("%03d", consecutivo);
     }
 
     /**

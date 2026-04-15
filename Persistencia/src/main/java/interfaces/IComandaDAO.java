@@ -7,6 +7,7 @@ package interfaces;
 import entidades.Comanda;
 import entidades.Mesa;
 import excepciones.PersistenciaException;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -72,4 +73,14 @@ public interface IComandaDAO {
      * @throws PersistenciaException Si ocurre un error durante la búsqueda.
      */
     public Comanda buscarComandaActivaPorMesa(Long idMesa) throws PersistenciaException;
+
+    /**
+     * Obtiene el último folio registrado para una fecha específica.
+     *
+     * @param fecha Fecha a consultar.
+     * @return Último folio del día, o null si no existe ninguno.
+     * @throws PersistenciaException Si ocurre un error durante la consulta.
+     */
+    public String obtenerUltimoFolioDelDia(LocalDate fecha) throws PersistenciaException;
+
 }

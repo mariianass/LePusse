@@ -14,6 +14,8 @@ import enums.EstadoComanda;
 import enums.EstadoMesa;
 import excepciones.PersistenciaException;
 import interfaces.IComandaDAO;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -317,6 +319,47 @@ public class ComandaDAO implements IComandaDAO {
 
         } catch (Exception e) {
             throw new PersistenciaException("Error al buscar la comanda activa de la mesa.", e);
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Obtiene el último folio registrado para una fecha específica.
+     *
+     * @param fecha Fecha a consultar.
+     * @return Último folio del día, o null si no existe ninguno.
+     * @throws PersistenciaException Si ocurre un error durante la consulta.
+     */
+    @Override
+    public String obtenerUltimoFolioDelDia(LocalDate fecha) throws PersistenciaException {
+        if (fecha == null) {
+            throw new PersistenciaException("La fecha no puede ser nula.");
+        }
+
+        EntityManager em = ConexionBD.crearConexion();
+
+        try {
+            String prefijo = "OB-" + fecha.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-";
+
+            String jpql = "SELECT c.folio FROM Comanda c "
+                    + "WHERE c.folio LIKE :prefijo "
+                    + "ORDER BY c.folio DESC";
+
+            TypedQuery<String> query = em.createQuery(jpql, String.class);
+            query.setParameter("prefijo", prefijo + "%");
+            query.setMaxResults(1);
+
+            List<String> resultados = query.getResultList();
+
+            if (resultados.isEmpty()) {
+                return null;
+            }
+
+            return resultados.get(0);
+
+        } catch (Exception e) {
+            throw new PersistenciaException("Error al obtener el último folio del día.", e);
         } finally {
             em.close();
         }

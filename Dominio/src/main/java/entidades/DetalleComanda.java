@@ -138,7 +138,16 @@ public class DetalleComanda implements Serializable {
 
     @Override
     public String toString() {
-        return "DetalleComanda{" + "idDetalleComanda=" + idDetalleComanda + ", cantidad=" + cantidad + ", comentarioEspecial=" + comentarioEspecial + ", precio=" + precio + ", subtotal=" + subtotal + ", comanda=" + comanda + ", producto=" + producto + '}';
+        return "DetalleComanda{"
+                + "idDetalleComanda=" + idDetalleComanda
+                + ", cantidad=" + cantidad
+                + ", comentarioEspecial=" + comentarioEspecial
+                + ", precio=" + precio
+                + ", subtotal=" + subtotal
+                + ", idComanda=" + (comanda != null ? comanda.getIdComanda() : null)
+                + ", idProducto=" + (producto != null ? producto.getIdProducto() : null)
+                + ", nombreProducto=" + (producto != null ? producto.getNombre() : null)
+                + '}';
     }
 
 }

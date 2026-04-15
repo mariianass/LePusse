@@ -10,7 +10,10 @@ import Controlador.Coordinador;
 import Estilos.Dimensiones;
 import Estilos.PaletaColores;
 import dtos.ClienteFrecuenteDTO;
+import dtos.ComandaDTO;
+import dtos.DetalleComandaDTO;
 import dtos.MesaDTO;
+import enumsDTO.EstadoComandaDTO;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -22,6 +25,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -64,6 +68,8 @@ public class FrmNuevaComanda extends JFrame {
 
     private JLabel lblTotalValor;
 
+    private List<DetalleComandaDTO> detallesSeleccionados;
+
     /**
      * Constructor principal de la pantalla de nueva comanda.
      *
@@ -71,6 +77,7 @@ public class FrmNuevaComanda extends JFrame {
      */
     public FrmNuevaComanda(Coordinador coordinador) {
         this.coordinador = coordinador;
+        this.detallesSeleccionados = new ArrayList<>();
 
         setTitle("Restaurante Le Pusse - Nueva Comanda");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -221,6 +228,7 @@ public class FrmNuevaComanda extends JFrame {
         btnAgregarProducto.setBackground(PaletaColores.DORADO);
         btnAgregarProducto.setForeground(PaletaColores.MARRON_OSCURO);
         btnAgregarProducto.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnAgregarProducto.addActionListener(e -> coordinador.mostrarCatalogoProductosComanda());
 
         JPanel parteSuperior = new JPanel(new BorderLayout());
         parteSuperior.setOpaque(false);
@@ -337,6 +345,7 @@ public class FrmNuevaComanda extends JFrame {
         btnGuardar.setBackground(PaletaColores.MARRON_OSCURO);
         btnGuardar.setForeground(PaletaColores.BLANCO);
         btnGuardar.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnGuardar.addActionListener(e -> confirmarGuardadoComanda());
 
         panelBotones.add(btnCancelar);
         panelBotones.add(btnGuardar);
@@ -421,6 +430,138 @@ public class FrmNuevaComanda extends JFrame {
                     "Error",
                     JOptionPane.ERROR_MESSAGE
             );
+        }
+    }
+
+    /**
+     * Carga en la tabla los productos seleccionados desde el catálogo y
+     * actualiza el total acumulado.
+     *
+     * @param detallesSeleccionados Lista de detalles seleccionados.
+     */
+    public void cargarDetallesSeleccionados(List<DetalleComandaDTO> detallesSeleccionados) {
+        modeloTabla.setRowCount(0);
+        this.detallesSeleccionados = new ArrayList<>();
+
+        if (detallesSeleccionados == null || detallesSeleccionados.isEmpty()) {
+            lblTotalValor.setText("$0.00");
+            return;
+        }
+
+        double total = 0.0;
+
+        for (DetalleComandaDTO detalle : detallesSeleccionados) {
+            double subtotal = detalle.getSubtotal() != null ? detalle.getSubtotal() : 0.0;
+            total += subtotal;
+
+            this.detallesSeleccionados.add(detalle);
+
+            modeloTabla.addRow(new Object[]{
+                detalle.getNombreProducto(),
+                detalle.getCantidad(),
+                detalle.getPrecio() != null ? "$" + String.format("%.2f", detalle.getPrecio()) : "$0.00",
+                "$" + String.format("%.2f", subtotal),
+                detalle.getComentarioEspecial() != null ? detalle.getComentarioEspecial() : ""
+            });
+        }
+
+        lblTotalValor.setText("$" + String.format("%.2f", total));
+    }
+
+    /**
+     * Valida la información capturada y registra la nueva comanda.
+     */
+    private void guardarComanda() {
+        try {
+            MesaDTO mesaSeleccionada = (MesaDTO) cmbMesa.getSelectedItem();
+            ClienteFrecuenteDTO clienteSeleccionado = (ClienteFrecuenteDTO) cmbCliente.getSelectedItem();
+
+            if (mesaSeleccionada == null) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Debes seleccionar una mesa.",
+                        "Validación",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+
+            if (detallesSeleccionados == null || detallesSeleccionados.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Debes agregar al menos un producto a la comanda.",
+                        "Validación",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+
+            double total = 0.0;
+            for (DetalleComandaDTO detalle : detallesSeleccionados) {
+                total += detalle.getSubtotal() != null ? detalle.getSubtotal() : 0.0;
+            }
+
+            ComandaDTO comanda = new ComandaDTO();
+            comanda.setIdComanda(null);
+            comanda.setFolio(null);
+            comanda.setFechaHoraCreacion(LocalDateTime.now());
+            comanda.setEstado(EstadoComandaDTO.ABIERTA);
+            comanda.setTotalVenta(total);
+
+            comanda.setIdMesa(mesaSeleccionada.getIdMesa());
+            comanda.setNumeroMesa(mesaSeleccionada.getNumeroMesa());
+
+            if (clienteSeleccionado != null) {
+                comanda.setIdCliente(clienteSeleccionado.getIdCliente());
+
+                String nombreCompleto = (clienteSeleccionado.getNombre() + " "
+                        + clienteSeleccionado.getApellidoPaterno() + " "
+                        + clienteSeleccionado.getApellidoMaterno()).trim().replaceAll("\\s+", " ");
+
+                comanda.setNombreCliente(nombreCompleto);
+            } else {
+                comanda.setIdCliente(null);
+                comanda.setNombreCliente(null);
+            }
+
+            comanda.setDetalles(new ArrayList<>(detallesSeleccionados));
+
+            ComandaDTO comandaGuardada = coordinador.registrarComanda(comanda);
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Comanda registrada correctamente.\nFolio: " + comandaGuardada.getFolio(),
+                    "Éxito",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+            limpiarFormulario();
+            coordinador.mostrarGestionarComandas();
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    /**
+     * Solicita confirmación al usuario antes de registrar la comanda.
+     */
+    private void confirmarGuardadoComanda() {
+        int opcion = JOptionPane.showConfirmDialog(
+                this,
+                "¿Deseas guardar la comanda?",
+                "Confirmar guardado",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (opcion == JOptionPane.YES_OPTION) {
+            guardarComanda();
         }
     }
 
@@ -543,6 +684,21 @@ public class FrmNuevaComanda extends JFrame {
         lbl.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lbl.setForeground(PaletaColores.TEXTO_MARRON);
         return lbl;
+    }
+
+    /**
+     * Limpia la información capturada en la pantalla.
+     */
+    private void limpiarFormulario() {
+        txtFolio.setText("");
+        cargarFechaYHoraActual();
+
+        cmbMesa.setSelectedItem(null);
+        cmbCliente.setSelectedItem(null);
+
+        modeloTabla.setRowCount(0);
+        detallesSeleccionados.clear();
+        lblTotalValor.setText("$0.00");
     }
 
     /**
