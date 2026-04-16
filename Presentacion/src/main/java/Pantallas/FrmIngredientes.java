@@ -14,6 +14,7 @@ import enumsDTO.UnidadMedidaDTO;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -133,6 +134,21 @@ public class FrmIngredientes extends JFrame {
         titulo.setFont(new Font("Segoe UI Semilight", Font.PLAIN, 34));
         titulo.setForeground(PaletaColores.TEXTO_MARRON);
         cabecera.add(titulo, BorderLayout.WEST);
+        
+        if (modoSeleccion) {
+            BotonRedondeado btnRegresar = new BotonRedondeado("Regresar", 20);
+            btnRegresar.setPreferredSize(new Dimension(120, 40));
+            btnRegresar.setBackground(new Color(220, 220, 220)); 
+            btnRegresar.setForeground(PaletaColores.TEXTO_MARRON);
+            btnRegresar.setFont(new Font("Segoe UI", Font.BOLD, 13));
+
+            btnRegresar.addActionListener(e -> this.dispose());
+
+            JPanel panelRegresar = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            panelRegresar.setOpaque(false);
+            panelRegresar.add(btnRegresar);
+            cabecera.add(panelRegresar, BorderLayout.EAST);
+        }
 
         contenido.add(cabecera, BorderLayout.NORTH);
 

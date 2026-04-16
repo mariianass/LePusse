@@ -173,15 +173,22 @@ public class FrmEditarClienteFrecuente extends JFrame {
 
     private void cargarDatosCliente() {
         if (clienteDTO == null) return;
+        String nombreCompleto = clienteDTO.getNombre().trim();
+        int primerEspacio = nombreCompleto.indexOf(" ");
 
-        txtPrimerNombre.setText(clienteDTO.getNombre());
+        if (primerEspacio != -1) {
+            txtPrimerNombre.setText(nombreCompleto.substring(0, primerEspacio));
+            txtSegundoNombre.setText(nombreCompleto.substring(primerEspacio + 1).trim());
+        } else {
+            txtPrimerNombre.setText(nombreCompleto);
+            txtSegundoNombre.setText(""); 
+        }
         txtApellidoPaterno.setText(clienteDTO.getApellidoPaterno());
         txtApellidoMaterno.setText(clienteDTO.getApellidoMaterno());
-        txtTelefono.setText(clienteDTO.getTelefono()); // YA DESENCRIPTADO
+        txtTelefono.setText(clienteDTO.getTelefono());
         txtCorreo.setText(clienteDTO.getCorreoElectronico());
     }
 
-    // 🔥 MÉTODO CLAVE CORREGIDO
     private void guardarCambios() {
 
         String nombre = txtPrimerNombre.getText().trim();
@@ -190,7 +197,6 @@ public class FrmEditarClienteFrecuente extends JFrame {
         String telefono = txtTelefono.getText().trim();
         String correo = txtCorreo.getText().trim();
 
-        // VALIDACIONES
         if (nombre.isEmpty() || apP.isEmpty() || apM.isEmpty() || telefono.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Complete todos los campos obligatorios.");
             return;
@@ -219,7 +225,7 @@ public class FrmEditarClienteFrecuente extends JFrame {
             clienteDTO.setNombre(nombre);
             clienteDTO.setApellidoPaterno(apP);
             clienteDTO.setApellidoMaterno(apM);
-            clienteDTO.setTelefono(telefono); // 🔥 AQUÍ VA NORMAL (BO lo cifra)
+            clienteDTO.setTelefono(telefono); 
             clienteDTO.setCorreoElectronico(correo.isEmpty() ? null : correo);
 
             coordinador.actualizarClienteFrecuente(clienteDTO);
