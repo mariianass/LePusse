@@ -5,6 +5,8 @@
 package BOs;
 
 import DAOs.ComandaDAO;
+import DAOs.IngredienteDAO;
+import DAOs.ProductoDAO;
 import dtos.ComandaDTO;
 import dtos.DetalleComandaDTO;
 import enumsDTO.EstadoComandaDTO;
@@ -13,6 +15,8 @@ import dtos.MesaDTO;
 import entidades.Cliente;
 import entidades.Comanda;
 import entidades.DetalleComanda;
+import entidades.DetalleProductoIngrediente;
+import entidades.Ingrediente;
 import entidades.Mesa;
 import entidades.Producto;
 import enums.EstadoComanda;
@@ -84,6 +88,8 @@ public class ComandaBO implements IComandaBO {
             if (comandaExistente != null) {
                 throw new NegocioException("La mesa seleccionada ya cuenta con una comanda activa.");
             }
+
+            descontarIngredientes(comandaDTO);
 
             Comanda comanda = convertirEntidad(comandaDTO);
             Comanda comandaGuardada = comandaDAO.guardar(comanda);
@@ -176,6 +182,9 @@ public class ComandaBO implements IComandaBO {
                 throw new NegocioException("La mesa seleccionada ya cuenta con otra comanda activa.");
             }
 
+            devolverIngredientes(comandaActual);
+            descontarIngredientes(comandaDTO);
+
             Comanda comanda = convertirEntidad(comandaDTO);
             Comanda comandaEditada = comandaDAO.editar(comanda);
 
@@ -248,6 +257,8 @@ public class ComandaBO implements IComandaBO {
                 throw new NegocioException("No se puede cancelar una comanda entregada.");
             }
 
+            devolverIngredientes(comanda);
+
             comanda.setEstado(EstadoComanda.CANCELADA);
 
             if (comanda.getMesa() != null) {
@@ -306,6 +317,99 @@ public class ComandaBO implements IComandaBO {
 
         } catch (PersistenciaException e) {
             throw new NegocioException("Error al obtener las mesas disponibles.", e);
+        }
+    }
+
+    /**
+     * Descuenta del inventario los ingredientes requeridos por los productos
+     * incluidos en la comanda.
+     *
+     * @param comandaDTO Comanda a procesar.
+     * @throws NegocioException Si no hay stock suficiente o ocurre un error.
+     */
+    private void descontarIngredientes(ComandaDTO comandaDTO) throws NegocioException {
+        try {
+            ProductoDAO productoDAO = ProductoDAO.getInstance();
+            IngredienteDAO ingredienteDAO = IngredienteDAO.getInstance();
+
+            for (DetalleComandaDTO detalleComanda : comandaDTO.getDetalles()) {
+                Producto producto = productoDAO.buscarPorId(detalleComanda.getIdProducto());
+
+                if (producto == null) {
+                    throw new NegocioException("No se encontró el producto con ID: " + detalleComanda.getIdProducto());
+                }
+
+                if (producto.getDetallesIngredientes() == null || producto.getDetallesIngredientes().isEmpty()) {
+                    continue;
+                }
+
+                for (DetalleProductoIngrediente detalleIngrediente : producto.getDetallesIngredientes()) {
+                    Ingrediente ingrediente = detalleIngrediente.getIngrediente();
+
+                    if (ingrediente == null || ingrediente.getIdIngrediente() == null) {
+                        throw new NegocioException("Uno de los ingredientes del producto no es válido.");
+                    }
+
+                    double stockActual = ingrediente.getStockActual() != null ? ingrediente.getStockActual() : 0.0;
+                    int cantidadRequerida = detalleIngrediente.getCantidadRequerida() != null ? detalleIngrediente.getCantidadRequerida() : 0;
+                    int cantidadPedida = detalleComanda.getCantidad() != null ? detalleComanda.getCantidad() : 0;
+
+                    double cantidadADescontar = cantidadRequerida * cantidadPedida;
+
+                    if (stockActual < cantidadADescontar) {
+                        throw new NegocioException("No hay suficiente stock de " + ingrediente.getNombre() + ".");
+                    }
+
+                    double nuevoStock = stockActual - cantidadADescontar;
+                    ingredienteDAO.actualizarStock(ingrediente.getIdIngrediente(), nuevoStock);
+                }
+            }
+
+        } catch (PersistenciaException e) {
+            throw new NegocioException("Error al descontar ingredientes de la comanda.", e);
+        }
+    }
+
+    /**
+     * Devuelve al inventario los ingredientes de una comanda existente.
+     *
+     * @param comanda Entidad Comanda.
+     * @throws NegocioException Si ocurre un error.
+     */
+    private void devolverIngredientes(Comanda comanda) throws NegocioException {
+        try {
+            IngredienteDAO ingredienteDAO = IngredienteDAO.getInstance();
+
+            for (DetalleComanda detalle : comanda.getDetalles()) {
+
+                Producto producto = detalle.getProducto();
+
+                if (producto == null || producto.getDetallesIngredientes() == null) {
+                    continue;
+                }
+
+                for (DetalleProductoIngrediente dpi : producto.getDetallesIngredientes()) {
+
+                    Ingrediente ingrediente = dpi.getIngrediente();
+
+                    double stockActual = ingrediente.getStockActual() != null ? ingrediente.getStockActual() : 0.0;
+
+                    int cantidadRequerida = dpi.getCantidadRequerida() != null ? dpi.getCantidadRequerida() : 0;
+                    int cantidadPedida = detalle.getCantidad() != null ? detalle.getCantidad() : 0;
+
+                    double cantidadADevolver = cantidadRequerida * cantidadPedida;
+
+                    double nuevoStock = stockActual + cantidadADevolver;
+
+                    ingredienteDAO.actualizarStock(
+                            ingrediente.getIdIngrediente(),
+                            nuevoStock
+                    );
+                }
+            }
+
+        } catch (PersistenciaException e) {
+            throw new NegocioException("Error al devolver ingredientes.", e);
         }
     }
 

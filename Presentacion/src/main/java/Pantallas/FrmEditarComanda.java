@@ -435,10 +435,9 @@ public class FrmEditarComanda extends JFrame {
             for (DetalleComandaDTO existente : detallesSeleccionados) {
                 if (existente.getIdProducto().equals(nuevo.getIdProducto())) {
 
-                    int nuevaCantidad = existente.getCantidad() + nuevo.getCantidad();
-                    existente.setCantidad(nuevaCantidad);
+                    existente.setCantidad(nuevo.getCantidad());
 
-                    double subtotal = nuevaCantidad * existente.getPrecio();
+                    double subtotal = nuevo.getCantidad() * existente.getPrecio();
                     existente.setSubtotal(subtotal);
 
                     encontrado = true;

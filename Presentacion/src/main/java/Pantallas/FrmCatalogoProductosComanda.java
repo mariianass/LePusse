@@ -439,6 +439,7 @@ public class FrmCatalogoProductosComanda extends JFrame {
         }
 
         coordinador.recibirProductosSeleccionadosDesdeCatalogo(detallesSeleccionados);
+        cantidadesSeleccionadas.clear();
     }
 
     /**
