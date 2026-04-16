@@ -40,6 +40,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
@@ -261,11 +262,24 @@ public class FrmEditarComanda extends JFrame {
         modeloTabla = new DefaultTableModel(null, columnas) {
             @Override
             public boolean isCellEditable(int fila, int columna) {
-                return false;
+                return columna == 4;
             }
         };
 
         tablaDetalle = new JTable(modeloTabla);
+
+        modeloTabla.addTableModelListener(e -> {
+            if (e.getType() == TableModelEvent.UPDATE) {
+                int fila = e.getFirstRow();
+                int columna = e.getColumn();
+
+                if (columna == 4 && fila >= 0 && fila < detallesSeleccionados.size()) {
+                    String comentario = (String) modeloTabla.getValueAt(fila, columna);
+                    detallesSeleccionados.get(fila).setComentarioEspecial(comentario);
+                }
+            }
+        });
+
         tablaDetalle.setRowHeight(42);
         tablaDetalle.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         tablaDetalle.setForeground(PaletaColores.TEXTO_MARRON);
