@@ -4,18 +4,18 @@
  */
 package Pantallas;
 
+import Componentes.BotonEditar;
 import Componentes.BotonRedondeado;
 import Componentes.MenuLateralEmpleadoPanel;
 import Controlador.Coordinador;
 import Estilos.Dimensiones;
 import Estilos.PaletaColores;
 import dtos.ComandaDTO;
-import enumsDTO.EstadoComandaDTO;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
@@ -144,7 +144,7 @@ public class FrmComandas extends JFrame {
      */
     private JScrollPane crearTablaComandas() {
         String[] columnas = {
-            "Folio", "Fecha", "Hora", "Mesa", "Cliente", "Total", "Estado", "Acciones"
+            "ID", "Folio", "Fecha", "Hora", "Mesa", "Cliente", "Total", "Estado", "Acciones"
         };
 
         modeloTabla = new DefaultTableModel(null, columnas) {
@@ -177,26 +177,52 @@ public class FrmComandas extends JFrame {
         header.setResizingAllowed(false);
         header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, PaletaColores.LINEA_SUAVE));
 
-        tablaComandas.getColumnModel().getColumn(0).setPreferredWidth(150);
-        tablaComandas.getColumnModel().getColumn(1).setPreferredWidth(110);
-        tablaComandas.getColumnModel().getColumn(2).setPreferredWidth(90);
+        tablaComandas.getColumnModel().getColumn(0).setMinWidth(0);
+        tablaComandas.getColumnModel().getColumn(0).setMaxWidth(0);
+        tablaComandas.getColumnModel().getColumn(0).setPreferredWidth(0);
+
+        tablaComandas.getColumnModel().getColumn(1).setPreferredWidth(150);
+        tablaComandas.getColumnModel().getColumn(2).setPreferredWidth(110);
         tablaComandas.getColumnModel().getColumn(3).setPreferredWidth(90);
-        tablaComandas.getColumnModel().getColumn(4).setPreferredWidth(210);
-        tablaComandas.getColumnModel().getColumn(5).setPreferredWidth(110);
-        tablaComandas.getColumnModel().getColumn(6).setPreferredWidth(120);
+        tablaComandas.getColumnModel().getColumn(4).setPreferredWidth(90);
+        tablaComandas.getColumnModel().getColumn(5).setPreferredWidth(210);
+        tablaComandas.getColumnModel().getColumn(6).setPreferredWidth(110);
         tablaComandas.getColumnModel().getColumn(7).setPreferredWidth(120);
+        tablaComandas.getColumnModel().getColumn(8).setPreferredWidth(120);
 
         DefaultTableCellRenderer centrado = new DefaultTableCellRenderer();
         centrado.setHorizontalAlignment(SwingConstants.CENTER);
         centrado.setBackground(PaletaColores.BLANCO);
         centrado.setForeground(PaletaColores.TEXTO_MARRON);
 
-        tablaComandas.getColumnModel().getColumn(1).setCellRenderer(centrado);
         tablaComandas.getColumnModel().getColumn(2).setCellRenderer(centrado);
         tablaComandas.getColumnModel().getColumn(3).setCellRenderer(centrado);
-        tablaComandas.getColumnModel().getColumn(5).setCellRenderer(centrado);
+        tablaComandas.getColumnModel().getColumn(4).setCellRenderer(centrado);
         tablaComandas.getColumnModel().getColumn(6).setCellRenderer(centrado);
         tablaComandas.getColumnModel().getColumn(7).setCellRenderer(centrado);
+        tablaComandas.getColumnModel().getColumn(8).setCellRenderer(new BotonEditar());
+
+        tablaComandas.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int fila = tablaComandas.getSelectedRow();
+                int columna = tablaComandas.getSelectedColumn();
+
+                if (fila == -1) {
+                    return;
+                }
+
+                Long idComanda = (Long) modeloTabla.getValueAt(fila, 0);
+
+                if (columna == 8 && e.getClickCount() == 1) {
+                    confirmarEntrega(idComanda);
+                }
+
+                if (e.getClickCount() == 2) {
+                    coordinador.mostrarEditarComanda(idComanda);
+                }
+            }
+        });
 
         JScrollPane scroll = new JScrollPane(tablaComandas);
         scroll.setBorder(BorderFactory.createEmptyBorder());
@@ -219,6 +245,7 @@ public class FrmComandas extends JFrame {
 
             for (ComandaDTO comanda : comandas) {
                 modeloTabla.addRow(new Object[]{
+                    comanda.getIdComanda(),
                     comanda.getFolio(),
                     comanda.getFechaHoraCreacion() != null ? comanda.getFechaHoraCreacion().toLocalDate() : null,
                     comanda.getFechaHoraCreacion() != null ? comanda.getFechaHoraCreacion().toLocalTime() : null,
@@ -237,6 +264,35 @@ public class FrmComandas extends JFrame {
                     "Error",
                     JOptionPane.ERROR_MESSAGE
             );
+        }
+    }
+
+    /**
+     * Solicita confirmación antes de marcar una comanda como entregada.
+     *
+     * @param idComanda ID de la comanda seleccionada.
+     */
+    private void confirmarEntrega(Long idComanda) {
+        int opcion = JOptionPane.showConfirmDialog(
+                this,
+                "¿Deseas marcar como entregada la comanda?",
+                "Confirmar",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (opcion == JOptionPane.YES_OPTION) {
+            try {
+                coordinador.entregarComanda(idComanda);
+                recargarTabla();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
         }
     }
 
