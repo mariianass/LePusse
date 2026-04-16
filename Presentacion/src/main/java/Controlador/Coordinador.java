@@ -9,6 +9,7 @@ import Pantallas.FrmCatalogoProductosComanda;
 import Pantallas.FrmClientesFrecuentes;
 import Pantallas.FrmComandas;
 import Pantallas.FrmEditarClienteFrecuente;
+import Pantallas.FrmEditarComanda;
 import Pantallas.FrmEditarIngrediente;
 import Pantallas.FrmEditarProducto;
 import Pantallas.FrmIngredientes;
@@ -52,6 +53,7 @@ public class Coordinador {
     // Capa Presentación (Pantallas)
     private FrmComandas frmComandas;
     private FrmNuevaComanda frmNuevaComanda;
+    private FrmEditarComanda frmEditarComanda;
     private FrmCatalogoProductosComanda frmCatalogoProductosComanda;
     private FrmMenuAcceso frmMenuAcceso;
     private FrmClientesFrecuentes frmGestionarClientesFrecuentes;
@@ -67,6 +69,8 @@ public class Coordinador {
     private FrmEditarProducto frmEditarProducto;
 
     private FrmReportes frmReportes;
+
+    private boolean catalogoEnModoEdicion = false;
 
     /**
      * Constructor que inicializa la lógica de negocio.
@@ -140,11 +144,42 @@ public class Coordinador {
      * Muestra la pantalla de catálogo de productos para nueva comanda.
      */
     public void mostrarCatalogoProductosComanda() {
+        catalogoEnModoEdicion = false;
+
         if (frmCatalogoProductosComanda == null) {
             frmCatalogoProductosComanda = new FrmCatalogoProductosComanda(this);
         }
 
         frmCatalogoProductosComanda.setVisible(true);
+        frmCatalogoProductosComanda.toFront();
+    }
+
+    /**
+     * Abre el catálogo de productos para edición de comanda.
+     */
+    public void mostrarCatalogoProductosParaEdicion() {
+        catalogoEnModoEdicion = true;
+
+        if (frmCatalogoProductosComanda == null) {
+            frmCatalogoProductosComanda = new FrmCatalogoProductosComanda(this);
+        }
+
+        frmCatalogoProductosComanda.setVisible(true);
+        frmCatalogoProductosComanda.toFront();
+    }
+
+    /**
+     * Recibe los productos seleccionados desde el catálogo y los envía a la
+     * pantalla correspondiente según el contexto actual.
+     *
+     * @param detallesSeleccionados Lista de detalles seleccionados.
+     */
+    public void recibirProductosSeleccionadosDesdeCatalogo(List<DetalleComandaDTO> detallesSeleccionados) {
+        if (catalogoEnModoEdicion) {
+            recibirProductosSeleccionadosEdicion(detallesSeleccionados);
+        } else {
+            recibirProductosSeleccionadosComanda(detallesSeleccionados);
+        }
     }
 
     /**
@@ -158,6 +193,26 @@ public class Coordinador {
             frmNuevaComanda.cargarDetallesSeleccionados(detallesSeleccionados);
             frmNuevaComanda.setVisible(true);
             frmNuevaComanda.toFront();
+        }
+
+        if (frmCatalogoProductosComanda != null) {
+            frmCatalogoProductosComanda.setVisible(false);
+            frmCatalogoProductosComanda.dispose();
+            frmCatalogoProductosComanda = null;
+        }
+    }
+
+    /**
+     * Recibe los productos seleccionados desde el catálogo y los envía a la
+     * pantalla de edición de comanda para actualizar su detalle.
+     *
+     * @param detallesSeleccionados Lista de detalles seleccionados.
+     */
+    public void recibirProductosSeleccionadosEdicion(List<DetalleComandaDTO> detallesSeleccionados) {
+        if (frmEditarComanda != null) {
+            frmEditarComanda.agregarProductosDesdeCatalogo(detallesSeleccionados);
+            frmEditarComanda.setVisible(true);
+            frmEditarComanda.toFront();
         }
 
         if (frmCatalogoProductosComanda != null) {
@@ -211,6 +266,20 @@ public class Coordinador {
     }
 
     /**
+     * Actualiza una comanda existente.
+     *
+     * @param comanda DTO con la información actualizada.
+     * @throws Exception Si ocurre un error.
+     */
+    public void actualizarComanda(ComandaDTO comanda) throws Exception {
+        try {
+            comandaBO.editar(comanda);
+        } catch (Exception ex) {
+            throw new Exception("Error al actualizar la comanda.", ex);
+        }
+    }
+
+    /**
      * Marca una comanda como cancelada.
      *
      * @param idComanda ID de la comanda.
@@ -243,12 +312,44 @@ public class Coordinador {
      * @param idComanda ID de la comanda.
      */
     public void mostrarEditarComanda(Long idComanda) {
-        JOptionPane.showMessageDialog(
-                null,
-                "Pantalla de edición de comanda pendiente de implementación. ID: " + idComanda,
-                "Información",
-                JOptionPane.INFORMATION_MESSAGE
-        );
+        try {
+            ComandaDTO comanda = comandaBO.buscarPorId(idComanda);
+
+            if (comanda == null) {
+                throw new Exception("No se encontró la comanda seleccionada.");
+            }
+
+            ocultarTodasLasPantallas();
+
+            frmEditarComanda = new FrmEditarComanda(this, comanda);
+            frmEditarComanda.setVisible(true);
+            frmEditarComanda.toFront();
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Error al abrir la pantalla de edición: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    /**
+     * Regresa a la pantalla principal de comandas desde edición.
+     */
+    public void regresarAGestionComandasDesdeEditar() {
+        if (frmEditarComanda != null) {
+            frmEditarComanda.setVisible(false);
+            frmEditarComanda.dispose();
+            frmEditarComanda = null;
+        }
+
+        if (frmComandas != null) {
+            frmComandas.setVisible(true);
+            frmComandas.toFront();
+            frmComandas.recargarTabla();
+        }
     }
 
     /**
@@ -832,11 +933,11 @@ public class Coordinador {
         try {
             reporteClienteBO.generarReportePDF(rutaSalidaPDF, nombre, minimoVisitas);
         } catch (NegocioException ex) {
-            throw new NegocioException("Error al generar el PDF del reporte de clientes: "+ex.getMessage(), ex);
+            throw new NegocioException("Error al generar el PDF del reporte de clientes: " + ex.getMessage(), ex);
         }
     }
-    
-    public JasperPrint generarVistaReporteComanda (LocalDate fechaInicio,LocalDate fechaFin) throws Exception {
+
+    public JasperPrint generarVistaReporteComanda(LocalDate fechaInicio, LocalDate fechaFin) throws Exception {
         try {
             return reporteClienteBO.generarJasperReporteComandas(fechaInicio, fechaFin);
         } catch (NegocioException ex) {
@@ -844,11 +945,11 @@ public class Coordinador {
         }
     }
 
-    public void generarPDFReporteComanda (String rutaSalidaPDF, String nombre, Integer minimoVisitas) throws Exception {
+    public void generarPDFReporteComanda(String rutaSalidaPDF, String nombre, Integer minimoVisitas) throws Exception {
         try {
             reporteClienteBO.generarReportePDF(rutaSalidaPDF, nombre, minimoVisitas);
         } catch (NegocioException ex) {
-            throw new NegocioException("Error al generar el PDF del reporte de clientes: "+ex.getMessage(), ex);
+            throw new NegocioException("Error al generar el PDF del reporte de clientes: " + ex.getMessage(), ex);
         }
     }
 
@@ -864,6 +965,9 @@ public class Coordinador {
         }
         if (frmNuevaComanda != null) {
             frmNuevaComanda.setVisible(false);
+        }
+        if (frmEditarComanda != null) {
+            frmEditarComanda.setVisible(false);
         }
         if (frmGestionarClientesFrecuentes != null) {
             frmGestionarClientesFrecuentes.setVisible(false);
