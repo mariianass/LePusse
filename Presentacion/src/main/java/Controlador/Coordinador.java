@@ -299,11 +299,14 @@ public class Coordinador {
     public void mostrarNuevaComanda() {
         ocultarTodasLasPantallas();
 
-        if (frmNuevaComanda == null) {
-            frmNuevaComanda = new FrmNuevaComanda(this);
+        if (frmNuevaComanda != null) {
+            frmNuevaComanda.dispose();
+            frmNuevaComanda = null;
         }
 
+        frmNuevaComanda = new FrmNuevaComanda(this);
         frmNuevaComanda.setVisible(true);
+        frmNuevaComanda.toFront();
     }
 
     /**
@@ -952,10 +955,10 @@ public class Coordinador {
             throw new NegocioException("Error al generar el PDF del reporte de clientes: " + ex.getMessage(), ex);
         }
     }
-    
+
     /**
-     * Abre la pantalla de clientes en modo selección (true).
-     * Se activa desde el botón "Buscar" en la pestaña de Reporte de Clientes.
+     * Abre la pantalla de clientes en modo selección (true). Se activa desde el
+     * botón "Buscar" en la pestaña de Reporte de Clientes.
      */
     public void abrirSelectorClienteParaReporte() {
         FrmClientesFrecuentes frmSeleccion = new FrmClientesFrecuentes(this, false);
@@ -963,10 +966,12 @@ public class Coordinador {
         frmSeleccion.toFront();
     }
 
-   /**
-    * Recibe el ID del cliente seleccionado, busca sus datos y los manda a la pantalla de reportes.
-    * @param idCliente ID del cliente seleccionado en la tabla.
-    */
+    /**
+     * Recibe el ID del cliente seleccionado, busca sus datos y los manda a la
+     * pantalla de reportes.
+     *
+     * @param idCliente ID del cliente seleccionado en la tabla.
+     */
     public void recibirClienteSeleccionadoParaReporte(Long idCliente) {
         try {
             ClienteFrecuenteDTO cliente = clienteFrecuenteBO.buscarPorId(idCliente);
@@ -982,13 +987,12 @@ public class Coordinador {
             frmReportes.toFront();
 
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, 
-                "Error al seleccionar cliente para el reporte: " + ex.getMessage(), 
-                "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null,
+                    "Error al seleccionar cliente para el reporte: " + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    
     /**
      * Oculta todas las pantallas activas del sistema.
      */
