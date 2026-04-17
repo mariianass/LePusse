@@ -5,6 +5,7 @@ import Componentes.MenuLateralPanel;
 import Controlador.Coordinador;
 import Estilos.Dimensiones;
 import Estilos.PaletaColores;
+import Validadores.Validadores;
 import dtos.ClienteFrecuenteDTO;
 import interfaces.IClienteFrecuenteBO;
 import java.awt.BorderLayout;
@@ -190,31 +191,20 @@ public class FrmEditarClienteFrecuente extends JFrame {
     }
 
     private void guardarCambios() {
-
-        String nombre = txtPrimerNombre.getText().trim();
+        String pNombre = txtPrimerNombre.getText().trim();
+        String sNombre = txtSegundoNombre.getText().trim(); 
         String apP = txtApellidoPaterno.getText().trim();
         String apM = txtApellidoMaterno.getText().trim();
         String telefono = txtTelefono.getText().trim();
         String correo = txtCorreo.getText().trim();
 
-        if (nombre.isEmpty() || apP.isEmpty() || apM.isEmpty() || telefono.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Complete todos los campos obligatorios.");
-            return;
-        }
-
-        if (!telefono.matches("\\d{10}")) {
-            JOptionPane.showMessageDialog(this, "El teléfono debe tener exactamente 10 dígitos.");
-            return;
-        }
-
-        if (!correo.isEmpty() && !correo.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-            JOptionPane.showMessageDialog(this, "Correo electrónico inválido.");
+        if (!Validadores.validarCliente(this, pNombre, apP, apM, telefono, correo)) {
             return;
         }
 
         int opcion = JOptionPane.showConfirmDialog(
                 this,
-                "¿Confirmas los cambios?",
+                "¿Confirmas los cambios realizados al cliente?",
                 "Confirmación",
                 JOptionPane.YES_NO_OPTION
         );
@@ -222,7 +212,9 @@ public class FrmEditarClienteFrecuente extends JFrame {
         if (opcion != JOptionPane.YES_OPTION) return;
 
         try {
-            clienteDTO.setNombre(nombre);
+            String nombreCompleto = sNombre.isEmpty() ? pNombre : pNombre + " " + sNombre;
+            
+            clienteDTO.setNombre(nombreCompleto);
             clienteDTO.setApellidoPaterno(apP);
             clienteDTO.setApellidoMaterno(apM);
             clienteDTO.setTelefono(telefono); 
@@ -230,12 +222,12 @@ public class FrmEditarClienteFrecuente extends JFrame {
 
             coordinador.actualizarClienteFrecuente(clienteDTO);
 
-            JOptionPane.showMessageDialog(this, "Cliente actualizado correctamente.");
+            JOptionPane.showMessageDialog(this, "Cliente actualizado correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
             coordinador.regresarDesdeEditarCliente();
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                    "Error al actualizar: " + e.getMessage(),
+                    "Error al actualizar en la base de datos: " + e.getMessage(),
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
