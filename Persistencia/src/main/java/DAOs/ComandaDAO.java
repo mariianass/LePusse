@@ -364,4 +364,47 @@ public class ComandaDAO implements IComandaDAO {
             em.close();
         }
     }
+
+    /**
+     * Registra las mesas iniciales del sistema, insertando únicamente las que
+     * aún no existan en la base de datos.
+     *
+     * Se consideran las mesas con números del 1 al 20, todas con estado
+     * DISPONIBLE al momento de su creación.
+     *
+     * @throws PersistenciaException Si ocurre un error durante el registro.
+     */
+    @Override
+    public void registrarMesasIniciales() throws PersistenciaException {
+        EntityManager em = ConexionBD.crearConexion();
+
+        try {
+            em.getTransaction().begin();
+
+            for (int numeroMesa = 1; numeroMesa <= 20; numeroMesa++) {
+                String jpql = "SELECT COUNT(m) FROM Mesa m WHERE m.numeroMesa = :numeroMesa";
+
+                Long existe = em.createQuery(jpql, Long.class)
+                        .setParameter("numeroMesa", numeroMesa)
+                        .getSingleResult();
+
+                if (existe == null || existe == 0) {
+                    Mesa mesa = new Mesa();
+                    mesa.setNumeroMesa(numeroMesa);
+                    mesa.setEstado(EstadoMesa.DISPONIBLE);
+                    em.persist(mesa);
+                }
+            }
+
+            em.getTransaction().commit();
+
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw new PersistenciaException("Error al registrar las mesas iniciales.", e);
+        } finally {
+            em.close();
+        }
+    }
 }

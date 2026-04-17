@@ -80,4 +80,13 @@ public interface IComandaBO {
      */
     public List<MesaDTO> obtenerMesasDisponibles() throws NegocioException;
 
+    /**
+     * Registra las mesas iniciales del sistema.
+     *
+     * Solo se insertan las mesas faltantes dentro del rango del 1 al 20.
+     *
+     * @throws NegocioException Si ocurre un error durante la operación.
+     */
+    public void registrarMesasIniciales() throws NegocioException;
+
 }

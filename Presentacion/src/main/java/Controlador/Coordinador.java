@@ -356,6 +356,23 @@ public class Coordinador {
     }
 
     /**
+     * Registra las mesas iniciales del sistema.
+     *
+     * @throws Exception Si ocurre un error durante la operación.
+     */
+    public void registrarMesasIniciales() throws Exception {
+        try {
+            comandaBO.registrarMesasIniciales();
+
+            if (frmComandas != null) {
+                frmComandas.recargarTabla();
+            }
+        } catch (Exception ex) {
+            throw new Exception("Error al registrar las mesas iniciales.", ex);
+        }
+    }
+
+    /**
      * Obtiene las mesas disponibles para registrar una nueva comanda.
      *
      * @return Lista de mesas disponibles.

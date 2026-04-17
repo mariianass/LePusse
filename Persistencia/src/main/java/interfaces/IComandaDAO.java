@@ -83,4 +83,15 @@ public interface IComandaDAO {
      */
     public String obtenerUltimoFolioDelDia(LocalDate fecha) throws PersistenciaException;
 
+    /**
+     * Registra las mesas iniciales del sistema, insertando únicamente las que
+     * aún no existan en la base de datos.
+     *
+     * Se consideran las mesas con números del 1 al 20, todas con estado
+     * DISPONIBLE al momento de su creación.
+     *
+     * @throws PersistenciaException Si ocurre un error durante el registro.
+     */
+    public void registrarMesasIniciales() throws PersistenciaException;
+
 }
