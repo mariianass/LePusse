@@ -537,4 +537,21 @@ public class ComandaBO implements IComandaBO {
                 EstadoMesaDTO.valueOf(mesa.getEstado().name())
         );
     }
+
+    /**
+     * Registra las mesas iniciales del sistema.
+     *
+     * Solo se insertan las mesas faltantes dentro del rango del 1 al 20.
+     *
+     * @throws NegocioException Si ocurre un error durante la operación.
+     */
+    @Override
+    public void registrarMesasIniciales() throws NegocioException {
+        try {
+            comandaDAO.registrarMesasIniciales();
+        } catch (PersistenciaException e) {
+            throw new NegocioException("Error al registrar las mesas iniciales.", e);
+        }
+    }
+    
 }

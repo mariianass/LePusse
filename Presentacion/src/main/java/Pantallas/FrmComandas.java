@@ -18,6 +18,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -112,8 +113,34 @@ public class FrmComandas extends JFrame {
         btnNuevaComanda.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnNuevaComanda.addActionListener(e -> coordinador.mostrarNuevaComanda());
 
+        BotonRedondeado btnAgregarMesas = new BotonRedondeado("Agregar Mesas", 20);
+        btnAgregarMesas.setPreferredSize(new Dimension(150, 42));
+        btnAgregarMesas.setBackground(PaletaColores.DORADO);
+        btnAgregarMesas.setForeground(PaletaColores.MARRON_OSCURO);
+        btnAgregarMesas.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnAgregarMesas.addActionListener(e -> {
+            try {
+                coordinador.registrarMesasIniciales();
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Las mesas iniciales fueron registradas correctamente.",
+                        "Éxito",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
+        });
+
         JPanel panelBoton = new JPanel();
         panelBoton.setOpaque(false);
+        panelBoton.add(btnAgregarMesas);
+        panelBoton.add(Box.createRigidArea(new Dimension(10, 0)));
         panelBoton.add(btnNuevaComanda);
 
         superior.add(panelBoton, BorderLayout.EAST);
