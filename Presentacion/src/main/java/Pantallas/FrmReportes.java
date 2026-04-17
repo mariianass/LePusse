@@ -11,13 +11,13 @@ import Estilos.Dimensiones;
 import Estilos.PaletaColores;
 import Validadores.Validadores;
 import com.toedter.calendar.JDateChooser;
+import dtos.ClienteFrecuenteDTO;
 import excepciones.NegocioException;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.io.File;
-import java.time.LocalDate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
@@ -32,8 +32,7 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.view.JasperViewer;
 
 /**
- * Pantalla de reportes
- *
+ * Pantalla de reportes para el sistema Restaurante Le Pusse.
  * @author regina, mariana e isaac
  */
 public class FrmReportes extends JFrame {
@@ -49,8 +48,9 @@ public class FrmReportes extends JFrame {
 
     private JDateChooser dcFechaInicio;
     private JDateChooser dcFechaFin;
-    private JTextField txtNombreCliente;
+    private JLabel lblClienteVisualizacion;
     private JTextField txtMinimoVisitas;
+    private ClienteFrecuenteDTO clienteSeleccionado;
 
     private enum TipoReporte {
         COMANDAS, CLIENTES
@@ -174,18 +174,39 @@ public class FrmReportes extends JFrame {
         actualizarEstiloPestanias();
         panelFiltros.removeAll();
 
-        agregarEtiqueta(panelFiltros, "Nombre del Cliente", 35, 110);
-        txtNombreCliente = crearCampoTexto();
-        txtNombreCliente.setBounds(35, 140, 350, 40);
-        panelFiltros.add(txtNombreCliente);
-
-        agregarEtiqueta(panelFiltros, "Número Mínimo de Visitas", 420, 110);
+        agregarEtiqueta(panelFiltros, "Mínimo de Visitas", 35, 110);
         txtMinimoVisitas = crearCampoTexto();
-        txtMinimoVisitas.setBounds(420, 140, 350, 40);
+        txtMinimoVisitas.setBounds(35, 140, 350, 40);
         panelFiltros.add(txtMinimoVisitas);
+
+        agregarEtiqueta(panelFiltros, "Seleccionar Cliente:", 35, 200);
+        lblClienteVisualizacion = new JLabel(" Ninguno seleccionado");
+        lblClienteVisualizacion.setBounds(35, 230, 250, 40);
+        lblClienteVisualizacion.setOpaque(true);
+        lblClienteVisualizacion.setBackground(Color.WHITE);
+        lblClienteVisualizacion.setBorder(BorderFactory.createLineBorder(PaletaColores.LINEA_SUAVE));
+        panelFiltros.add(lblClienteVisualizacion);
+
+        BotonRedondeado btnBuscar = new BotonRedondeado("Buscar", 15);
+        btnBuscar.setBounds(295, 230, 90, 40);
+        btnBuscar.setBackground(PaletaColores.DORADO);
+        btnBuscar.addActionListener(e -> coordinador.abrirSelectorClienteParaReporte());
+        panelFiltros.add(btnBuscar);
 
         panelFiltros.revalidate();
         panelFiltros.repaint();
+    }
+
+    public void setClienteSeleccionado(ClienteFrecuenteDTO cliente) {
+        this.clienteSeleccionado = cliente;
+        if (cliente != null) {
+            this.lblClienteVisualizacion.setText(" " + construirNombreCompleto(cliente));
+            this.lblClienteVisualizacion.setForeground(PaletaColores.TEXTO_MARRON);
+        }
+    }
+
+    private String construirNombreCompleto(ClienteFrecuenteDTO c) {
+        return (c.getNombre() + " " + c.getApellidoPaterno()).trim();
     }
 
     private JTextField crearCampoTexto() {
@@ -202,7 +223,7 @@ public class FrmReportes extends JFrame {
         JLabel lbl = new JLabel(texto);
         lbl.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         lbl.setForeground(PaletaColores.TEXTO_MARRON);
-        lbl.setBounds(x, y, 300, 25);
+        lbl.setBounds(x, y, 350, 25);
         p.add(lbl);
     }
 
@@ -223,107 +244,74 @@ public class FrmReportes extends JFrame {
     private void consultarReporte() throws Exception {
         try {
             if (tipoActual == TipoReporte.CLIENTES) {
-                String nombre = txtNombreCliente != null ? txtNombreCliente.getText().trim() : "";
-                String visitasTexto = (txtMinimoVisitas != null) ? txtMinimoVisitas.getText().trim() : "";
+                String nombreFiltro = (clienteSeleccionado != null) ? clienteSeleccionado.getNombre() : "";
+                String visitasTexto = (txtMinimoVisitas != null) ? txtMinimoVisitas.getText().trim() : "0";
 
-                if (!Validadores.validarFiltrosCliente(this, nombre, visitasTexto)) {
+                if (!Validadores.validarFiltrosCliente(this, nombreFiltro, visitasTexto)) {
                     return;
                 }
 
                 Integer minimoVisitas = visitasTexto.isEmpty() ? 0 : Integer.parseInt(visitasTexto);
 
-                JasperPrint jasperPrint = coordinador.generarVistaReporteClientes(nombre, minimoVisitas);
-                JasperViewer.viewReport(jasperPrint, false);
-            } else {
+                JasperPrint jasperPrint = coordinador.generarVistaReporteClientes(nombreFiltro, minimoVisitas);
+                if (jasperPrint.getPages().isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "No se encontraron clientes con esos filtros.", "Sin resultados", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JasperViewer.viewReport(jasperPrint, false);
+                }
+                
+            } else { 
                 java.util.Date dateIni = dcFechaInicio.getDate();
                 java.util.Date dateFin = dcFechaFin.getDate();
 
                 if (dateIni == null || dateFin == null) {
-                    JOptionPane.showMessageDialog(this,
-                            "Por favor, seleccione ambas fechas para el reporte de comandas.",
-                            "Filtros incompletos",
-                            JOptionPane.WARNING_MESSAGE);
-                    return; 
+                    JOptionPane.showMessageDialog(this, "Por favor, seleccione ambas fechas.", "Filtros incompletos", JOptionPane.WARNING_MESSAGE);
+                    return;
                 }
 
-                java.time.LocalDate fechaInicio = dateIni.toInstant()
-                        .atZone(java.time.ZoneId.systemDefault())
-                        .toLocalDate();
-                java.time.LocalDate fechaFin = dateFin.toInstant()
-                        .atZone(java.time.ZoneId.systemDefault())
-                        .toLocalDate();
+                java.time.LocalDate fechaInicio = dateIni.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+                java.time.LocalDate fechaFin = dateFin.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
 
                 if (fechaInicio.isAfter(fechaFin)) {
-                    JOptionPane.showMessageDialog(this,
-                            "La fecha de inicio no puede ser posterior a la fecha de fin.",
-                            "Error de fechas",
-                            JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "La fecha de inicio no puede ser posterior a la fecha de fin.", "Error de fechas", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
                 JasperPrint jasperPrint = coordinador.generarVistaReporteComanda(fechaInicio, fechaFin);
 
                 if (jasperPrint.getPages().isEmpty()) {
-                    JOptionPane.showMessageDialog(this,
-                            "No se encontraron comandas en el rango de fechas seleccionado.",
-                            "Sin coincidencias",
-                            JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "No se encontraron comandas en el rango seleccionado.", "Sin coincidencias", JOptionPane.INFORMATION_MESSAGE);
                 } else {
                     JasperViewer.viewReport(jasperPrint, false);
                 }
             }
         } catch (NegocioException ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Error al consultar el reporte: " + ex.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error al consultar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void descargarPDF() {
         try {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Guardar reporte PDF");
+            
             if (tipoActual == TipoReporte.CLIENTES) {
-                String nombre = txtNombreCliente != null ? txtNombreCliente.getText().trim() : "";
-                String visitasTexto = (txtMinimoVisitas != null) ? txtMinimoVisitas.getText().trim() : "";
-
-                if (!Validadores.validarFiltrosCliente(this, nombre, visitasTexto)) {
-                    return;
-                }
-
+                String nombreFiltro = (clienteSeleccionado != null) ? clienteSeleccionado.getNombre() : "";
+                String visitasTexto = (txtMinimoVisitas != null) ? txtMinimoVisitas.getText().trim() : "0";
                 Integer minimoVisitas = visitasTexto.isEmpty() ? 0 : Integer.parseInt(visitasTexto);
 
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setDialogTitle("Guardar reporte PDF");
-                fileChooser.setSelectedFile(new File("ReporteClientesFrecuentes.pdf"));
-
-                int opcion = fileChooser.showSaveDialog(this);
-
-                if (opcion == JFileChooser.APPROVE_OPTION) {
+                fileChooser.setSelectedFile(new File("ReporteClientes.pdf"));
+                if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
                     String ruta = fileChooser.getSelectedFile().getAbsolutePath();
-
-                    if (!ruta.toLowerCase().endsWith(".pdf")) {
-                        ruta += ".pdf";
-                    }
-
-                    coordinador.generarPDFReporteClientes(ruta, nombre, minimoVisitas);
-
-                    JOptionPane.showMessageDialog(this,
-                            "Reporte PDF generado correctamente.",
-                            "Éxito",
-                            JOptionPane.INFORMATION_MESSAGE);
+                    if (!ruta.toLowerCase().endsWith(".pdf")) ruta += ".pdf";
+                    coordinador.generarPDFReporteClientes(ruta, nombreFiltro, minimoVisitas);
+                    JOptionPane.showMessageDialog(this, "Reporte de clientes generado con éxito.");
                 }
             } else {
-                JOptionPane.showMessageDialog(this,
-                        "El reporte de comandas aún no está disponible.",
-                        "Información",
-                        JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "La descarga PDF de comandas se habilitará en la próxima actualización.", "Próximamente", JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this,
-                    "Error al generar el PDF: " + e.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error al generar el PDF: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-
 }

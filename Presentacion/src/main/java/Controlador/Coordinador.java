@@ -390,7 +390,7 @@ public class Coordinador {
         ocultarTodasLasPantallas();
 
         if (frmGestionarClientesFrecuentes == null) {
-            frmGestionarClientesFrecuentes = new FrmClientesFrecuentes(this);
+            frmGestionarClientesFrecuentes = new FrmClientesFrecuentes(this, true);
         }
 
         frmGestionarClientesFrecuentes.setVisible(true);
@@ -952,7 +952,43 @@ public class Coordinador {
             throw new NegocioException("Error al generar el PDF del reporte de clientes: " + ex.getMessage(), ex);
         }
     }
+    
+    /**
+     * Abre la pantalla de clientes en modo selección (true).
+     * Se activa desde el botón "Buscar" en la pestaña de Reporte de Clientes.
+     */
+    public void abrirSelectorClienteParaReporte() {
+        FrmClientesFrecuentes frmSeleccion = new FrmClientesFrecuentes(this, false);
+        frmSeleccion.setVisible(true);
+        frmSeleccion.toFront();
+    }
 
+   /**
+    * Recibe el ID del cliente seleccionado, busca sus datos y los manda a la pantalla de reportes.
+    * @param idCliente ID del cliente seleccionado en la tabla.
+    */
+    public void recibirClienteSeleccionadoParaReporte(Long idCliente) {
+        try {
+            ClienteFrecuenteDTO cliente = clienteFrecuenteBO.buscarPorId(idCliente);
+
+            if (cliente == null) {
+                throw new Exception("No se pudo recuperar la información del cliente.");
+            }
+            if (frmReportes == null) {
+                frmReportes = new FrmReportes(this);
+            }
+            frmReportes.setClienteSeleccionado(cliente);
+            frmReportes.setVisible(true);
+            frmReportes.toFront();
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, 
+                "Error al seleccionar cliente para el reporte: " + ex.getMessage(), 
+                "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    
     /**
      * Oculta todas las pantallas activas del sistema.
      */

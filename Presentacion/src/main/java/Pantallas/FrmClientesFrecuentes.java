@@ -10,6 +10,7 @@ import dtos.ClienteFrecuenteDTO;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -45,10 +46,12 @@ public class FrmClientesFrecuentes extends JFrame {
     private JTable tablaClientes;
     private DefaultTableModel modeloTabla;
     private JTextField txtBuscar;
+    private boolean modoSeleccion;
 
-    public FrmClientesFrecuentes(Coordinador coordinador) {
+    public FrmClientesFrecuentes(Coordinador coordinador, boolean modoSeleccion) {
         this.coordinador = coordinador;
-        setTitle("Restaurante Le Pusse - Clientes Frecuentes");
+        this.modoSeleccion = modoSeleccion;
+        setTitle("Restaurante - " + (modoSeleccion ? "Clientes Frecuentes" : "Seleccionar Cliente"));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(Dimensiones.ANCHO_VENTANA, Dimensiones.ALTO_VENTANA);
         setMinimumSize(new Dimension(Dimensiones.ANCHO_VENTANA, Dimensiones.ALTO_VENTANA));
@@ -71,10 +74,25 @@ public class FrmClientesFrecuentes extends JFrame {
         cabecera.setBackground(PaletaColores.BLANCO);
         cabecera.setBorder(new EmptyBorder(26, 28, 20, 28));
 
-        JLabel titulo = new JLabel("Clientes Frecuentes");
+        JLabel titulo = new JLabel(modoSeleccion ? "Clientes Frecuentes" : "Seleccionar Cliente");
         titulo.setFont(new Font("Segoe UI Semilight", Font.PLAIN, 34));
         titulo.setForeground(PaletaColores.TEXTO_MARRON);
         cabecera.add(titulo, BorderLayout.WEST);
+        
+        if(!modoSeleccion) {
+            BotonRedondeado btnRegresar = new BotonRedondeado("Regresar", 20);
+            btnRegresar.setPreferredSize(new Dimension(120, 40));
+            btnRegresar.setBackground(new Color(220, 220, 220)); 
+            btnRegresar.setForeground(PaletaColores.TEXTO_MARRON);
+            btnRegresar.setFont(new Font("Segoe UI", Font.BOLD, 13));
+
+            btnRegresar.addActionListener(e -> this.dispose());
+
+            JPanel panelRegresar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+            panelRegresar.setOpaque(false);
+            panelRegresar.add(btnRegresar);
+            cabecera.add(panelRegresar, BorderLayout.EAST);
+        }
 
         contenido.add(cabecera, BorderLayout.NORTH);
 
@@ -165,34 +183,35 @@ public class FrmClientesFrecuentes extends JFrame {
 
         izquierda.add(lblInfo);
 
-        BotonRedondeado btnNuevo = new BotonRedondeado("Nuevo Cliente", 20);
-        btnNuevo.setPreferredSize(new Dimension(145, 40));
-        btnNuevo.setMinimumSize(new Dimension(145, 40));
-        btnNuevo.setMaximumSize(new Dimension(145, 40));
-        btnNuevo.setBackground(PaletaColores.DORADO);
-        btnNuevo.setForeground(PaletaColores.MARRON_OSCURO);
-        btnNuevo.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        if (modoSeleccion) {
+            BotonRedondeado btnNuevo = new BotonRedondeado("Nuevo Cliente", 20);
+            btnNuevo.setPreferredSize(new Dimension(145, 40));
+            btnNuevo.setMinimumSize(new Dimension(145, 40));
+            btnNuevo.setMaximumSize(new Dimension(145, 40));
+            btnNuevo.setBackground(PaletaColores.DORADO);
+            btnNuevo.setForeground(PaletaColores.MARRON_OSCURO);
+            btnNuevo.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
-        btnNuevo.addActionListener(e -> coordinador.mostrarRegistroClienteFrecuente());
-        
-        BotonRedondeado btnGeneral = new BotonRedondeado("Cliente General", 20);
-        btnGeneral.setPreferredSize(new Dimension(155, 40));
-        btnGeneral.setBackground(PaletaColores.TEXTO_MARRON); 
-        btnGeneral.setForeground(Color.WHITE);
-        btnGeneral.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        
-        btnGeneral.addActionListener(e -> {
-            coordinador.registrarClienteGeneral(); 
-        });
+            btnNuevo.addActionListener(e -> coordinador.mostrarRegistroClienteFrecuente());
 
-        JPanel panelBoton = new JPanel();
-        panelBoton.setOpaque(false);
-        panelBoton.add(btnGeneral); 
-        panelBoton.add(Box.createRigidArea(new Dimension(10, 0))); 
-        panelBoton.add(btnNuevo);
+            BotonRedondeado btnGeneral = new BotonRedondeado("Cliente General", 20);
+            btnGeneral.setPreferredSize(new Dimension(155, 40));
+            btnGeneral.setBackground(PaletaColores.TEXTO_MARRON); 
+            btnGeneral.setForeground(Color.WHITE);
+            btnGeneral.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
-        superior.add(izquierda, BorderLayout.WEST);
+            btnGeneral.addActionListener(e -> {
+                coordinador.registrarClienteGeneral(); 
+            });
+
+            JPanel panelBoton = new JPanel();
+            panelBoton.setOpaque(false);
+            panelBoton.add(btnGeneral); 
+            panelBoton.add(Box.createRigidArea(new Dimension(10, 0))); 
+            panelBoton.add(btnNuevo);
         superior.add(panelBoton, BorderLayout.EAST);
+        }
+        superior.add(izquierda, BorderLayout.WEST);
 
         return superior;
     }
@@ -277,9 +296,14 @@ public class FrmClientesFrecuentes extends JFrame {
 
                 if (e.getClickCount() == 2) {
                     Long idCliente = (Long) modeloTabla.getValueAt(filaSeleccionada, 0);
-                    coordinador.mostrarEditarClienteFrecuente(idCliente);
+                    if (!modoSeleccion) {
+                        coordinador.recibirClienteSeleccionadoParaReporte(idCliente);
+                        dispose();
+                    } else {
+                        coordinador.mostrarEditarClienteFrecuente(idCliente);
+                    }
                 }
-            }
+                }
         });
 
         JScrollPane scroll = new JScrollPane(tablaClientes);
