@@ -5,6 +5,7 @@
 package Pantallas;
 
 import Componentes.BotonRedondeado;
+import Componentes.ImagenProducto;
 import Componentes.MenuLateralEmpleadoPanel;
 import Controlador.Coordinador;
 import Estilos.Dimensiones;
@@ -346,12 +347,18 @@ public class FrmCatalogoProductosComanda extends JFrame {
                 new EmptyBorder(18, 18, 18, 18)
         ));
         tarjeta.setLayout(new BoxLayout(tarjeta, BoxLayout.Y_AXIS));
-        tarjeta.setPreferredSize(new Dimension(220, 240));
+        tarjeta.setPreferredSize(new Dimension(220, 300));
 
-        JLabel lblImagen = new JLabel("Imagen");
+        JLabel lblImagen = ImagenProducto.crearLabelImagenProducto(
+        producto.getRutaImagen(),
+        180,
+        120
+);
+
         lblImagen.setAlignmentX(Component.CENTER_ALIGNMENT);
-        lblImagen.setFont(new Font("Segoe UI", Font.ITALIC, 12));
-        lblImagen.setForeground(PaletaColores.TEXTO_MARRON);
+        lblImagen.setPreferredSize(new Dimension(180, 120));
+        lblImagen.setMaximumSize(new Dimension(180, 120));
+        lblImagen.setMinimumSize(new Dimension(180, 120));
 
         JLabel lblNombre = new JLabel(producto.getNombre() != null ? producto.getNombre() : "Producto");
         lblNombre.setAlignmentX(Component.CENTER_ALIGNMENT);
