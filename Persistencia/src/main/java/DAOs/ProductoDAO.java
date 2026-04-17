@@ -212,7 +212,10 @@ public class ProductoDAO implements IProductoDAO {
             }
 
             em.getTransaction().begin();
+
+            producto.getDetallesIngredientes().size();
             em.remove(producto);
+
             em.getTransaction().commit();
             return true;
 
