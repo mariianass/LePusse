@@ -13,6 +13,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 /**
  *
@@ -114,30 +119,27 @@ public class ClienteDAO implements IClienteDAO {
 
     @Override
     public List<Cliente> buscarPorFiltros(String filtro) throws PersistenciaException {
-
         EntityManager em = ConexionBD.crearConexion();
-
         try {
-            String filtroLimpio = filtro == null ? "" : filtro.trim();
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Cliente> cq = cb.createQuery(Cliente.class);
+            Root<Cliente> c = cq.from(Cliente.class);
 
-            String jpql = "SELECT c FROM Cliente c "
-                    + "WHERE LOWER(c.nombre) LIKE LOWER(:filtro) "
-                    + "OR LOWER(c.apellidoPaterno) LIKE LOWER(:filtro) "
-                    + "OR LOWER(c.apellidoMaterno) LIKE LOWER(:filtro) "
-                    + "OR LOWER(CONCAT(CONCAT(CONCAT(CONCAT(c.nombre, ' '), c.apellidoPaterno), ' '), c.apellidoMaterno)) LIKE LOWER(:filtro) "
-                    + "OR LOWER(COALESCE(c.correoElectronico, '')) LIKE LOWER(:filtro) ";
+            String f = "%" + (filtro == null ? "" : filtro.trim().toLowerCase()) + "%";
 
-            TypedQuery<Cliente> query = em.createQuery(jpql, Cliente.class);
-            query.setParameter("filtro", "%" + filtroLimpio + "%");
+            cq.where(cb.or(
+                cb.like(cb.lower(c.get("nombre")), f),
+                cb.like(cb.lower(c.get("apellidoPaterno")), f),
+                cb.like(cb.lower(c.get("apellidoMaterno")), f),
+                cb.like(cb.lower(cb.coalesce(c.get("correoElectronico"), "")), f)
+            ));
 
-            return query.getResultList();
-
+            return em.createQuery(cq).getResultList();
         } catch (Exception e) {
-            throw new PersistenciaException("Error al buscar clientes por filtro.", e);
+            throw new PersistenciaException("Error en búsqueda por filtro", e);
         } finally {
             em.close();
         }
-        
     }
     
     @Override
