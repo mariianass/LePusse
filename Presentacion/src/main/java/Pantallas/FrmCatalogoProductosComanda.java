@@ -21,6 +21,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -158,17 +160,29 @@ public class FrmCatalogoProductosComanda extends JFrame {
     private JPanel crearPanelSuperior() {
         JPanel superior = new JPanel(new BorderLayout());
         superior.setOpaque(false);
-        superior.setBorder(new EmptyBorder(0, 0, 16, 0));
+        superior.setBorder(new EmptyBorder(10, 26, 18, 26));
 
-        txtBuscar = new JTextField();
-        txtBuscar.setPreferredSize(new Dimension(260, 36));
+        txtBuscar = new JTextField("Buscar por nombre...");
+        txtBuscar.setPreferredSize(new Dimension(310, 42));
+        txtBuscar.setMaximumSize(new Dimension(310, 42));
+        txtBuscar.setMinimumSize(new Dimension(310, 42));
         txtBuscar.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        txtBuscar.setForeground(PaletaColores.TEXTO_MARRON);
+        txtBuscar.setForeground(new Color(180, 155, 130));
         txtBuscar.setBackground(PaletaColores.BLANCO);
         txtBuscar.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(PaletaColores.LINEA_SUAVE, 1),
-                new EmptyBorder(4, 10, 4, 10)
+                new EmptyBorder(0, 14, 0, 14)
         ));
+
+        txtBuscar.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if ("Buscar por nombre...".equals(txtBuscar.getText())) {
+                    txtBuscar.setText("");
+                    txtBuscar.setForeground(PaletaColores.TEXTO_MARRON);
+                }
+            }
+        });
 
         txtBuscar.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -187,11 +201,15 @@ public class FrmCatalogoProductosComanda extends JFrame {
             }
         });
 
-        cmbFiltroTipo = new JComboBox<>(new String[]{"Todos los tipos", "PLATILLO", "BEBIDA", "POSTRE"});
-        cmbFiltroTipo.setPreferredSize(new Dimension(180, 36));
+        cmbFiltroTipo = new JComboBox<>(new String[]{
+            "Todos los tipos", "PLATILLO", "BEBIDA", "POSTRE"
+        });
+        cmbFiltroTipo.setPreferredSize(new Dimension(180, 42));
+        cmbFiltroTipo.setMaximumSize(new Dimension(180, 42));
+        cmbFiltroTipo.setMinimumSize(new Dimension(180, 42));
         cmbFiltroTipo.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        cmbFiltroTipo.setForeground(PaletaColores.MARRON_OSCURO);
         cmbFiltroTipo.setBackground(PaletaColores.BLANCO);
+        cmbFiltroTipo.setForeground(PaletaColores.MARRON_OSCURO);
         cmbFiltroTipo.setBorder(BorderFactory.createLineBorder(PaletaColores.LINEA_SUAVE, 1));
         cmbFiltroTipo.addActionListener(e -> aplicarFiltros());
 
@@ -283,6 +301,10 @@ public class FrmCatalogoProductosComanda extends JFrame {
      */
     private void aplicarFiltros() {
         String texto = txtBuscar.getText() != null ? txtBuscar.getText().trim().toLowerCase() : "";
+
+        if ("buscar por nombre...".equals(texto)) {
+            texto = "";
+        }
         String tipoSeleccionado = (String) cmbFiltroTipo.getSelectedItem();
 
         List<ProductoDTO> filtrados = new ArrayList<>();
@@ -350,10 +372,10 @@ public class FrmCatalogoProductosComanda extends JFrame {
         tarjeta.setPreferredSize(new Dimension(220, 300));
 
         JLabel lblImagen = ImagenProducto.crearLabelImagenProducto(
-        producto.getRutaImagen(),
-        180,
-        120
-);
+                producto.getRutaImagen(),
+                180,
+                120
+        );
 
         lblImagen.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblImagen.setPreferredSize(new Dimension(180, 120));
