@@ -4,7 +4,7 @@
 	<parameter name="fechaFin" class="java.lang.String"/>
 	
 	<field name="folio" class="java.lang.String"/>
-	<field name="fechaHoraCreacion" class="java.lang.Object"/>
+	<field name="fechaHoraCreacion" class="java.lang.String"/>
 	<field name="numeroMesa" class="java.lang.Integer"/>
 	<field name="totalVenta" class="java.lang.Double"/>
 	<field name="nombreCliente" class="java.lang.String"/>
@@ -71,7 +71,7 @@
 			</textField>
 			<textField>
 				<reportElement x="90" y="0" width="120" height="20"/>
-				<textFieldExpression><![CDATA[""+$F{fechaHoraCreacion}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{fechaHoraCreacion}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="215" y="0" width="130" height="20"/>

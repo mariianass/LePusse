@@ -20,7 +20,7 @@
     <field name="puntosFidelidad" class="java.lang.Integer"/>
     <field name="totalGastado" class="java.lang.Double"/>
     <field name="numeroVisitas" class="java.lang.Integer"/>
-    <field name="fechaUltimaComanda" class="java.time.LocalDate"/>
+    <field name="fechaUltimaComanda" class="java.lang.String"/>
 
     <pageHeader>
         <band height="100" splitType="Stretch">
@@ -119,9 +119,7 @@
             <textField isBlankWhenNull="true">
                 <reportElement x="370" y="0" width="90" height="20" forecolor="#3D2B1F" uuid="92345678-1234-1234-1234-567890abcdef"/>
                 <textElement textAlignment="Center" verticalAlignment="Middle"/>
-                <textFieldExpression><![CDATA[$F{fechaUltimaComanda} != null ? 
-                    $F{fechaUltimaComanda}.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) : 
-                    "-"]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$F{fechaUltimaComanda}]]></textFieldExpression>
             </textField>
             <textField pattern="$ #,##0.00">
                 <reportElement x="465" y="0" width="85" height="20" forecolor="#3D2B1F" uuid="01234567-1123-2123-3123-412345678917"/>

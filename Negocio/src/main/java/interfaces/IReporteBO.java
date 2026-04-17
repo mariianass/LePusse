@@ -56,4 +56,6 @@ public interface IReporteBO {
      * @throws Exception si ocurre un error durante la generación o exportación del PDF.
      */
     public void generarReportePDF(String rutaSalidaPDF, String nombreFiltro, Integer minimoVisitas) throws Exception;
+    
+    public void generarReporteComandasPDF(String rutaSalidaPDF, LocalDate inicio, LocalDate fin) throws Exception;
 }

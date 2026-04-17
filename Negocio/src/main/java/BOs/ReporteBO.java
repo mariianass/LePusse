@@ -92,42 +92,74 @@ public class ReporteBO implements IReporteBO{
     @Override
     public JasperPrint generarJasperClientesFrecuentes(String nombreFiltro, Integer minimoVisitas) throws Exception {
         try {
-            List<ClienteFrecuenteDTO> lista;
+            List<ClienteFrecuenteDTO> listaOriginal;
 
+            // 1. Lógica de filtrado original
             String nombre = (nombreFiltro == null) ? "" : nombreFiltro.trim();
             int visitas = (minimoVisitas == null) ? 0 : minimoVisitas;
 
             if (!nombre.isEmpty()) {
-                //Metodo para generar reporte por numVisitas
-                lista = clienteFrecuenteBO.buscarPorFiltros(nombre);
+                listaOriginal = clienteFrecuenteBO.buscarPorFiltros(nombre);
             } else if (visitas > 0) {
-                lista = clienteFrecuenteBO.obtenerTodos();
-                lista.removeIf(c -> (c.getNumeroVisitas() == null ? 0 : c.getNumeroVisitas()) < minimoVisitas);
+                listaOriginal = clienteFrecuenteBO.obtenerTodos();
+                listaOriginal.removeIf(c -> (c.getNumeroVisitas() == null ? 0 : c.getNumeroVisitas()) < visitas);
             } else {
-                lista = clienteFrecuenteBO.obtenerTodos();
+                listaOriginal = clienteFrecuenteBO.obtenerTodos();
             }
 
-            Map<String, Object> parametros = new HashMap<>();
+            // Esto permite que el reporte reciba los datos ya procesados como Strings
+            List<Map<String, Object>> listaParaReporte = new java.util.ArrayList<>();
+            java.time.format.DateTimeFormatter formatoFecha = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+            for (ClienteFrecuenteDTO cliente : listaOriginal) {
+                Map<String, Object> fila = new java.util.HashMap<>();
+
+                fila.put("nombre", cliente.getNombre());
+                fila.put("apellidoPaterno", cliente.getApellidoPaterno());
+                fila.put("numeroVisitas", cliente.getNumeroVisitas());
+                fila.put("puntosFidelidad", cliente.getPuntosFidelidad()); // Asegúrate de que este también esté
+                fila.put("totalGastado", cliente.getTotalGastado());      // Y este
+
+                // --- ESTA ES LA LÍNEA QUE FALTA ---
+                fila.put("telefono", cliente.getTelefono()); 
+                // ----------------------------------
+
+                String fechaTexto = (cliente.getFechaUltimaComanda() != null) 
+                                    ? cliente.getFechaUltimaComanda().format(formatoFecha) 
+                                    : "-";
+
+                fila.put("fechaUltimaComanda", fechaTexto);
+
+                listaParaReporte.add(fila);
+            }
+
+            // 3. Configuración de parámetros
+            Map<String, Object> parametros = new java.util.HashMap<>();
             parametros.put("nombreReporte", "Reporte de Clientes Frecuentes");
             parametros.put("filtroNombre", !nombre.isEmpty() ? nombre : (visitas > 0 ? "Min. Visitas: " + visitas : "Todos"));
 
+            // 4. Carga y compilación del reporte
             InputStream ruta = getClass().getResourceAsStream("/reportes/clientes.jrxml");
-            
             if (ruta == null) {
-                throw new NegocioException(" No se encontro el archivo (.jrxml). Revisa la ruta.");
-            }
-            
-            JasperReport report = JasperCompileManager.compileReport(ruta);
-            JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(lista);
-            
-            if (lista.isEmpty()) {
-                throw new NegocioException("No se encontraron coincidencias con los filtros aplicados.");
+                throw new excepciones.NegocioException("No se encontró el archivo (.jrxml). Revisa la ruta.");
             }
 
-            return JasperFillManager.fillReport(report, parametros, dataSource);
+            if (listaParaReporte.isEmpty()) {
+                throw new excepciones.NegocioException("No se encontraron coincidencias con los filtros aplicados.");
+            }
 
-        } catch (NegocioException | JRException ex) {
-            throw new NegocioException("Error al procesar el reporte: " + ex.getMessage());
+            net.sf.jasperreports.engine.JasperReport report = net.sf.jasperreports.engine.JasperCompileManager.compileReport(ruta);
+
+            // 5. Usamos la lista de mapas como fuente de datos
+            net.sf.jasperreports.engine.data.JRBeanCollectionDataSource dataSource = 
+                    new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource(listaParaReporte);
+
+            return net.sf.jasperreports.engine.JasperFillManager.fillReport(report, parametros, dataSource);
+
+        } catch (net.sf.jasperreports.engine.JRException ex) {
+            throw new excepciones.NegocioException("Error de Jasper: " + ex.getMessage());
+        } catch (Exception ex) {
+            throw new excepciones.NegocioException("Error al procesar el reporte: " + ex.getMessage());
         }
     }
     
@@ -145,23 +177,49 @@ public class ReporteBO implements IReporteBO{
     @Override
     public JasperPrint generarJasperReporteComandas(LocalDate inicio, LocalDate fin) throws NegocioException {
         try {
-            List<ComandaDTO> lista = comanda.buscarPorFiltros(null);
+            List<ComandaDTO> listaCompleta = comanda.buscarPorFiltros(null); 
 
-            DateTimeFormatter formatoSimple = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            List<Map<String, Object>> listaFiltrada = new java.util.ArrayList<>();
+            DateTimeFormatter formatoDeseado = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+            for (ComandaDTO c : listaCompleta) {
+                LocalDate fechaComanda = c.getFechaHoraCreacion().toLocalDate();
+
+                if ((fechaComanda.isAfter(inicio) || fechaComanda.isEqual(inicio)) && 
+                    (fechaComanda.isBefore(fin) || fechaComanda.isEqual(fin))) {
+
+                    Map<String, Object> fila = new HashMap<>();
+
+                    // ESTOS NOMBRES DEBEN SER IDÉNTICOS AL XML
+                    fila.put("folio", c.getFolio());
+                    fila.put("nombreCliente", c.getNombreCliente());
+                    fila.put("numeroMesa", c.getNumeroMesa());
+                    fila.put("totalVenta", c.getTotalVenta()); // Cambiado de 'total' a 'totalVenta'
+
+                    // Para la fecha, mandamos el String ya formateado
+                    fila.put("fechaHoraCreacion", c.getFechaHoraCreacion().format(formatoDeseado)); 
+
+                    listaFiltrada.add(fila);
+                }
+            }
+
+            if (listaFiltrada.isEmpty()) {
+                throw new NegocioException("No hay comandas en el rango seleccionado.");
+            }
 
             Map<String, Object> parametros = new HashMap<>();
-            parametros.put("fechaInicio", inicio.format(formatoSimple));
-            parametros.put("fechaFin", fin.format(formatoSimple));
+            parametros.put("fechaInicio", inicio.format(formatoDeseado));
+            parametros.put("fechaFin", fin.format(formatoDeseado));
 
-            JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(lista);
+            JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(listaFiltrada);
 
-            JasperReport report = JasperCompileManager.compileReport(
-                    getClass().getResourceAsStream("/reportes/comandas.jrxml"));
+            InputStream reporteStream = getClass().getResourceAsStream("/reportes/comandas.jrxml");
+            JasperReport report = JasperCompileManager.compileReport(reporteStream);
 
             return JasperFillManager.fillReport(report, parametros, dataSource);
 
-        } catch (NegocioException | JRException ex) {
-            throw new NegocioException("Error al procesar el reporte: " + ex.getMessage());
+        } catch (Exception ex) {
+            throw new NegocioException("Error: " + ex.getMessage());
         }
     }
     
@@ -183,6 +241,18 @@ public class ReporteBO implements IReporteBO{
         }
 
         JasperPrint jasperPrint = generarJasperClientesFrecuentes(nombreFiltro, minimoVisitas);
+        asegurarCarpetaDestino(rutaSalidaPDF);
+        JasperExportManager.exportReportToPdfFile(jasperPrint, rutaSalidaPDF);
+    }
+    
+    @Override
+    public void generarReporteComandasPDF(String rutaSalidaPDF, LocalDate inicio, LocalDate fin) throws Exception {
+        if (rutaSalidaPDF == null || rutaSalidaPDF.trim().isEmpty()) {
+            throw new NegocioException("La ruta de salida del PDF es obligatoria.");
+        }
+
+        // Usa el método de comandas que ya tiene el filtro de fechas y Mapas
+        JasperPrint jasperPrint = generarJasperReporteComandas(inicio, fin);
         asegurarCarpetaDestino(rutaSalidaPDF);
         JasperExportManager.exportReportToPdfFile(jasperPrint, rutaSalidaPDF);
     }

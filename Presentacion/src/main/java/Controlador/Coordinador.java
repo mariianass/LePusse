@@ -987,6 +987,10 @@ public class Coordinador {
                 "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+    
+    public void generarPDFReporteComandas(String ruta, LocalDate inicio, LocalDate fin) throws Exception {
+        this.reporteClienteBO.generarReporteComandasPDF(ruta, inicio, fin);
+    }
 
     
     /**

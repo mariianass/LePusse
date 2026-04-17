@@ -294,8 +294,9 @@ public class FrmReportes extends JFrame {
         try {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Guardar reporte PDF");
-            
+
             if (tipoActual == TipoReporte.CLIENTES) {
+                // --- Lógica para Clientes ---
                 String nombreFiltro = (clienteSeleccionado != null) ? clienteSeleccionado.getNombre() : "";
                 String visitasTexto = (txtMinimoVisitas != null) ? txtMinimoVisitas.getText().trim() : "0";
                 Integer minimoVisitas = visitasTexto.isEmpty() ? 0 : Integer.parseInt(visitasTexto);
@@ -303,12 +304,38 @@ public class FrmReportes extends JFrame {
                 fileChooser.setSelectedFile(new File("ReporteClientes.pdf"));
                 if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
                     String ruta = fileChooser.getSelectedFile().getAbsolutePath();
-                    if (!ruta.toLowerCase().endsWith(".pdf")) ruta += ".pdf";
+                    if (!ruta.toLowerCase().endsWith(".pdf")) {
+                        ruta += ".pdf";
+                    }
                     coordinador.generarPDFReporteClientes(ruta, nombreFiltro, minimoVisitas);
                     JOptionPane.showMessageDialog(this, "Reporte de clientes generado con éxito.");
                 }
             } else {
-                JOptionPane.showMessageDialog(this, "La descarga PDF de comandas se habilitará en la próxima actualización.", "Próximamente", JOptionPane.INFORMATION_MESSAGE);
+                // --- Lógica para COMANDAS (ESTO ES LO QUE CAMBIA) ---
+                java.util.Date dateIni = dcFechaInicio.getDate();
+                java.util.Date dateFin = dcFechaFin.getDate();
+
+                if (dateIni == null || dateFin == null) {
+                    JOptionPane.showMessageDialog(this, "Por favor, seleccione ambas fechas para el PDF.", "Filtros incompletos", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                java.time.LocalDate fechaInicio = dateIni.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+                java.time.LocalDate fechaFin = dateFin.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+
+                fileChooser.setSelectedFile(new File("ReporteComandas_" + fechaInicio + "_a_" + fechaFin + ".pdf"));
+                
+                if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                    String ruta = fileChooser.getSelectedFile().getAbsolutePath();
+                    if (!ruta.toLowerCase().endsWith(".pdf")) {
+                        ruta += ".pdf";
+                    }
+                    
+                    // Asegúrate de que el Coordinador tenga este método
+                    coordinador.generarPDFReporteComandas(ruta, fechaInicio, fechaFin);
+                    
+                    JOptionPane.showMessageDialog(this, "Reporte de comandas guardado exitosamente en:\n" + ruta);
+                }
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error al generar el PDF: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
