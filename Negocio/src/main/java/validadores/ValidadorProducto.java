@@ -11,14 +11,41 @@ import excepciones.NegocioException;
 /**
  * Clase utilitaria encargada de validar la información de los productos
  * antes de ser procesados por la capa de negocio.
+ * 
+ * Verifica que los datos del producto cumplan con las reglas establecidas,
+ * como campos obligatorios, longitudes máximas y valores válidos.
+ * 
+ * También valida la lista de ingredientes asociados al producto,
+ * asegurando que cada detalle sea correcto.
+ * 
+ * Esta clase no puede ser instanciada.
  *
- * @author regina, mariana e isaac
+ * @author Regina, Mariana e Isaac
  */
 public class ValidadorProducto {
 
+    /**
+     * Constructor privado para evitar la creación de instancias.
+     */
     private ValidadorProducto() {
     }
 
+    /**
+     * Valida la información de un producto antes de su procesamiento.
+     * 
+     * Comprueba que:
+     * <ul>
+     *     <li>El producto no sea nulo.</li>
+     *     <li>El nombre y descripción sean válidos y no excedan la longitud permitida.</li>
+     *     <li>El precio sea mayor que cero.</li>
+     *     <li>El tipo, disponibilidad y estado estén definidos.</li>
+     *     <li>Exista al menos un ingrediente asociado.</li>
+     *     <li>Cada ingrediente tenga datos válidos.</li>
+     * </ul>
+     * 
+     * @param productoDTO producto a validar.
+     * @throws NegocioException si alguna regla de validación no se cumple.
+     */
     public static void validar(ProductoDTO productoDTO) throws NegocioException {
         if (productoDTO == null) {
             throw new NegocioException("El producto no puede ser nulo.");

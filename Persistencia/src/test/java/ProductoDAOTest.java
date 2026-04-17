@@ -22,15 +22,28 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Pruebas unitarias para ProductoDAO.
+ * Pruebas unitarias para la clase ProductoDAO.
+ * 
+ * Esta clase contiene los casos de prueba para validar el correcto funcionamiento 
+ * de las operaciones CRUD y validaciones de negocio en la persistencia de Productos.
+ * 
  * @author regina, mariana e isaac
  */
 public class ProductoDAOTest {
 
+    /** DAO bajo prueba. */
     private ProductoDAO productoDAO;
+    
+    /** Lista de IDs de productos creados durante los tests para su limpieza posterior. */
     private List<Long> idsProductosCreados;
+    
+    /** Lista de IDs de ingredientes creados durante los tests para su limpieza posterior. */
     private List<Long> idsIngredientesCreados;
 
+    /**
+     * Configuración inicial antes de cada prueba. 
+     * Inicializa el DAO y las listas de seguimiento de IDs.
+     */
     @BeforeEach
     void setUp() {
         productoDAO = ProductoDAO.getInstance();
@@ -38,12 +51,19 @@ public class ProductoDAOTest {
         idsIngredientesCreados = new ArrayList<>();
     }
 
+    /**
+     * Limpieza de la base de datos después de cada prueba.
+     * Elimina los productos e ingredientes creados para mantener la independencia 
+     * entre pruebas y evitar contaminación de datos.
+     * * @throws PersistenciaException Si ocurre un error al eliminar productos.
+     */
     @AfterEach
     void tearDown() throws PersistenciaException {
         for (Long idProducto : idsProductosCreados) {
             try {
                 productoDAO.eliminar(idProducto);
             } catch (PersistenciaException e) {
+                // Silencio intencional para continuar limpieza
             }
         }
 
@@ -57,6 +77,7 @@ public class ProductoDAOTest {
                         em.remove(ingrediente);
                     }
                 } catch (Exception e) {
+                    // Silencio intencional para continuar limpieza
                 }
             }
             em.getTransaction().commit();
@@ -69,12 +90,21 @@ public class ProductoDAOTest {
         }
     }
 
+    /**
+     * Registra el ID de un producto en la lista de seguimiento para limpieza.
+     * @param producto Producto cuyo ID será registrado.
+     */
     private void registrarIdProductoSiExiste(Producto producto) {
         if (producto != null && producto.getIdProducto() != null) {
             idsProductosCreados.add(producto.getIdProducto());
         }
     }
 
+    /**
+     * Método auxiliar para crear un ingrediente persistido necesario para las pruebas de producto.
+     * @param sufijo Cadena única para diferenciar nombres de ingredientes.
+     * @return El Ingrediente persistido.
+     */
     private Ingrediente crearIngredientePrueba(String sufijo) {
         EntityManager em = ConexionBD.crearConexion();
 
@@ -103,6 +133,12 @@ public class ProductoDAOTest {
         }
     }
 
+    /**
+     * Método auxiliar para instanciar un objeto Producto con datos válidos y un ingrediente asociado.
+     * @param sufijo Cadena única para diferenciar nombres.
+     * @param tipo El tipo de producto a crear.
+     * @return Objeto Producto listo para ser persistido.
+     */
     private Producto crearProductoValido(String sufijo, TipoProducto tipo) {
         Ingrediente ingrediente = crearIngredientePrueba(sufijo);
 
@@ -123,6 +159,10 @@ public class ProductoDAOTest {
         return producto;
     }
 
+    /**
+     * Prueba el flujo exitoso de guardado de un producto válido.
+     * @throws PersistenciaException Si ocurre un error inesperado.
+     */
     @Test
     void guardarProductoValido() throws PersistenciaException {
         Producto producto = crearProductoValido("guardar", TipoProducto.PLATILLO);
@@ -136,6 +176,10 @@ public class ProductoDAOTest {
         assertEquals(1, resultado.getDetallesIngredientes().size());
     }
 
+    /**
+     * Verifica que el sistema impida guardar productos con nombres duplicados.
+     * @throws PersistenciaException Caso esperado.
+     */
     @Test
     void guardarProductoDuplicadoLanzaExcepcion() throws PersistenciaException {
         Producto p1 = crearProductoValido("duplicadoA", TipoProducto.PLATILLO);
@@ -150,6 +194,10 @@ public class ProductoDAOTest {
         assertThrows(PersistenciaException.class, () -> productoDAO.guardar(p2));
     }
 
+    /**
+     * Verifica que se lance una excepción si se intenta guardar un producto 
+     * con detalles de ingredientes que carecen de ID válido.
+     */
     @Test
     void guardarProductoSinIngredienteValidoLanzaExcepcion() {
         DetalleProductoIngrediente detalle = new DetalleProductoIngrediente();
@@ -168,6 +216,10 @@ public class ProductoDAOTest {
         assertThrows(PersistenciaException.class, () -> productoDAO.guardar(producto));
     }
 
+    /**
+     * Prueba la recuperación exitosa de un producto por su identificador.
+     * @throws PersistenciaException Si ocurre un error en la búsqueda.
+     */
     @Test
     void buscarPorIdExistente() throws PersistenciaException {
         Producto producto = crearProductoValido("buscarId", TipoProducto.POSTRE);
@@ -182,17 +234,28 @@ public class ProductoDAOTest {
         assertEquals("ProductoTest_buscarId", encontrado.getNombre());
     }
 
+    /**
+     * Verifica que la búsqueda por un ID inexistente retorne null.
+     * @throws PersistenciaException Si ocurre un error técnico.
+     */
     @Test
     void buscarPorIdInexistente() throws PersistenciaException {
         Producto encontrado = productoDAO.buscarPorId(-1L);
         assertNull(encontrado, "Debería retornar null si el producto no existe");
     }
 
+    /**
+     * Verifica que buscar por un ID nulo resulte en una excepción de persistencia.
+     */
     @Test
     void buscarPorIdNuloLanzaExcepcion() {
         assertThrows(PersistenciaException.class, () -> productoDAO.buscarPorId(null));
     }
 
+    /**
+     * Prueba la actualización de los campos básicos de un producto.
+     * @throws PersistenciaException Si ocurre un error en la edición.
+     */
     @Test
     void editarProducto() throws PersistenciaException {
         Producto producto = crearProductoValido("editar", TipoProducto.BEBIDA);
@@ -213,6 +276,9 @@ public class ProductoDAOTest {
         assertEquals("Descripción editada", actualizado.getDescripcion());
     }
 
+    /**
+     * Verifica que no se pueda editar un producto que no tenga ID asignado.
+     */
     @Test
     void editarProductoConIdNuloLanzaExcepcion() {
         Producto producto = crearProductoValido("sinIdEditar", TipoProducto.PLATILLO);
@@ -221,6 +287,10 @@ public class ProductoDAOTest {
         assertThrows(PersistenciaException.class, () -> productoDAO.editar(producto));
     }
 
+    /**
+     * Prueba la eliminación física de un producto en la base de datos.
+     * @throws PersistenciaException Si falla la transacción de eliminación.
+     */
     @Test
     void eliminarProductoExistente() throws PersistenciaException {
         Producto producto = crearProductoValido("eliminar", TipoProducto.PLATILLO);
@@ -233,12 +303,20 @@ public class ProductoDAOTest {
         assertNull(productoDAO.buscarPorId(guardado.getIdProducto()), "El producto ya no debería existir en la BD");
     }
 
+    /**
+     * Verifica que el método eliminar retorne false si el ID no corresponde a ningún registro.
+     * @throws PersistenciaException Si ocurre un error técnico.
+     */
     @Test
     void eliminarProductoInexistente() throws PersistenciaException {
         boolean eliminado = productoDAO.eliminar(-999L);
         assertFalse(eliminado, "Debería retornar false si el producto no existe");
     }
 
+    /**
+     * Verifica que la recuperación de todos los productos incluya los recién guardados.
+     * @throws PersistenciaException Si falla la consulta.
+     */
     @Test
     void obtenerTodosDebeRegresarProductosGuardados() throws PersistenciaException {
         Producto producto = crearProductoValido("obtenerTodos", TipoProducto.POSTRE);
@@ -255,6 +333,10 @@ public class ProductoDAOTest {
         );
     }
 
+    /**
+     * Prueba el filtro de búsqueda por nombre parcial.
+     * @throws PersistenciaException Si falla la consulta dinámica.
+     */
     @Test
     void buscarPorNombreYTipoPorNombreParcial() throws PersistenciaException {
         Producto producto = crearProductoValido("nombreParcial", TipoProducto.BEBIDA);
@@ -273,6 +355,10 @@ public class ProductoDAOTest {
         );
     }
 
+    /**
+     * Prueba el filtro de búsqueda por tipo de producto.
+     * @throws PersistenciaException Si falla la consulta dinámica.
+     */
     @Test
     void buscarPorNombreYTipoPorTipo() throws PersistenciaException {
         Producto producto = crearProductoValido("soloTipo", TipoProducto.POSTRE);
@@ -290,6 +376,10 @@ public class ProductoDAOTest {
         );
     }
 
+    /**
+     * Prueba la combinación de filtros de nombre y tipo simultáneamente.
+     * @throws PersistenciaException Si falla la consulta.
+     */
     @Test
     void buscarPorNombreYTipoCombinado() throws PersistenciaException {
         Producto producto = crearProductoValido("combinado", TipoProducto.PLATILLO);
@@ -308,6 +398,10 @@ public class ProductoDAOTest {
         );
     }
 
+    /**
+     * Verifica que el cambio de estado lógico (activo/inactivo) persista correctamente.
+     * @throws PersistenciaException Si ocurre un error en el UPDATE.
+     */
     @Test
     void cambiarEstadoActivoDebeActualizarProducto() throws PersistenciaException {
         Producto producto = crearProductoValido("estadoActivo", TipoProducto.BEBIDA);
@@ -323,6 +417,10 @@ public class ProductoDAOTest {
         assertFalse(actualizado.getActivo(), "El estado activo debió cambiar a false");
     }
 
+    /**
+     * Verifica que la actualización del nivel de disponibilidad se guarde correctamente.
+     * @throws PersistenciaException Si falla el UPDATE en la BD.
+     */
     @Test
     void actualizarDisponibilidadDebeActualizarProducto() throws PersistenciaException {
         Producto producto = crearProductoValido("disponibilidad", TipoProducto.POSTRE);
@@ -339,6 +437,10 @@ public class ProductoDAOTest {
         assertEquals(DisponibilidadProducto.SI, actualizado.getDisponibilidad());
     }
 
+    /**
+     * Verifica que se detecte correctamente un nombre que ya está en uso.
+     * @throws PersistenciaException Si falla la consulta de validación.
+     */
     @Test
     void existeDuplicadoActivoDebeRetornarTrueSiYaExisteNombre() throws PersistenciaException {
         Producto producto = crearProductoValido("duplicadoActivo", TipoProducto.PLATILLO);
@@ -352,6 +454,10 @@ public class ProductoDAOTest {
         assertTrue(existe, "Debería detectar duplicado por nombre");
     }
 
+    /**
+     * Verifica que la validación de duplicados ignore al producto actual mediante su ID.
+     * @throws PersistenciaException Si falla la consulta de validación.
+     */
     @Test
     void existeDuplicadoActivoDebeRetornarFalseSiSeExcluyeElMismoId() throws PersistenciaException {
         Producto producto = crearProductoValido("excluirMismo", TipoProducto.PLATILLO);

@@ -17,13 +17,29 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+/**
+ * Clase que implementa la interfaz IProductoDAO para gestionar la persistencia 
+ * de la entidad Producto en la base de datos utilizando JPA.
+ * 
+ * Implementa el patrón Singleton para garantizar una única instancia del DAO.
+ * 
+ * @author regina, mariana e isaac
+ */
 public class ProductoDAO implements IProductoDAO {
 
+    /** Instancia única de la clase ProductoDAO. */
     private static ProductoDAO instanciaProducto;
 
+    /**
+     * Constructor privado para evitar la instanciación externa (Patrón Singleton).
+     */
     private ProductoDAO() {
     }
 
+    /**
+     * Obtiene la instancia única de ProductoDAO.
+     * * @return La instancia única de ProductoDAO.
+     */
     public static ProductoDAO getInstance() {
         if (instanciaProducto == null) {
             instanciaProducto = new ProductoDAO();
@@ -31,6 +47,15 @@ public class ProductoDAO implements IProductoDAO {
         return instanciaProducto;
     }
 
+    /**
+     * Guarda un nuevo producto en la base de datos.
+     * Valida que el nombre no esté duplicado y vincula correctamente los 
+     * ingredientes referenciados en los detalles del producto.
+     * * @param producto El producto a guardar.
+     * @return El producto persistido con su ID generado.
+     * @throws PersistenciaException Si el producto es nulo, el nombre ya existe 
+     * o ocurre un error en la transacción.
+     */
     @Override
     public Producto guardar(Producto producto) throws PersistenciaException {
         if (producto == null) {
@@ -83,6 +108,13 @@ public class ProductoDAO implements IProductoDAO {
         }
     }
 
+    /**
+     * Actualiza los datos de un producto existente.
+     * * @param producto El producto con los datos actualizados.
+     * @return El producto actualizado.
+     * @throws PersistenciaException Si el producto o su ID son nulos, si el nombre 
+     * coincide con otro producto existente o por errores de base de datos.
+     */
     @Override
     public Producto editar(Producto producto) throws PersistenciaException {
         if (producto == null) {
@@ -139,6 +171,12 @@ public class ProductoDAO implements IProductoDAO {
         }
     }
 
+    /**
+     * Busca un producto por su identificador único.
+     * * @param id Identificador del producto.
+     * @return El objeto Producto encontrado o null si no existe.
+     * @throws PersistenciaException Si el ID es nulo o hay un error en la consulta.
+     */
     @Override
     public Producto buscarPorId(Long id) throws PersistenciaException {
         if (id == null) {
@@ -156,6 +194,12 @@ public class ProductoDAO implements IProductoDAO {
         }
     }
 
+    /**
+     * Elimina un producto de la base de datos por su ID.
+     * * @param id Identificador del producto a eliminar.
+     * @return true si se eliminó con éxito, false si el producto no existía.
+     * @throws PersistenciaException Si ocurre un error durante la eliminación.
+     */
     @Override
     public boolean eliminar(Long id) throws PersistenciaException {
         EntityManager em = ConexionBD.crearConexion();
@@ -182,6 +226,11 @@ public class ProductoDAO implements IProductoDAO {
         }
     }
 
+    /**
+     * Obtiene una lista de todos los productos registrados, ordenados por nombre.
+     * * @return Lista de productos.
+     * @throws PersistenciaException Si ocurre un error en la consulta JPQL.
+     */
     @Override
     public List<Producto> obtenerTodos() throws PersistenciaException {
         EntityManager em = ConexionBD.crearConexion();
@@ -197,6 +246,14 @@ public class ProductoDAO implements IProductoDAO {
         }
     }
 
+    /**
+     * Busca productos filtrando opcionalmente por nombre y tipo.
+     * Utiliza la API de Criteria para construir la consulta dinámica.
+     * * @param nombre Filtro parcial del nombre (insensible a mayúsculas).
+     * @param tipo El TipoProducto a filtrar.
+     * @return Lista de productos que coinciden con los criterios.
+     * @throws PersistenciaException Si ocurre un error en la consulta.
+     */
     @Override
     public List<Producto> buscarPorNombreYTipo(String nombre, TipoProducto tipo) throws PersistenciaException {
         EntityManager em = ConexionBD.crearConexion();
@@ -236,11 +293,25 @@ public class ProductoDAO implements IProductoDAO {
         }
     }
 
+    /**
+     * Verifica si existe un producto con el nombre proporcionado, excluyendo un ID específico.
+     * * @param nombre Nombre a validar.
+     * @param idExcluir ID que se debe omitir en la búsqueda (útil en ediciones).
+     * @return true si ya existe un duplicado, false en caso contrario.
+     * @throws PersistenciaException Si el nombre es inválido o falla la consulta.
+     */
     @Override
     public boolean existeDuplicadoActivo(String nombre, Long idExcluir) throws PersistenciaException {
         return existeDuplicadoPorNombre(nombre, idExcluir);
     }
 
+    /**
+     * Método privado para centralizar la lógica de validación de nombres duplicados.
+     * * @param nombre Nombre a verificar.
+     * @param idExcluir ID a ignorar (opcional).
+     * @return true si hay coincidencia, false de lo contrario.
+     * @throws PersistenciaException Si hay errores de validación o persistencia.
+     */
     private boolean existeDuplicadoPorNombre(String nombre, Long idExcluir) throws PersistenciaException {
         if (nombre == null || nombre.isBlank()) {
             throw new PersistenciaException("El nombre del producto es obligatorio para validar duplicados.");
@@ -273,6 +344,12 @@ public class ProductoDAO implements IProductoDAO {
         }
     }
 
+    /**
+     * Cambia el estado de activación de un producto mediante una actualización masiva.
+     * * @param idProducto ID del producto a modificar.
+     * @param activo Nuevo estado (true para activo, false para inactivo).
+     * @throws PersistenciaException Si ocurre un error al ejecutar el UPDATE.
+     */
     @Override
     public void cambiarEstadoActivo(Long idProducto, Boolean activo) throws PersistenciaException {
         EntityManager em = ConexionBD.crearConexion();
@@ -299,6 +376,12 @@ public class ProductoDAO implements IProductoDAO {
         }
     }
 
+    /**
+     * Actualiza el nivel de disponibilidad de un producto específico.
+     * * @param idProducto ID del producto.
+     * @param disponibilidad Nuevo valor del enum DisponibilidadProducto.
+     * @throws PersistenciaException Si ocurre un error en la base de datos.
+     */
     @Override
     public void actualizarDisponibilidad(Long idProducto, DisponibilidadProducto disponibilidad)
             throws PersistenciaException {

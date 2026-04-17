@@ -7,15 +7,32 @@ package dtos;
 import java.io.Serializable;
 
 /**
- * DTO que representa el detalle de un ingrediente requerido por un producto.
- *  Contiene el ingrediente asociado y la cantidad necesaria para su preparación
+ * DTO que representa el detalle de un ingrediente
+ * requerido por un producto.
  * 
- * @author regina, mariana e isaac
+ * Este objeto se utiliza para transferir información entre las capas de
+ * presentación y negocio, sin exponer directamente las entidades.
+ * 
+ * Contiene el ingrediente asociado y la cantidad necesaria para la
+ * preparación del producto.
+ * 
+ * @author Regina, Mariana e Isaac
  */
 public class DetalleProductoIngredienteDTO  implements Serializable{
     
+    /**
+     * Identificador único del detalle producto-ingrediente.
+     */
     private Long idDetalleProductoIngrediente;
+
+    /**
+     * Ingrediente asociado al producto.
+     */
     private IngredienteDTO ingrediente;
+
+    /**
+     * Cantidad requerida del ingrediente.
+     */
     private Integer cantidadRequerida;
 
     /**
@@ -25,7 +42,7 @@ public class DetalleProductoIngredienteDTO  implements Serializable{
     }
 
     /**
-     * Constructor con todos los atributos.
+     * Constructor con todos los atributos del detalle.
      *
      * @param idDetalleProductoIngrediente Identificador único del detalle.
      * @param ingrediente Ingrediente asociado al producto.
@@ -37,30 +54,65 @@ public class DetalleProductoIngredienteDTO  implements Serializable{
         this.cantidadRequerida = cantidadRequerida;
     }
 
+    /**
+     * Obtiene el identificador del detalle.
+     * 
+     * @return id del detalle producto-ingrediente.
+     */
     public Long getIdDetalleProductoIngrediente() {
         return idDetalleProductoIngrediente;
     }
 
+    /**
+     * Establece el identificador del detalle.
+     * 
+     * @param idDetalleProductoIngrediente nuevo identificador.
+     */
     public void setIdDetalleProductoIngrediente(Long idDetalleProductoIngrediente) {
         this.idDetalleProductoIngrediente = idDetalleProductoIngrediente;
     }
 
+    /**
+     * Obtiene el ingrediente asociado.
+     * 
+     * @return ingrediente del detalle.
+     */
     public IngredienteDTO getIngrediente() {
         return ingrediente;
     }
 
+    /**
+     * Establece el ingrediente asociado.
+     * 
+     * @param ingrediente nuevo ingrediente.
+     */
     public void setIngrediente(IngredienteDTO ingrediente) {
         this.ingrediente = ingrediente;
     }
 
+    /**
+     * Obtiene la cantidad requerida del ingrediente.
+     * 
+     * @return cantidad requerida.
+     */
     public Integer getCantidadRequerida() {
         return cantidadRequerida;
     }
 
+    /**
+     * Establece la cantidad requerida del ingrediente.
+     * 
+     * @param cantidadRequerida nueva cantidad.
+     */
     public void setCantidadRequerida(Integer cantidadRequerida) {
         this.cantidadRequerida = cantidadRequerida;
     }
 
+    /**
+     * Representación en texto del detalle DTO.
+     * 
+     * @return cadena con los datos del detalle.
+     */
     @Override
     public String toString() {
         return "DetalleProductoIngredienteDTO{"

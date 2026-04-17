@@ -26,21 +26,41 @@ import java.util.List;
 import validadores.ValidadorProducto;
 
 /**
- * Implementa la lógica de negocio de la entidad Producto.
- * Convierte entre DTO y entidad, valida reglas de negocio y delega
- * las operaciones a la capa de persistencia.
+ * Clase que implementa la lógica de negocio para la gestión de productos.
+ * 
+ * Se encarga de validar la información recibida, convertir entre entidades
+ * y DTOs, aplicar reglas de negocio y delegar las operaciones correspondientes
+ * a la capa de persistencia.
+ * 
+ * Implementa el patrón Singleton para asegurar una única instancia durante
+ * la ejecución del sistema.
  *
- * @author regina, mariana e isaac
+ * @author Regina, Mariana e Isaac
  */
 public class ProductoBO implements IProductoBO {
 
+    /**
+     * Instancia única de la clase ProductoBO.
+     */
     private static ProductoBO instanciaProductoBO;
+
+    /**
+     * Objeto de acceso a datos para la gestión de productos.
+     */
     private IProductoDAO productoDAO;
 
+    /**
+     * Constructor privado para aplicar el patrón Singleton.
+     */
     private ProductoBO() {
         this.productoDAO = ProductoDAO.getInstance();
     }
 
+    /**
+     * Obtiene la instancia única de la clase ProductoBO.
+     * 
+     * @return instancia única de ProductoBO.
+     */
     public static ProductoBO getInstance() {
         if (instanciaProductoBO == null) {
             instanciaProductoBO = new ProductoBO();
@@ -48,6 +68,17 @@ public class ProductoBO implements IProductoBO {
         return instanciaProductoBO;
     }
 
+    /**
+     * Guarda un nuevo producto en el sistema.
+     * 
+     * Primero valida la información del producto, después convierte el DTO
+     * a entidad, calcula su disponibilidad con base en sus ingredientes
+     * y finalmente delega el guardado a la capa de persistencia.
+     *
+     * @param productoDTO producto a guardar.
+     * @return producto guardado como DTO.
+     * @throws NegocioException si ocurre un error de validación o persistencia.
+     */
     @Override
     public ProductoDTO guardar(ProductoDTO productoDTO) throws NegocioException {
         ValidadorProducto.validar(productoDTO);
@@ -62,6 +93,16 @@ public class ProductoBO implements IProductoBO {
         }
     }
 
+    /**
+     * Edita un producto existente.
+     * 
+     * Verifica que el producto y su identificador sean válidos, valida sus datos,
+     * actualiza su disponibilidad y delega la edición a la capa de persistencia.
+     *
+     * @param productoDTO producto con la información actualizada.
+     * @return producto editado como DTO.
+     * @throws NegocioException si ocurre un error de validación o persistencia.
+     */
     @Override
     public ProductoDTO editar(ProductoDTO productoDTO) throws NegocioException {
         if (productoDTO == null) {
@@ -84,6 +125,14 @@ public class ProductoBO implements IProductoBO {
         }
     }
 
+    /**
+     * Busca un producto por su identificador.
+     *
+     * @param id identificador del producto.
+     * @return producto encontrado como DTO.
+     * @throws NegocioException si el ID es nulo, no se encuentra el producto
+     * o ocurre un error en persistencia.
+     */
     @Override
     public ProductoDTO buscarPorId(Long id) throws NegocioException {
         if (id == null) {
@@ -103,6 +152,13 @@ public class ProductoBO implements IProductoBO {
         }
     }
 
+    /**
+     * Elimina un producto del sistema a partir de su identificador.
+     *
+     * @param id identificador del producto a eliminar.
+     * @throws NegocioException si el ID es nulo, el producto no existe
+     * o ocurre un error en persistencia.
+     */
     @Override
     public void eliminar(Long id) throws NegocioException {
         if (id == null) {
@@ -120,6 +176,12 @@ public class ProductoBO implements IProductoBO {
         }
     }
 
+    /**
+     * Obtiene todos los productos registrados en el sistema.
+     *
+     * @return lista de productos como DTO.
+     * @throws NegocioException si ocurre un error en la capa de persistencia.
+     */
     @Override
     public List<ProductoDTO> obtenerTodos() throws NegocioException {
         try {
@@ -138,6 +200,17 @@ public class ProductoBO implements IProductoBO {
         }
     }
 
+    /**
+     * Busca productos filtrando por nombre y tipo.
+     * 
+     * Este método permite realizar búsquedas específicas sin necesidad
+     * de recuperar toda la lista de productos.
+     *
+     * @param nombre nombre o parte del nombre del producto.
+     * @param tipoDTO tipo de producto a filtrar.
+     * @return lista de productos que coinciden con los criterios.
+     * @throws NegocioException si ocurre un error en la búsqueda.
+     */
     @Override
     public List<ProductoDTO> buscarPorNombreYTipo(String nombre, TipoProductoDTO tipoDTO) throws NegocioException {
         try {
@@ -158,6 +231,14 @@ public class ProductoBO implements IProductoBO {
         }
     }
 
+    /**
+     * Cambia el estado lógico de un producto.
+     *
+     * @param idProducto identificador del producto.
+     * @param activo nuevo estado del producto.
+     * @throws NegocioException si el ID o el estado son nulos,
+     * o si ocurre un error en persistencia.
+     */
     @Override
     public void cambiarEstadoActivo(Long idProducto, Boolean activo) throws NegocioException {
         if (idProducto == null) {
@@ -175,6 +256,13 @@ public class ProductoBO implements IProductoBO {
         }
     }
 
+    /**
+     * Actualiza la disponibilidad de un producto en función de sus ingredientes.
+     *
+     * @param idProducto identificador del producto.
+     * @throws NegocioException si el ID es nulo, no se encuentra el producto
+     * o ocurre un error en persistencia.
+     */
     @Override
     public void actualizarDisponibilidad(Long idProducto) throws NegocioException {
         if (idProducto == null) {
@@ -198,10 +286,13 @@ public class ProductoBO implements IProductoBO {
 
     /**
      * Calcula si un producto está disponible con base en los ingredientes requeridos.
-     * El producto está disponible si todos sus ingredientes tienen stock suficiente.
+     * 
+     * El producto se considera disponible únicamente si todos sus ingredientes
+     * tienen stock suficiente para cubrir la cantidad requerida.
      *
-     * @param producto Producto a evaluar.
-     * @return SI si todos los ingredientes tienen stock suficiente, NO en caso contrario.
+     * @param producto producto a evaluar.
+     * @return {@code DisponibilidadProducto.SI} si todos los ingredientes tienen
+     * stock suficiente; {@code DisponibilidadProducto.NO} en caso contrario.
      */
     private DisponibilidadProducto calcularDisponibilidad(Producto producto) {
         if (producto == null || producto.getDetallesIngredientes() == null || producto.getDetallesIngredientes().isEmpty()) {
@@ -224,6 +315,12 @@ public class ProductoBO implements IProductoBO {
         return DisponibilidadProducto.SI;
     }
 
+    /**
+     * Convierte un objeto {@code ProductoDTO} en una entidad {@code Producto}.
+     *
+     * @param productoDTO DTO a convertir.
+     * @return entidad Producto equivalente.
+     */
     private Producto convertirEntidad(ProductoDTO productoDTO) {
         if (productoDTO == null) {
             return null;
@@ -253,6 +350,12 @@ public class ProductoBO implements IProductoBO {
         return producto;
     }
 
+    /**
+     * Convierte una entidad {@code Producto} en un objeto {@code ProductoDTO}.
+     *
+     * @param producto entidad a convertir.
+     * @return DTO equivalente.
+     */
     private ProductoDTO convertirDTO(Producto producto) {
         if (producto == null) {
             return null;
@@ -279,6 +382,13 @@ public class ProductoBO implements IProductoBO {
         );
     }
 
+    /**
+     * Convierte un {@code DetalleProductoIngredienteDTO} en una entidad
+     * {@code DetalleProductoIngrediente}.
+     *
+     * @param detalleDTO DTO a convertir.
+     * @return entidad equivalente.
+     */
     private DetalleProductoIngrediente convertirDetalleEntidad(DetalleProductoIngredienteDTO detalleDTO) {
         if (detalleDTO == null) {
             return null;
@@ -291,6 +401,13 @@ public class ProductoBO implements IProductoBO {
         return detalle;
     }
 
+    /**
+     * Convierte una entidad {@code DetalleProductoIngrediente} en un
+     * {@code DetalleProductoIngredienteDTO}.
+     *
+     * @param detalle entidad a convertir.
+     * @return DTO equivalente.
+     */
     private DetalleProductoIngredienteDTO convertirDetalleDTO(DetalleProductoIngrediente detalle) {
         if (detalle == null) {
             return null;
@@ -303,6 +420,12 @@ public class ProductoBO implements IProductoBO {
         );
     }
 
+    /**
+     * Convierte un {@code IngredienteDTO} en una entidad {@code Ingrediente}.
+     *
+     * @param ingredienteDTO DTO a convertir.
+     * @return entidad equivalente.
+     */
     private Ingrediente convertirIngredienteEntidad(IngredienteDTO ingredienteDTO) {
         if (ingredienteDTO == null) {
             return null;
@@ -317,6 +440,12 @@ public class ProductoBO implements IProductoBO {
         );
     }
 
+    /**
+     * Convierte una entidad {@code Ingrediente} en un {@code IngredienteDTO}.
+     *
+     * @param ingrediente entidad a convertir.
+     * @return DTO equivalente.
+     */
     private IngredienteDTO convertirIngredienteDTO(Ingrediente ingrediente) {
         if (ingrediente == null) {
             return null;
@@ -331,6 +460,12 @@ public class ProductoBO implements IProductoBO {
         );
     }
 
+    /**
+     * Convierte un {@code TipoProductoDTO} en un {@code TipoProducto}.
+     *
+     * @param tipoDTO tipo DTO a convertir.
+     * @return tipo de entidad equivalente.
+     */
     private TipoProducto convertirTipoEntidad(TipoProductoDTO tipoDTO) {
         if (tipoDTO == null) {
             return null;
@@ -348,6 +483,12 @@ public class ProductoBO implements IProductoBO {
         }
     }
 
+    /**
+     * Convierte un {@code TipoProducto} en un {@code TipoProductoDTO}.
+     *
+     * @param tipo tipo de entidad a convertir.
+     * @return tipo DTO equivalente.
+     */
     private TipoProductoDTO convertirTipoDTO(TipoProducto tipo) {
         if (tipo == null) {
             return null;
@@ -365,6 +506,13 @@ public class ProductoBO implements IProductoBO {
         }
     }
 
+    /**
+     * Convierte una {@code DisponibilidadProductoDTO} en una
+     * {@code DisponibilidadProducto}.
+     *
+     * @param disponibilidadDTO disponibilidad DTO a convertir.
+     * @return disponibilidad de entidad equivalente.
+     */
     private DisponibilidadProducto convertirDisponibilidadEntidad(DisponibilidadProductoDTO disponibilidadDTO) {
         if (disponibilidadDTO == null) {
             return null;
@@ -380,6 +528,13 @@ public class ProductoBO implements IProductoBO {
         }
     }
 
+    /**
+     * Convierte una {@code DisponibilidadProducto} en una
+     * {@code DisponibilidadProductoDTO}.
+     *
+     * @param disponibilidad disponibilidad de entidad a convertir.
+     * @return disponibilidad DTO equivalente.
+     */
     private DisponibilidadProductoDTO convertirDisponibilidadDTO(DisponibilidadProducto disponibilidad) {
         if (disponibilidad == null) {
             return null;
@@ -395,6 +550,12 @@ public class ProductoBO implements IProductoBO {
         }
     }
 
+    /**
+     * Convierte una {@code UnidadMedidaDTO} en una {@code UnidadMedida}.
+     *
+     * @param unidadMedidaDTO unidad de medida DTO a convertir.
+     * @return unidad de medida de entidad equivalente.
+     */
     private UnidadMedida convertirUnidadMedidaEntidad(UnidadMedidaDTO unidadMedidaDTO) {
         if (unidadMedidaDTO == null) {
             return null;
@@ -412,6 +573,12 @@ public class ProductoBO implements IProductoBO {
         }
     }
 
+    /**
+     * Convierte una {@code UnidadMedida} en una {@code UnidadMedidaDTO}.
+     *
+     * @param unidadMedida unidad de medida de entidad a convertir.
+     * @return unidad de medida DTO equivalente.
+     */
     private UnidadMedidaDTO convertirUnidadMedidaDTO(UnidadMedida unidadMedida) {
         if (unidadMedida == null) {
             return null;
