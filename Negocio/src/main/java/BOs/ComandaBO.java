@@ -390,9 +390,15 @@ public class ComandaBO implements IComandaBO {
 
                 for (DetalleProductoIngrediente dpi : producto.getDetallesIngredientes()) {
 
-                    Ingrediente ingrediente = dpi.getIngrediente();
+                    Ingrediente ingredienteBase = dpi.getIngrediente();
 
-                    double stockActual = ingrediente.getStockActual() != null ? ingrediente.getStockActual() : 0.0;
+                    if (ingredienteBase == null || ingredienteBase.getIdIngrediente() == null) {
+                        throw new NegocioException("Uno de los ingredientes del producto no es válido.");
+                    }
+
+                    Ingrediente ingredienteActual = ingredienteDAO.buscarPorId(ingredienteBase.getIdIngrediente());
+
+                    double stockActual = ingredienteActual.getStockActual() != null ? ingredienteActual.getStockActual() : 0.0;
 
                     int cantidadRequerida = dpi.getCantidadRequerida() != null ? dpi.getCantidadRequerida() : 0;
                     int cantidadPedida = detalle.getCantidad() != null ? detalle.getCantidad() : 0;
@@ -402,7 +408,7 @@ public class ComandaBO implements IComandaBO {
                     double nuevoStock = stockActual + cantidadADevolver;
 
                     ingredienteDAO.actualizarStock(
-                            ingrediente.getIdIngrediente(),
+                            ingredienteActual.getIdIngrediente(),
                             nuevoStock
                     );
                 }
