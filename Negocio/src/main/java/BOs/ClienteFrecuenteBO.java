@@ -8,6 +8,7 @@ import excepciones.NegocioException;
 import excepciones.PersistenciaException;
 import interfaces.IClienteDAO;
 import interfaces.IClienteFrecuenteBO;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import utilidades.CifradorTelefono;
@@ -242,19 +243,28 @@ public class ClienteFrecuenteBO implements IClienteFrecuenteBO {
             return null;
         }
 
-        return new ClienteFrecuenteDTO(
-                clienteFrecuente.getId(),
-                clienteFrecuente.getNombre(),
-                clienteFrecuente.getApellidoPaterno(),
-                clienteFrecuente.getApellidoMaterno(),
-                CifradorTelefono.desencriptar(clienteFrecuente.getTelefono()),
-                clienteFrecuente.getCorreoElectronico(),
-                clienteFrecuente.getFechaRegistro(),
-                clienteFrecuente.getNumeroVisitas(),
-                clienteFrecuente.getTotalGastado(),
-                clienteFrecuente.getPuntosFidelidad(),
-                clienteFrecuente.getFechaUltimaComanda()
-        );
+        try {
+            Integer numeroVisitas = clienteDAO.obtenerNumeroVisitas(clienteFrecuente.getId());
+            Double totalGastado = clienteDAO.obtenerTotalGastado(clienteFrecuente.getId());
+            Integer puntosFidelidad = (int) Math.floor(totalGastado / 20.0);
+            LocalDateTime fechaUltimaComanda = clienteDAO.obtenerFechaUltimaComanda(clienteFrecuente.getId());
+
+            return new ClienteFrecuenteDTO(
+                    clienteFrecuente.getId(),
+                    clienteFrecuente.getNombre(),
+                    clienteFrecuente.getApellidoPaterno(),
+                    clienteFrecuente.getApellidoMaterno(),
+                    CifradorTelefono.desencriptar(clienteFrecuente.getTelefono()),
+                    clienteFrecuente.getCorreoElectronico(),
+                    clienteFrecuente.getFechaRegistro(),
+                    numeroVisitas,
+                    totalGastado,
+                    puntosFidelidad,
+                    fechaUltimaComanda
+            );
+        } catch (PersistenciaException e) {
+            throw new RuntimeException("Error al convertir el cliente frecuente a DTO.", e);
+        }
     }
 
     @Override
