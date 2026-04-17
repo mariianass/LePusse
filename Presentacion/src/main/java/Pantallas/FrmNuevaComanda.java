@@ -378,7 +378,7 @@ public class FrmNuevaComanda extends JFrame {
 
         txtFecha.setText(ahora.format(formatoFecha));
         txtHora.setText(ahora.format(formatoHora));
-        txtFolio.setText("");
+        txtFolio.setText("Generado automáticamente");
     }
 
     /**

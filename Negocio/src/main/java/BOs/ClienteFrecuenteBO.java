@@ -219,7 +219,7 @@ public class ClienteFrecuenteBO implements IClienteFrecuenteBO {
         if (clienteFrecuenteDTO == null) {
             return null;
         }
-        
+
         return new ClienteFrecuente(
                 clienteFrecuenteDTO.getFechaRegistro(),
                 clienteFrecuenteDTO.getIdCliente(),
@@ -251,7 +251,7 @@ public class ClienteFrecuenteBO implements IClienteFrecuenteBO {
                 clienteFrecuente.getCorreoElectronico(),
                 clienteFrecuente.getFechaRegistro(),
                 clienteFrecuente.getNumeroVisitas(),
-                null,
+                clienteFrecuente.getTotalGastado(),
                 clienteFrecuente.getPuntosFidelidad(),
                 clienteFrecuente.getFechaUltimaComanda()
         );
@@ -276,7 +276,7 @@ public class ClienteFrecuenteBO implements IClienteFrecuenteBO {
             throw new NegocioException("Error al obtener todos los clientes frecuentes en negocio.", e);
         }
     }
-    
+
     public void registrarClienteGeneral() throws Exception {
         try {
             clienteDAO.registrarClienteGeneral();
@@ -284,5 +284,5 @@ public class ClienteFrecuenteBO implements IClienteFrecuenteBO {
             throw new Exception("Error en la capa de negocio al registrar cliente general: " + e.getMessage());
         }
     }
-    
+
 }
