@@ -474,7 +474,7 @@ public class FrmEditarComanda extends JFrame {
                 "$" + String.format("%.2f", detalle.getPrecio()),
                 "$" + String.format("%.2f", subtotal),
                 detalle.getComentarioEspecial() != null ? detalle.getComentarioEspecial() : "",
-                "🗑"
+                "X"
             });
         }
 
@@ -638,7 +638,7 @@ public class FrmEditarComanda extends JFrame {
                 detalle.getPrecio() != null ? "$" + String.format("%.2f", detalle.getPrecio()) : "$0.00",
                 "$" + String.format("%.2f", subtotal),
                 detalle.getComentarioEspecial() != null ? detalle.getComentarioEspecial() : "",
-                "🗑"
+                "X"
             });
         }
 

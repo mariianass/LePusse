@@ -7,6 +7,7 @@ package DAOs;
 import conexion.ConexionBD;
 import entidades.Cliente;
 import entidades.ClienteFrecuente;
+import enums.EstadoComanda;
 import excepciones.PersistenciaException;
 import interfaces.IClienteDAO;
 import java.time.LocalDateTime;
@@ -19,20 +20,22 @@ import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Root;
 
 /**
- * Clase que implementa el patrón DAO para gestionar la persistencia de la entidad Cliente.
- * Utiliza JPA para interactuar con la base de datos y sigue el patrón Singleton.
+ * Clase que implementa el patrón DAO para gestionar la persistencia de la
+ * entidad Cliente. Utiliza JPA para interactuar con la base de datos y sigue el
+ * patrón Singleton.
+ *
  * @author regina, mariana e isaac
  */
 public class ClienteDAO implements IClienteDAO {
-    
+
     private static ClienteDAO instanciaCliente;
-    
-    private ClienteDAO(){
-        
+
+    private ClienteDAO() {
+
     }
-    
-    public static ClienteDAO getInstance(){
-        if(instanciaCliente == null){
+
+    public static ClienteDAO getInstance() {
+        if (instanciaCliente == null) {
             instanciaCliente = new ClienteDAO();
         }
         return instanciaCliente;
@@ -40,6 +43,7 @@ public class ClienteDAO implements IClienteDAO {
 
     /**
      * Guarda un nuevo cliente en la base de datos.
+     *
      * @param cliente El objeto cliente a persistir.
      * @return El cliente guardado.
      * @throws PersistenciaException Si ocurre un error durante la transacción.
@@ -47,7 +51,7 @@ public class ClienteDAO implements IClienteDAO {
     @Override
     public Cliente guardar(Cliente cliente) throws PersistenciaException {
         EntityManager em = ConexionBD.crearConexion();
-        
+
         try {
             em.getTransaction().begin();
             em.persist(cliente);
@@ -66,6 +70,7 @@ public class ClienteDAO implements IClienteDAO {
 
     /**
      * Busca un cliente por su identificador único.
+     *
      * @param id Identificador del cliente.
      * @return El cliente encontrado o null si no existe.
      * @throws PersistenciaException Si ocurre un error en la consulta.
@@ -73,19 +78,20 @@ public class ClienteDAO implements IClienteDAO {
     @Override
     public Cliente buscarPorId(Long id) throws PersistenciaException {
         EntityManager em = ConexionBD.crearConexion();
-        
+
         try {
             return em.find(Cliente.class, id);
-        } catch (Exception e){
-            throw new PersistenciaException("No se encontró el cliente en la base de datos. "+e.getMessage());
+        } catch (Exception e) {
+            throw new PersistenciaException("No se encontró el cliente en la base de datos. " + e.getMessage());
         } finally {
             em.close();
         }
-        
+
     }
 
     /**
      * Actualiza la información de un cliente existente.
+     *
      * @param cliente Cliente con los datos actualizados.
      * @return El cliente actualizado.
      * @throws PersistenciaException Si ocurre un error al intentar actualizar.
@@ -111,6 +117,7 @@ public class ClienteDAO implements IClienteDAO {
 
     /**
      * Elimina a un cliente de la base de datos mediante su ID.
+     *
      * @param id Identificador del cliente a eliminar.
      * @return true si se eliminó con éxito, false si el cliente no existía.
      * @throws PersistenciaException Si ocurre un error durante la eliminación.
@@ -141,11 +148,13 @@ public class ClienteDAO implements IClienteDAO {
     }
 
     /**
-     * Busca clientes basándose en un filtro de texto.
-     * Realiza la búsqueda en nombre, apellidos y correo electrónico.
+     * Busca clientes basándose en un filtro de texto. Realiza la búsqueda en
+     * nombre, apellidos y correo electrónico.
+     *
      * @param filtro Cadena de texto a buscar.
      * @return Lista de clientes que coinciden con el criterio.
-     * @throws PersistenciaException Si ocurre un error al construir o ejecutar la consulta Criteria.
+     * @throws PersistenciaException Si ocurre un error al construir o ejecutar
+     * la consulta Criteria.
      */
     @Override
     public List<Cliente> buscarPorFiltros(String filtro) throws PersistenciaException {
@@ -156,16 +165,16 @@ public class ClienteDAO implements IClienteDAO {
             Root<Cliente> c = cq.from(Cliente.class);
             String f = "%" + (filtro == null ? "" : filtro.trim().toLowerCase()) + "%";
 
-            Expression<String> nombreCompleto = cb.concat(cb.concat(c.get("nombre"), " "), 
-                                                cb.concat(cb.concat(c.get("apellidoPaterno"), " "), 
-                                                c.get("apellidoMaterno")));
+            Expression<String> nombreCompleto = cb.concat(cb.concat(c.get("nombre"), " "),
+                    cb.concat(cb.concat(c.get("apellidoPaterno"), " "),
+                            c.get("apellidoMaterno")));
 
             cq.where(cb.or(
-                cb.like(cb.lower(c.get("nombre")), f),
-                cb.like(cb.lower(c.get("apellidoPaterno")), f),
-                cb.like(cb.lower(c.get("apellidoMaterno")), f),
-                cb.like(cb.lower(nombreCompleto), f),
-                cb.like(cb.lower(cb.coalesce(c.get("correoElectronico"), "")), f)
+                    cb.like(cb.lower(c.get("nombre")), f),
+                    cb.like(cb.lower(c.get("apellidoPaterno")), f),
+                    cb.like(cb.lower(c.get("apellidoMaterno")), f),
+                    cb.like(cb.lower(nombreCompleto), f),
+                    cb.like(cb.lower(cb.coalesce(c.get("correoElectronico"), "")), f)
             ));
 
             return em.createQuery(cq).getResultList();
@@ -175,9 +184,10 @@ public class ClienteDAO implements IClienteDAO {
             em.close();
         }
     }
-    
+
     /**
      * Recupera todos los clientes registrados en la base de datos.
+     *
      * @return Lista con todos los clientes.
      * @throws PersistenciaException Si ocurre un error en la consulta JPQL.
      */
@@ -195,12 +205,14 @@ public class ClienteDAO implements IClienteDAO {
             em.close();
         }
     }
-    
+
     /**
-     * Gestiona la existencia de un "Cliente General" para ventas rápidas.
-     * Si no existe, lo crea; si ya existe, lo retorna.
+     * Gestiona la existencia de un "Cliente General" para ventas rápidas. Si no
+     * existe, lo crea; si ya existe, lo retorna.
+     *
      * @return Objeto Cliente que representa al cliente genérico.
-     * @throws PersistenciaException Si ocurre un error al verificar o persistir el cliente.
+     * @throws PersistenciaException Si ocurre un error al verificar o persistir
+     * el cliente.
      */
     @Override
     public Cliente registrarClienteGeneral() throws PersistenciaException {
@@ -215,7 +227,7 @@ public class ClienteDAO implements IClienteDAO {
             }
             ClienteFrecuente clienteG = new ClienteFrecuente();
             clienteG.setNombre("Cliente General");
-            clienteG.setApellidoPaterno(""); 
+            clienteG.setApellidoPaterno("");
             clienteG.setApellidoMaterno("");
             clienteG.setTelefono("");
             clienteG.setCorreoElectronico("");
@@ -232,6 +244,94 @@ public class ClienteDAO implements IClienteDAO {
                 em.getTransaction().rollback();
             }
             throw new PersistenciaException("Error al gestionar el Cliente General", e);
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Obtiene el número de visitas realizadas por un cliente frecuente. Solo se
+     * consideran las comandas entregadas.
+     *
+     * @param idCliente Identificador único del cliente.
+     * @return Número de visitas registradas.
+     * @throws PersistenciaException Si ocurre un error durante la consulta.
+     */
+    @Override
+    public Integer obtenerNumeroVisitas(Long idCliente) throws PersistenciaException {
+        EntityManager em = ConexionBD.crearConexion();
+
+        try {
+            String jpql = "SELECT COUNT(c) FROM Comanda c "
+                    + "WHERE c.cliente.id = :idCliente "
+                    + "AND c.estado = :estado";
+
+            Long resultado = em.createQuery(jpql, Long.class)
+                    .setParameter("idCliente", idCliente)
+                    .setParameter("estado", EstadoComanda.ENTREGADA)
+                    .getSingleResult();
+
+            return resultado != null ? resultado.intValue() : 0;
+        } catch (Exception e) {
+            throw new PersistenciaException("Error al obtener el número de visitas del cliente.", e);
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Obtiene el total gastado acumulado por un cliente frecuente. Solo se
+     * consideran las comandas entregadas.
+     *
+     * @param idCliente Identificador único del cliente.
+     * @return Total gastado por el cliente.
+     * @throws PersistenciaException Si ocurre un error durante la consulta.
+     */
+    @Override
+    public Double obtenerTotalGastado(Long idCliente) throws PersistenciaException {
+        EntityManager em = ConexionBD.crearConexion();
+
+        try {
+            String jpql = "SELECT COALESCE(SUM(c.totalVenta), 0) FROM Comanda c "
+                    + "WHERE c.cliente.id = :idCliente "
+                    + "AND c.estado = :estado";
+
+            Double resultado = em.createQuery(jpql, Double.class)
+                    .setParameter("idCliente", idCliente)
+                    .setParameter("estado", EstadoComanda.ENTREGADA)
+                    .getSingleResult();
+
+            return resultado != null ? resultado : 0.0;
+        } catch (Exception e) {
+            throw new PersistenciaException("Error al obtener el total gastado del cliente.", e);
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Obtiene la fecha y hora de la última comanda entregada de un cliente
+     * frecuente.
+     *
+     * @param idCliente Identificador único del cliente.
+     * @return Fecha de la última comanda entregada, o null si no existe.
+     * @throws PersistenciaException Si ocurre un error durante la consulta.
+     */
+    @Override
+    public LocalDateTime obtenerFechaUltimaComanda(Long idCliente) throws PersistenciaException {
+        EntityManager em = ConexionBD.crearConexion();
+
+        try {
+            String jpql = "SELECT MAX(c.fechaHoraCreacion) FROM Comanda c "
+                    + "WHERE c.cliente.id = :idCliente "
+                    + "AND c.estado = :estado";
+
+            return em.createQuery(jpql, LocalDateTime.class)
+                    .setParameter("idCliente", idCliente)
+                    .setParameter("estado", EstadoComanda.ENTREGADA)
+                    .getSingleResult();
+        } catch (Exception e) {
+            throw new PersistenciaException("Error al obtener la fecha de la última comanda del cliente.", e);
         } finally {
             em.close();
         }
