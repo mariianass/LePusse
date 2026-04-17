@@ -16,12 +16,12 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 /**
- *
- * @author regin
+ * Clase que implementa el patrón DAO para gestionar la persistencia de la entidad Cliente.
+ * Utiliza JPA para interactuar con la base de datos y sigue el patrón Singleton.
+ * @author regina, mariana e isaac
  */
 public class ClienteDAO implements IClienteDAO {
     
@@ -38,7 +38,12 @@ public class ClienteDAO implements IClienteDAO {
         return instanciaCliente;
     }
 
-
+    /**
+     * Guarda un nuevo cliente en la base de datos.
+     * @param cliente El objeto cliente a persistir.
+     * @return El cliente guardado.
+     * @throws PersistenciaException Si ocurre un error durante la transacción.
+     */
     @Override
     public Cliente guardar(Cliente cliente) throws PersistenciaException {
         EntityManager em = ConexionBD.crearConexion();
@@ -59,6 +64,12 @@ public class ClienteDAO implements IClienteDAO {
 
     }
 
+    /**
+     * Busca un cliente por su identificador único.
+     * @param id Identificador del cliente.
+     * @return El cliente encontrado o null si no existe.
+     * @throws PersistenciaException Si ocurre un error en la consulta.
+     */
     @Override
     public Cliente buscarPorId(Long id) throws PersistenciaException {
         EntityManager em = ConexionBD.crearConexion();
@@ -73,6 +84,12 @@ public class ClienteDAO implements IClienteDAO {
         
     }
 
+    /**
+     * Actualiza la información de un cliente existente.
+     * @param cliente Cliente con los datos actualizados.
+     * @return El cliente actualizado.
+     * @throws PersistenciaException Si ocurre un error al intentar actualizar.
+     */
     @Override
     public Cliente editar(Cliente cliente) throws PersistenciaException {
         EntityManager em = ConexionBD.crearConexion();
@@ -92,6 +109,12 @@ public class ClienteDAO implements IClienteDAO {
         }
     }
 
+    /**
+     * Elimina a un cliente de la base de datos mediante su ID.
+     * @param id Identificador del cliente a eliminar.
+     * @return true si se eliminó con éxito, false si el cliente no existía.
+     * @throws PersistenciaException Si ocurre un error durante la eliminación.
+     */
     @Override
     public boolean eliminar(Long id) throws PersistenciaException {
         EntityManager em = ConexionBD.crearConexion();
@@ -117,6 +140,13 @@ public class ClienteDAO implements IClienteDAO {
         }
     }
 
+    /**
+     * Busca clientes basándose en un filtro de texto.
+     * Realiza la búsqueda en nombre, apellidos y correo electrónico.
+     * @param filtro Cadena de texto a buscar.
+     * @return Lista de clientes que coinciden con el criterio.
+     * @throws PersistenciaException Si ocurre un error al construir o ejecutar la consulta Criteria.
+     */
     @Override
     public List<Cliente> buscarPorFiltros(String filtro) throws PersistenciaException {
         EntityManager em = ConexionBD.crearConexion();
@@ -124,13 +154,17 @@ public class ClienteDAO implements IClienteDAO {
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<Cliente> cq = cb.createQuery(Cliente.class);
             Root<Cliente> c = cq.from(Cliente.class);
-
             String f = "%" + (filtro == null ? "" : filtro.trim().toLowerCase()) + "%";
+
+            Expression<String> nombreCompleto = cb.concat(cb.concat(c.get("nombre"), " "), 
+                                                cb.concat(cb.concat(c.get("apellidoPaterno"), " "), 
+                                                c.get("apellidoMaterno")));
 
             cq.where(cb.or(
                 cb.like(cb.lower(c.get("nombre")), f),
                 cb.like(cb.lower(c.get("apellidoPaterno")), f),
                 cb.like(cb.lower(c.get("apellidoMaterno")), f),
+                cb.like(cb.lower(nombreCompleto), f),
                 cb.like(cb.lower(cb.coalesce(c.get("correoElectronico"), "")), f)
             ));
 
@@ -142,6 +176,11 @@ public class ClienteDAO implements IClienteDAO {
         }
     }
     
+    /**
+     * Recupera todos los clientes registrados en la base de datos.
+     * @return Lista con todos los clientes.
+     * @throws PersistenciaException Si ocurre un error en la consulta JPQL.
+     */
     @Override
     public List<Cliente> obtenerTodos() throws PersistenciaException {
         EntityManager em = ConexionBD.crearConexion();
@@ -157,6 +196,12 @@ public class ClienteDAO implements IClienteDAO {
         }
     }
     
+    /**
+     * Gestiona la existencia de un "Cliente General" para ventas rápidas.
+     * Si no existe, lo crea; si ya existe, lo retorna.
+     * @return Objeto Cliente que representa al cliente genérico.
+     * @throws PersistenciaException Si ocurre un error al verificar o persistir el cliente.
+     */
     @Override
     public Cliente registrarClienteGeneral() throws PersistenciaException {
         EntityManager em = ConexionBD.crearConexion();
