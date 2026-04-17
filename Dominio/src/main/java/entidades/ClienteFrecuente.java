@@ -30,19 +30,15 @@ public class ClienteFrecuente extends Cliente implements Serializable {
     private LocalDateTime fechaRegistro;
     
     @Transient
-    @Formula("(SELECT COUNT(c) FROM comandas c WHERE c.id_cliente = id_cliente")
     private Integer numeroVisitas;
     
     @Transient
-    @Formula("(SELECT FLOOR(SUM(c.total_venta)/20) FROM comandas c WHERE c.id_cliente = id_cliente")
     private Integer puntosFidelidad;
     
     @Transient
-    @Formula("(SELECT SUM(c.total_venta) FROM comandas c WHERE c.id_cliente = id_cliente")
     private Double totalGastado;
     
     @Transient
-    @Formula("(SELECT MAX(c.fecha_hora_creacion) FROM comandas c WHERE c.id_cliente = id_cliente)")
     private LocalDateTime fechaUltimaComanda;
 
     /**
