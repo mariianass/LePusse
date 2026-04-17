@@ -5,8 +5,10 @@
 package enumsDTO;
 
 /**
- *
- * @author regin
+ * Enum que define las unidades de medida permitidas en el sistema.
+ * Se utiliza para estandarizar la transferencia de datos (DTO) relacionados
+ * con inventarios, ventas o recetas de productos.
+ * @author regina, mariana e isaac
  */
 public enum UnidadMedidaDTO {
     PIEZAS,

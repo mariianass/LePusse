@@ -3,7 +3,10 @@ package Inicio;
 import Controlador.Coordinador;
 
 /**
- * @author Mariana
+ * Clase de entrada principal que arranca la ejecución de la aplicación.
+ * Se encarga de configurar el aspecto visual del sistema e inicializar el
+ * flujo de control a través del Coordinador.
+ * @author Mariana, regina e isaac
  */
 public class InicioAplicacion {
 
